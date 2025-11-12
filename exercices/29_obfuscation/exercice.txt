@@ -1,320 +1,88 @@
-═══════════════════════════════════════════════════════════════════════
-MODULE 29 : OBFUSCATION DE CODE - EXERCICES PRATIQUES
-═══════════════════════════════════════════════════════════════════════
-
-AVERTISSEMENT LÉGAL :
-Ces exercices sont à but ÉDUCATIF uniquement. Toute utilisation malveillante
-est STRICTEMENT INTERDITE. Vous êtes SEUL RESPONSABLE de l'usage que vous
-faites de ces techniques.
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 1 : String Encryption Multi-Clés
-═══════════════════════════════════════════════════════════════════════
-
-Objectif :
-Implémentez un système de chiffrement de chaînes utilisant plusieurs clés
-XOR différentes pour différentes parties de la chaîne.
-
-Spécifications :
-1. Divisez la chaîne en segments de 4 caractères
-2. Utilisez une clé différente pour chaque segment (ex: 0x42, 0x13, 0xAA, 0x7F)
-3. Créez une fonction de déchiffrement correspondante
-4. Testez avec : "This is a secret message!"
-
-Bonus :
-- Ajoutez un système de rotation de clés
-- Implémentez un chiffrement plus complexe (multi-XOR)
-
-Auto-évaluation :
-[ ] Les chaînes sont correctement chiffrées par segment
-[ ] Le déchiffrement restaure la chaîne originale
-[ ] Les clés sont gérées de manière automatique
-[ ] Le code est testé avec plusieurs chaînes
-
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 2 : Control Flow Flattening Avancé
-═══════════════════════════════════════════════════════════════════════
-
-Objectif :
-Transformez une fonction complexe en machine à états avec randomisation
-de l'ordre des états.
-
-Fonction de base :
-```c
-int calculate_hash(const char* str) {
-    int hash = 0;
-    for (int i = 0; str[i]; i++) {
-        hash = hash * 31 + str[i];
-    }
-    hash ^= (hash >> 16);
-    hash *= 0x85ebca6b;
-    hash ^= (hash >> 13);
-    return hash;
-}
-```
-
-Spécifications :
-1. Transformez en machine à états avec au moins 8 états
-2. Ajoutez des états de transition aléatoires
-3. Utilisez des valeurs d'état non séquentielles (ex: 17, 42, 99, etc.)
-4. Préservez la fonctionnalité exacte
-
-Auto-évaluation :
-[ ] La fonction obfusquée produit le même résultat
-[ ] Au moins 8 états sont utilisés
-[ ] L'ordre des états est non-séquentiel
-[ ] Des états de transition sont présents
-
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 3 : Opaque Predicates Mathématiques
-═══════════════════════════════════════════════════════════════════════
-
-Objectif :
-Créez une bibliothèque de prédicats opaques basés sur des propriétés
-mathématiques.
-
-Implémentez au moins 5 prédicats :
-1. Toujours vrai basé sur les carrés : (2x+1)² est toujours impair
-2. Toujours faux basé sur la somme : 2n + 1 n'est jamais pair
-3. Toujours vrai basé sur les cubes : n³ - n est divisible par 6
-4. Toujours faux : n² + n + 1 n'est jamais divisible par 2
-5. Toujours vrai : (n² - 1) est divisible par 8 si n est impair
-
-Spécifications :
-- Créez des fonctions réutilisables
-- Documentez la propriété mathématique
-- Testez avec plusieurs valeurs
-- Utilisez-les dans une fonction réelle
-
-Auto-évaluation :
-[ ] Au moins 5 prédicats opaque sont implémentés
-[ ] Les propriétés mathématiques sont correctes
-[ ] Les prédicats sont testés et vérifiés
-[ ] Une fonction réelle utilise ces prédicats
-
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 4 : Dead Code Injection Automatique
-═══════════════════════════════════════════════════════════════════════
-
-Objectif :
-Créez un système de macros pour injecter automatiquement du code mort
-dans vos fonctions.
-
-Spécifications :
-1. Créez 10 macros de dead code différentes
-2. Implémentez une macro INJECT_DEAD_CODE(level) où level contrôle
-   la quantité de code mort (1-5)
-3. Le code mort doit être varié (calculs, boucles, appels de fonctions)
-4. Utilisez des variables volatiles pour éviter l'optimisation
-
-Exemple d'utilisation :
-```c
-int my_function(int x) {
-    INJECT_DEAD_CODE(3);
-    int result = x * 2;
-    INJECT_DEAD_CODE(2);
-    return result;
-}
-```
-
-Auto-évaluation :
-[ ] Au moins 10 macros de dead code créées
-[ ] Le système de niveau fonctionne correctement
-[ ] Le code mort est varié et réaliste
-[ ] Les variables volatiles empêchent l'optimisation
-
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 5 : Junk Code Generator
-═══════════════════════════════════════════════════════════════════════
-
-Objectif :
-Créez un générateur de junk code qui produit du code inutile mais
-syntaxiquement correct et varié.
-
-Spécifications :
-1. Créez au moins 15 types de junk code différents
-2. Incluez : calculs arithmétiques, manipulations de bits, boucles,
-   allocations, opérations sur chaînes
-3. Utilisez un générateur pseudo-aléatoire pour varier le junk code
-4. Créez une macro JUNK(complexity) qui génère du junk code aléatoire
-
-Types de junk code à implémenter :
-- Calculs mathématiques complexes inutiles
-- Opérations bitwise en cascade
-- Boucles avec calculs internes
-- Manipulations de tableaux temporaires
-- Appels de fonctions sans effet
-- Allocations/désallocations mémoire
-
-Auto-évaluation :
-[ ] Au moins 15 types de junk code créés
-[ ] Le code est syntaxiquement correct
-[ ] La variété est suffisante pour être convaincante
-[ ] La macro JUNK() fonctionne correctement
-
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 6 : Obfuscation de Constantes
-═══════════════════════════════════════════════════════════════════════
-
-Objectif :
-Implémentez un système pour obfusquer les constantes numériques dans
-votre code.
-
-Au lieu de :
-```c
-int timeout = 5000;
-int max_retries = 3;
-```
-
-Utilisez :
-```c
-int timeout = (((0x13 << 8) | 0x88) - 0x388);  // 5000
-int max_retries = ((17 * 3 - 48) / 2);          // 3
-```
-
-Spécifications :
-1. Créez des macros pour générer des expressions obfusquées
-2. Implémentez au moins 5 méthodes d'obfuscation différentes
-3. Vérifiez que les valeurs sont correctes à l'exécution
-4. Créez un outil pour convertir automatiquement les constantes
-
-Méthodes d'obfuscation :
-- Opérations arithmétiques complexes
-- Manipulations bitwise
-- Combinaisons d'opérations
-- Utilisation de fonctions mathématiques
-- Expressions avec time() ou rand() contrôlées
-
-Auto-évaluation :
-[ ] Au moins 5 méthodes d'obfuscation implémentées
-[ ] Les macros génèrent des expressions correctes
-[ ] Les valeurs calculées sont exactes
-[ ] Le système est facile à utiliser
-
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 7 : Obfuscateur de Noms de Variables
-═══════════════════════════════════════════════════════════════════════
-
-Objectif :
-Créez un système pour renommer automatiquement les variables et fonctions
-avec des noms non descriptifs.
-
-Spécifications :
-1. Générez des noms aléatoires mais valides (ex: l1l, O0O, _l1, etc.)
-2. Créez un mapping entre noms originaux et noms obfusqués
-3. Utilisez des macros de préprocesseur pour la substitution
-4. Conservez une table de correspondance pour le débogage
-
-Exemple :
-```c
-// Avant
-int calculate_total(int price, int quantity) {
-    int total = price * quantity;
-    return total;
-}
-
-// Après
-#define calculate_total l1lO0
-#define price O0l1l
-#define quantity l0O1l
-#define total ll0O0
-
-int l1lO0(int O0l1l, int l0O1l) {
-    int ll0O0 = O0l1l * l0O1l;
-    return ll0O0;
-}
-```
-
-Auto-évaluation :
-[ ] Le système génère des noms valides
-[ ] Les macros fonctionnent correctement
-[ ] Une table de correspondance est maintenue
-[ ] Le code obfusqué compile et fonctionne
-
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 8 : Système d'Obfuscation Complet
-═══════════════════════════════════════════════════════════════════════
-
-Objectif :
-Combinez toutes les techniques précédentes pour créer un système
-d'obfuscation complet et configurable.
-
-Spécifications :
-1. Intégrez toutes les techniques vues dans ce module
-2. Créez un système de configuration par niveaux (1-5)
-3. Niveau 1 : Obfuscation minimale (strings uniquement)
-4. Niveau 5 : Obfuscation maximale (toutes les techniques)
-5. Fournissez des macros faciles à utiliser
-
-Exemple d'utilisation :
-```c
-#define OBFUSCATION_LEVEL 4
-
-OBFUSCATED_FUNCTION_BEGIN(calculate_score, int, (int a, int b))
-    OBFUSCATED_STRING(msg, "Calculating score");
-    OBFUSCATED_CONST(multiplier, 10);
-
-    int result = a + b;
-    INJECT_COMPLEXITY(OBFUSCATION_LEVEL);
-    result *= multiplier;
-
-    return result;
-OBFUSCATED_FUNCTION_END
-```
-
-Fonctionnalités à implémenter :
-- Configuration globale du niveau d'obfuscation
-- Macros pour fonctions obfusquées
-- Macros pour strings obfusquées
-- Macros pour constantes obfusquées
-- Injection automatique de complexité
-- Génération de rapport d'obfuscation
-
-Auto-évaluation :
-[ ] Toutes les techniques sont intégrées
-[ ] Le système de niveaux fonctionne
-[ ] Les macros sont faciles à utiliser
-[ ] Un rapport d'obfuscation est généré
-[ ] Le code obfusqué reste fonctionnel
-[ ] Documentation complète fournie
-
-
-═══════════════════════════════════════════════════════════════════════
-NOTES IMPORTANTES
-═══════════════════════════════════════════════════════════════════════
-
-1. COMPILATION :
-   - Utilisez toujours -O0 pour tester l'obfuscation
-   - Les optimisations peuvent éliminer le code mort
-   - Testez avec et sans optimisations
-
-2. ANALYSE :
-   - Utilisez objdump pour voir le code assembleur généré
-   - Utilisez strings pour vérifier le chiffrement des chaînes
-   - Comparez la taille des binaires avant/après obfuscation
-
-3. SÉCURITÉ :
-   - L'obfuscation n'est PAS du chiffrement
-   - Ne comptez pas uniquement sur l'obfuscation pour la sécurité
-   - Utilisez en complément d'autres mesures de sécurité
-
-4. PERFORMANCE :
-   - Mesurez l'impact sur les performances
-   - L'obfuscation peut ralentir l'exécution de 5-50%
-   - Équilibrez sécurité et performance
-
-5. LÉGALITÉ :
-   - Utilisez ces techniques de manière éthique
-   - Documentez votre code original
-   - Respectez les lois et réglementations
-
-═══════════════════════════════════════════════════════════════════════
-Consultez solution.txt pour les solutions détaillées.
-═══════════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
+
+EXERCICES - MODULE 29 : CODE OBFUSCATION
+
+[ ] 1. STRING OBFUSCATION MACRO AVANCÉE
+Créer macro C++ constexpr pour strings :
+- Compile-time XOR avec key dérivée de __LINE__
+- Support strings multiples dans même fonction
+- Compatible char* et wchar_t*
+- Vérifier avec 'strings binary' (rien visible)
+- Déchiffrement automatique runtime
+
+Référence : ADVobfuscator, obfuscate.h libraries
+
+[ ] 2. CONTROL FLOW FLATTENING COMPLET
+Transformer fonction en state machine :
+- Parser code séquentiel A; B; C; D;
+- Générer state machine avec switch/case
+- États randomisés (pas séquentiels 0,1,2,3)
+- Dispatcher opaque avec calculs complexes
+- CFG (Control Flow Graph) aplati complètement
+
+Référence : Obfuscator-LLVM -mllvm -fla pass
+
+[ ] 3. OPAQUE PREDICATES VARIÉES
+Implémenter 10+ opaque predicates :
+- Mathématiques : (x²≥0), (x(x+1) pair)
+- Pointeurs : (&x == &x)
+- Time-based : (time() > 0)
+- System : (getpid() > 0)
+- Combiner avec dead code branches
+
+Référence : Tigress opaque predicates
+
+[ ] 4. JUNK CODE GENERATOR
+Générer junk instructions aléatoires :
+- NOP variations (xchg eax,eax, mov eax,eax)
+- Push/pop pairs inutiles
+- Calculs arithmétiques sans side effects
+- Calls à fonctions fake
+- Insertion entre vraies instructions (50% ratio)
+
+Référence : Polymorphic engine techniques
+
+[ ] 5. INSTRUCTION VIRTUALIZATION
+Créer VM custom pour code :
+- Définir bytecode custom (ADD, SUB, MOV, JMP, etc.)
+- Compileur: code C -> bytecode
+- Interpréteur VM runtime
+- Code original jamais en clair (virtualisé)
+
+Référence : VMProtect, Code Virtualizer, Themida
+
+[ ] 6. API HASHING (IMPORT OBFUSCATION)
+Résoudre APIs dynamiquement via hash :
+- Hash function names (DJB2, CRC32)
+- Parse PEB -> LDR -> modules -> exports
+- Match hash pour trouver function address
+- Éviter imports statiques (IAT vide)
+
+Référence : Metasploit block_api, Cobalt Strike
+
+[ ] 7. CALL INDIRECTION (INDIRECT CALLS)
+Remplacer calls directs par indirects :
+- Stocker function pointers dans array
+- Index calculé via formule opaque
+- call via pointer au lieu de call direct
+- Complique analyse statique CFG
+
+Référence : Control flow obfuscation techniques
+
+[ ] 8. METAMORPHIC CODE GENERATOR
+Générer variants fonctionnellement équivalents :
+- Même logique, code assembleur différent
+- Instruction substitution (add -> sub -x)
+- Register allocation variation
+- Code reordering (préserve sémantique)
+- Output N variants uniques
+
+Référence : Metamorphic engines (Zmist, Metaphor)
+
+NOTES :
+- Obfuscation ralentit exécution (acceptable malware, problème soft légit)
+- Combiner techniques multiples pour efficacité maximale
+- Tester avec IDA Pro, Ghidra pour voir résultat
+- Analyse dynamique (sandbox) bypass obfuscation statique
+- Obfuscation != encryption (réversible avec temps/efforts)

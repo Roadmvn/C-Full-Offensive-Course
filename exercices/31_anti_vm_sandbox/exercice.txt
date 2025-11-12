@@ -1,155 +1,89 @@
-═══════════════════════════════════════════════════════════════════════
-MODULE 31 : ANTI-VM ET ANTI-SANDBOX - EXERCICES PRATIQUES
-═══════════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
 
-AVERTISSEMENT : Usage éducatif uniquement.
+EXERCICES - MODULE 31 : ANTI-VM & ANTI-SANDBOX
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 1 : Détection Multi-VM Complète
-═══════════════════════════════════════════════════════════════════════
+[ ] 1. CPUID COMPREHENSIVE CHECKS
+Tous les leafs CPUID pertinents :
+- Leaf 0x1 : Hypervisor bit (ECX bit 31)
+- Leaf 0x40000000 : Hypervisor vendor ("VMwareVMware", "Microsoft Hv", "KVMKVMKVM")
+- Leaf 0x40000001-0x40000010 : Hypervisor info
+- Detect VMware, VirtualBox, Hyper-V, KVM, Xen
 
-Objectif : Détecter VMware, VirtualBox, QEMU, Hyper-V et Parallels
+Référence : CPUID specification Intel/AMD
 
-Spécifications :
-1. Vérifier les clés de registre (Windows)
-2. Vérifier les fichiers système (Linux)
-3. Détecter les pilotes virtuels
-4. Vérifier les services spécifiques
+[ ] 2. MAC ADDRESS & NETWORK CHECKS
+Détection réseau complète :
+- MAC OUI: VMware (00:0C:29, 00:50:56), VBox (08:00:27), QEMU (52:54:00)
+- Hostname patterns: "sandbox", "malware", "virus"
+- IP address ranges: 10.x, 192.168.x (souvent sandboxes)
+- DNS servers: Google DNS (sandbox standard)
 
-Auto-évaluation :
-[ ] Détection de 5 hyperviseurs différents
-[ ] Tests sous vraie VM effectués
-[ ] Faux positifs minimisés
-[ ] Code multi-plateforme
+Référence : Pafish anti-sandbox checks
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 2 : Sandbox Evasion Complète
-═══════════════════════════════════════════════════════════════════════
+[ ] 3. VM ARTIFACTS (FILES/REGISTRY/SERVICES)
+Scanner tous artifacts :
+- VMware: vmtools, vmhgfs, vmmouse drivers
+- VirtualBox: VBoxGuest, VBoxService, VBoxTray
+- QEMU: qemu-ga
+- Registry keys multiples
+- Services running
+- Window classes (VMware, VBox)
 
-Objectif : Détecter Cuckoo, Any.run, Joe Sandbox, VirusTotal
+Référence : Al-Khaser VM detection
 
-Techniques :
-1. Sleep acceleration
-2. Vérification du nom de machine
-3. Vérification de l'uptime
-4. Détection d'interaction utilisateur
-5. Vérification des ressources système
+[ ] 4. SANDBOX BEHAVIOR DETECTION
+Comportements sandbox typiques :
+- Sleep() acceleration (skip delays)
+- Limited execution time (timeout kill)
+- No user interaction (mouse/keyboard idle)
+- High CPU count (sandbox parallélisation)
+- Low disk space (minimal VMs)
+- Fake file operations (hooks retournent fake)
 
-Auto-évaluation :
-[ ] Au moins 5 techniques implémentées
-[ ] Score de confiance calculé
-[ ] Tests dans sandbox réelle
-[ ] Documentation complète
+Référence : Cuckoo Sandbox evasion
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 3 : User Interaction Detection
-═══════════════════════════════════════════════════════════════════════
+[ ] 5. WMI QUERIES ANTI-VM
+Windows Management Instrumentation :
+- SELECT * FROM Win32_ComputerSystem (Manufacturer, Model)
+- SELECT * FROM Win32_BIOS (SerialNumber, Version)
+- SELECT * FROM Win32_BaseBoard (Manufacturer, Product)
+- Détecter "VMware", "VirtualBox", "QEMU", "Bochs"
 
-Objectif : Détecter une vraie interaction utilisateur
+Référence : WMI anti-VM queries
 
-Vérifications :
-1. Mouvements de souris
-2. Clics souris
-3. Activité clavier
-4. Changements de fenêtre active
-5. Historique du presse-papiers
+[ ] 6. TIMING & PERFORMANCE CHECKS
+Détection via performance anormales :
+- RDTSC timing (VM overhead)
+- Disk I/O speed (VMs plus lents)
+- Network latency (virtual adapters)
+- CPU benchmarks (émulation lente)
 
-Auto-évaluation :
-[ ] Détection des mouvements souris
-[ ] Comptage des interactions
-[ ] Système de scoring
-[ ] Pas de blocage si interaction réelle
+Référence : Timing-based VM detection
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 4 : Hardware Fingerprinting
-═══════════════════════════════════════════════════════════════════════
+[ ] 7. HUMAN INTERACTION DETECTION
+Vérifier activité humaine :
+- Mouse movements tracking (GetCursorPos loop)
+- Keyboard input monitoring (GetAsyncKeyState)
+- Window focus changes
+- Idle time analysis
+- Captcha-like challenges
 
-Objectif : Identifier le matériel virtuel
+Référence : User interaction checks
 
-Vérifications :
-1. Nombre de cœurs CPU
-2. Taille de la RAM
-3. Espace disque
-4. Carte graphique
-5. Périphériques USB
+[ ] 8. MULTI-LAYER EVASION
+Combiner 20+ techniques :
+- CPUID + MAC + Files + Registry
+- Timing + Sleep + User interaction
+- WMI + Services + Processes
+- Randomize check order
+- Delayed checks (après 5min)
 
-Auto-évaluation :
-[ ] Énumération du matériel
-[ ] Détection de valeurs suspectes
-[ ] Comparaison avec profils normaux
-[ ] Rapport détaillé généré
+Référence : APT malware evasion (Dridex, Emotet)
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 5 : Timing Attacks Avancés
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Détecter manipulation du temps
-
-Techniques :
-1. Sleep acceleration
-2. RDTSC variation
-3. Comparaison de plusieurs horloges
-4. Mesure de latence réseau
-
-Auto-évaluation :
-[ ] 4 techniques de timing implémentées
-[ ] Détection des incohérences
-[ ] Robustesse face aux faux positifs
-[ ] Tests sous sandbox
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 6 : Network-Based Detection
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Détecter sandbox par le réseau
-
-Vérifications :
-1. Absence de connexion Internet
-2. MAC address virtuelle
-3. Gateway suspect
-4. DNS resolver par défaut
-5. Latence réseau anormale
-
-Auto-évaluation :
-[ ] Vérifications réseau implémentées
-[ ] Détection MAC virtuelle
-[ ] Tests de connectivité
-[ ] Gestion des environnements sans réseau
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 7 : Process et Service Detection
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Détecter les processus de VM/Sandbox
-
-Processus suspects :
-- vmtoolsd.exe, vboxservice.exe (VM)
-- python.exe, analyzer.exe (Cuckoo)
-- wireshark.exe, procmon.exe (analyse)
-
-Auto-évaluation :
-[ ] Énumération des processus
-[ ] Liste de processus suspects complète
-[ ] Détection case-insensitive
-[ ] Logging des détections
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 8 : Système Anti-VM/Sandbox Complet
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Système complet avec scoring et réaction
-
-Architecture :
-- Detection Layer (10+ techniques)
-- Scoring System (0-100%)
-- Decision Engine
-- Evasion Actions
-
-Auto-évaluation :
-[ ] 10+ techniques intégrées
-[ ] Scoring fonctionnel
-[ ] Réactions variées selon score
-[ ] Tests complets effectués
-[ ] Documentation fournie
-
-═══════════════════════════════════════════════════════════════════════
+NOTES :
+- VMs peuvent hide artifacts (stealthier configs)
+- Bare metal analysis = ultimate bypass
+- Tester avec Pafish tool (open source)
+- Cuckoo/Any.run ont anti-evasion (detect checks)
+- Combiner avec anti-debug pour maximum efficacité

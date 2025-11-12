@@ -1,119 +1,60 @@
-# Module 28 : Cryptographie
+# Cryptographie - Chiffrement de Payload et String Obfuscation
 
-## Objectifs d'apprentissage
+XOR, AES-256, RSA, string obfuscation compile-time - techniques pour chiffrer payloads shellcode, évader signatures AV/EDR, protéger C2 traffic. Base de tous les crypters et polymorphic malware modernes.
 
-Ce module explore les techniques cryptographiques utilisées en offensive security. Vous apprendrez :
+⚠️ AVERTISSEMENT STRICT : Techniques de malware development avancées. Usage éducatif uniquement. Tests sur VM isolées. Usage malveillant = PRISON.
 
-- **XOR Cipher** : Chiffrement simple pour obfuscation
-- **AES Encryption** : Chiffrement symétrique moderne
-- **RSA Concepts** : Chiffrement asymétrique
-- **String Obfuscation** : Cacher des strings sensibles
-- **Hashing** : MD5, SHA-256 pour intégrité
+```c
+// XOR encoding compile-time pour strings
+#define XOR_KEY 0xAA
+#define OBFUSCATE(s) {s[0]^XOR_KEY, s[1]^XOR_KEY, ...}
 
-## Concepts clés
-
-### XOR Cipher
-Opération bit à bit simple :
-- Rapide et efficace
-- Utilisé pour obfuscation basique
-- Réversible (A XOR B XOR B = A)
-- Vulnérable à l'analyse fréquentielle
-
-### AES (Advanced Encryption Standard)
-Chiffrement symétrique robuste :
-- Clé de 128, 192 ou 256 bits
-- Block cipher (blocs de 128 bits)
-- Modes : ECB, CBC, CTR, GCM
-- Standard industriel
-
-### RSA
-Chiffrement asymétrique :
-- Paire de clés (publique/privée)
-- Utilisé pour échange de clés
-- Signature numérique
-- Lent, utilisé avec AES (hybrid)
-
-### String Obfuscation
-Cacher les strings du binaire :
-- Éviter détection par strings
-- XOR ou AES au compile-time
-- Déchiffrement runtime
-- Complique l'analyse statique
-
-## Architecture Cryptographique
-
-```
-┌─────────────────────────────────────────────────┐
-│         Encryption/Decryption Flow              │
-├─────────────────────────────────────────────────┤
-│                                                 │
-│  [Plaintext]                                    │
-│       │                                         │
-│       ├─→ XOR with key ──→ [Ciphertext]         │
-│       │                                         │
-│       ├─→ AES-256-CBC ──→ [Encrypted Data]      │
-│       │      ↑                                  │
-│       │      └── Key + IV                       │
-│       │                                         │
-│       └─→ Base64 Encode ──→ [Obfuscated]        │
-│                                                 │
-│  Hybrid (RSA + AES):                            │
-│  1. Generate random AES key                     │
-│  2. Encrypt data with AES                       │
-│  3. Encrypt AES key with RSA public key         │
-│  4. Send encrypted key + encrypted data         │
-│                                                 │
-└─────────────────────────────────────────────────┘
+// Runtime decryption
+unsigned char encrypted[] = OBFUSCATE("cmd.exe");
+for(int i=0; i<sizeof(encrypted); i++) encrypted[i] ^= XOR_KEY;
+CreateProcessA(encrypted, ...);  // "cmd.exe" jamais en plaintext dans binary
 ```
 
 ## Compilation
 
+### Linux
 ```bash
-# Sans bibliothèque externe (XOR, Base64)
-gcc -o crypto main.c
-
-# Avec OpenSSL (AES, RSA, SHA)
-gcc -o crypto main.c -lcrypto -lssl
-
-# Windows
-gcc -o crypto.exe main.c -lcrypto -lssl -lws2_32
+gcc example.c -o crypter -lcrypto
 ```
 
-## ⚠️ AVERTISSEMENT
+### Windows
+```bash
+gcc example.c -o crypter.exe -lcrypto -lssl
+```
 
-**NE PAS RÉINVENTER LA CRYPTOGRAPHIE**
+## Concepts clés
 
-### Bonnes pratiques :
-- Utiliser des bibliothèques éprouvées (OpenSSL, libsodium)
-- Ne JAMAIS créer son propre algorithme
-- Clés aléatoires et suffisamment longues
-- IV (Initialization Vector) unique par chiffrement
-- Authentification (HMAC, GCM) pour intégrité
+- **XOR Cipher** : Obfuscation simple, rapide, réversible (shellcode encryption)
+- **AES-256-CBC** : Chiffrement robuste payload (avec PKCS7 padding)
+- **RC4** : Stream cipher rapide (utilisé WannaCry, Emotet)
+- **String Obfuscation** : Compiler strings chiffrées (éviter "strings" command)
+- **Key Derivation** : PBKDF2 pour générer clé depuis password
+- **Crypters** : Chiffrer PE complet, déchiffrer en mémoire
+- **Polymorphic Malware** : Rechiffrer avec clé différente à chaque exécution
 
-### Erreurs communes :
-- Clés hardcodées dans le binaire
-- Réutilisation d'IV
-- ECB mode (vulnérable)
-- Mauvaise génération de nombres aléatoires
+## Techniques utilisées par
 
-### Usage en Red Team :
-- Chiffrement de payload pour évasion AV
-- C2 communication chiffrée
-- Exfiltration de credentials chiffrés
-- Ransomware (⚠️ ILLÉGAL sans autorisation)
+- **WannaCry** : AES-128 pour chiffrer fichiers, RSA-2048 pour clé AES
+- **Emotet** : RC4 pour chiffrer strings et C2 traffic
+- **Cobalt Strike** : AES-256 pour beacon encryption
+- **APT29 (Cozy Bear)** : Custom XOR pour string obfuscation
+- **Lazarus Group** : Multi-layer encryption (XOR + AES + RC4)
 
-**USAGE ÉDUCATIF UNIQUEMENT**
+## Détection et Mitigation
 
-## Exercices
+**Indicateurs** :
+- High entropy sections dans PE (.text avec entropy > 7.0)
+- Imports crypto APIs (CryptEncrypt, BCrypt*)
+- Strings chiffrées détectées par YARA entropy rules
+- Decryption loops dans code (XOR pattern detection)
 
-Consultez `exercice.txt` pour 8 défis progressifs.
-
-## Prérequis
-
-- Bases de la cryptographie
-- Compréhension des opérations binaires
-- OpenSSL installé (optionnel)
-
----
-
-**RAPPEL** : Cryptographie robuste = bibliothèques éprouvées, pas de custom crypto!
+**Mitigations AV/EDR** :
+- Entropy analysis des sections PE
+- YARA rules pour crypto patterns
+- Memory scanning post-decryption
+- Behavioral detection (allocation RWX + write + execute)

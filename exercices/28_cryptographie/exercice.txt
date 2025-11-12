@@ -1,144 +1,95 @@
-═══════════════════════════════════════════════════════════════════════════
-            MODULE 28 : CRYPTOGRAPHIE - EXERCICES
-═══════════════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
 
-⚠️  AVERTISSEMENT : Utiliser des bibliothèques cryptographiques éprouvées
-                    Ne JAMAIS créer son propre algorithme de chiffrement
+EXERCICES - MODULE 28 : CRYPTOGRAPHIE
 
-═══════════════════════════════════════════════════════════════════════════
+[ ] 1. SHELLCODE XOR ENCRYPTER
+Implémenter crypter XOR pour shellcode :
+- Lire shellcode binaire depuis fichier
+- Multi-byte XOR key (4-16 bytes aléatoires)
+- Générer stub C avec shellcode chiffré
+- Stub inclut decrypt loop + execute
+- Output : shellcode.enc.c compilable
 
-EXERCICE 1 : XOR File Encryptor
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Chiffrer/déchiffrer des fichiers avec XOR
+Référence : MSFvenom encoder shikata_ga_nai (polymorphic XOR)
 
-Auto-évaluation :
-[ ] Lecture et écriture de fichiers binaires
-[ ] Chiffrement XOR avec clé
-[ ] Déchiffrement fonctionnel
-[ ] Gestion de fichiers volumineux (buffer)
-[ ] Préservation de l'intégrité des données
+[ ] 2. AES-256-CBC PAYLOAD ENCRYPTER
+Chiffrer payload PE complet :
+- Lire PE file (exe/dll)
+- Générer AES-256 key + IV aléatoires (CSPRNG)
+- Chiffrer avec OpenSSL EVP_aes_256_cbc
+- PKCS7 padding automatique
+- Output : payload.enc + key.bin + iv.bin
+- Créer loader qui decrypt + execute en mémoire
 
-═══════════════════════════════════════════════════════════════════════════
+Référence : Cobalt Strike artifact kit, Veil-Evasion
 
-EXERCICE 2 : AES-256 avec OpenSSL
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Implémenter AES-256-CBC avec OpenSSL
+[ ] 3. RC4 STREAM CIPHER C2 TRAFFIC
+Chiffrer communication C2 avec RC4 :
+- Implémenter RC4 (KSA + PRGA)
+- Chiffrer messages C2 bidirectionnels
+- Key exchange via Diffie-Hellman ou RSA
+- Packet format : [len(2)|encrypted_data|hmac(32)]
+- Compatible avec serveur C2
 
-Auto-évaluation :
-[ ] Initialisation d'OpenSSL
-[ ] Génération de clé et IV aléatoires
-[ ] Chiffrement AES-256-CBC
-[ ] Déchiffrement correct
-[ ] Padding PKCS#7 géré
+Référence : Emotot C2 encryption, Zeus malware
 
-═══════════════════════════════════════════════════════════════════════════
+[ ] 4. STRING OBFUSCATION COMPILE-TIME
+Macro C++ constexpr pour strings :
+- #define OBFSTR(s) compile_time_xor(s, __LINE__)
+- Utiliser __LINE__ comme seed XOR key
+- Déchiffrement automatique runtime
+- Tester avec 'strings' command (rien visible)
+- Support strings Unicode (wchar_t)
 
-EXERCICE 3 : SHA-256 Hashing
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Calculer des hash SHA-256 de fichiers
+Référence : ADVobfuscator library, obfuscate.h
 
-Auto-évaluation :
-[ ] Utilisation d'OpenSSL pour SHA-256
-[ ] Hash de fichiers volumineux (streaming)
-[ ] Affichage en hexadécimal
-[ ] Vérification d'intégrité fonctionnelle
-[ ] Performance acceptable
+[ ] 5. PE CRYPTER (FULL BINARY ENCRYPTION)
+Chiffrer PE entier sauf headers :
+- Parser PE headers (DOS, NT, sections)
+- Chiffrer sections .text, .data avec AES
+- Ajouter nouvelle section .crypt avec decrypt stub
+- Modifier entry point vers decrypt stub
+- Stub : decrypt sections + jump OEP (Original Entry Point)
 
-═══════════════════════════════════════════════════════════════════════════
+Référence : UPX packer (compression), Themida (protection)
 
-EXERCICE 4 : String Obfuscation Macro
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Créer une macro pour obfusquer des strings à la compilation
+[ ] 6. POLYMORPHIC MALWARE GENERATOR
+Générer variant unique à chaque build :
+- Shellcode chiffré avec clé aléatoire différente
+- Stub decrypt avec instructions junk random
+- Reorder instructions (équivalent fonctionnel)
+- Variable/function names randomisés
+- Signature différente chaque build (éviter AV)
 
-Auto-évaluation :
-[ ] Macro C pour XOR compile-time
-[ ] Strings non visibles avec 'strings'
-[ ] Déobfuscation runtime fonctionnelle
-[ ] Code généré automatiquement
-[ ] Utilisable facilement
+Référence : Metasploit shikata_ga_nai encoder
 
-═══════════════════════════════════════════════════════════════════════════
+[ ] 7. RANSOMWARE CRYPTO (ÉDUCATIF VM ISOLÉE)
+Architecture ransomware complète :
+- Générer paire RSA-2048 (clé privée exfiltrée vers C2)
+- Pour chaque fichier : AES-256 key aléatoire
+- Chiffrer fichier avec AES-256-CTR
+- Chiffrer AES key avec RSA public
+- Stocker encrypted AES key dans fichier header
+- Ransom note avec victim ID
+- Decryptor : RSA private key -> AES keys -> fichiers
 
-EXERCICE 5 : RSA Key Generation et Encryption
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Générer des paires de clés RSA et chiffrer des données
+Référence : WannaCry, Ryuk, REvil architectures
 
-Auto-évaluation :
-[ ] Génération de paire RSA (2048 bits minimum)
-[ ] Export des clés en PEM
-[ ] Chiffrement avec clé publique
-[ ] Déchiffrement avec clé privée
-[ ] Gestion des erreurs OpenSSL
+[ ] 8. PBKDF2 KEY DERIVATION
+Dériver clé crypto depuis password :
+- Implémenter PBKDF2-HMAC-SHA256
+- Iterations élevées (100k+) pour ralentir bruteforce
+- Salt aléatoire unique (16 bytes)
+- Output clé 256-bit pour AES-256
+- Utiliser pour chiffrer payloads avec password
 
-═══════════════════════════════════════════════════════════════════════════
+Référence : OpenSSL PKCS5_PBKDF2_HMAC, WinCrypt CryptDeriveKey
 
-EXERCICE 6 : HMAC pour Authentification
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Implémenter HMAC-SHA256 pour vérifier l'intégrité
-
-Auto-évaluation :
-[ ] Génération de HMAC avec clé secrète
-[ ] Vérification de l'authenticité
-[ ] Détection de tampering
-[ ] Code constant-time pour comparaison
-[ ] Utilisable pour authentifier messages
-
-═══════════════════════════════════════════════════════════════════════════
-
-EXERCICE 7 : Payload Encryptor (Shellcode)
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Chiffrer un shellcode pour évasion AV
-
-Auto-évaluation :
-[ ] Chiffrement AES du shellcode
-[ ] Génération de stub de déchiffrement
-[ ] Déchiffrement runtime en mémoire
-[ ] Le shellcode s'exécute correctement
-[ ] Évasion d'antivirus basique (test avec clam)
-
-═══════════════════════════════════════════════════════════════════════════
-
-EXERCICE 8 : Ransomware Simulator (ÉDUCATIF UNIQUEMENT)
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Simuler un ransomware dans un sandbox isolé
-
-⚠️  DANGER : À exécuter UNIQUEMENT dans VM isolée, répertoire test!
-
-Auto-évaluation :
-[ ] Génération de clé RSA unique
-[ ] Chiffrement AES de fichiers test
-[ ] Clé AES chiffrée avec RSA public
-[ ] Sauvegarde de la clé privée (pour récupération!)
-[ ] Note de "rançon" générée
-[ ] Déchiffrement fonctionnel avec clé privée
-
-⚠️  NE JAMAIS exécuter sur système réel!
-⚠️  Usage STRICTEMENT éducatif pour comprendre le fonctionnement
-
-═══════════════════════════════════════════════════════════════════════════
-
-NOTES IMPORTANTES
-─────────────────────────────────────────────────────────────────────────────
-
-Bibliothèques recommandées :
-- OpenSSL : Standard industriel, complet
-- libsodium : API simple, sécurisé par défaut
-- mbedTLS : Léger, pour embedded
-
-Erreurs cryptographiques courantes :
-- Clés hardcodées (visible dans le binaire)
-- Réutilisation d'IV/nonce
-- Mode ECB (patterns visibles)
-- Pas d'authentification (vulnerable à tampering)
-- RNG faible (rand() au lieu de CSPRNG)
-
-Pour production :
-- Utiliser AES-256-GCM (chiffrement + authentification)
-- Clés dérivées avec PBKDF2 ou Argon2
-- IV/nonce aléatoires cryptographiquement
-- Rotation de clés régulière
-- HSM pour clés sensibles
-
-═══════════════════════════════════════════════════════════════════════════
-RAPPEL : Usage éducatif - Cryptographie robuste = bibliothèques éprouvées
-═══════════════════════════════════════════════════════════════════════════
+NOTES :
+- XOR = rapide mais faible (uniquement obfuscation légère)
+- AES-256-CBC = standard robuste (attention IV unique!)
+- RC4 = déprécié mais rapide (encore utilisé malwares legacy)
+- Polymorphic = clé/stub différent chaque build (éviter signatures)
+- Toujours utiliser CSPRNG : CryptGenRandom(), /dev/urandom, BCryptGenRandom()
+- Tester évasion AV avec : VirusTotal, Antiscan.me, malware sandboxes

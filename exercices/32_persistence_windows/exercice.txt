@@ -1,162 +1,94 @@
-═══════════════════════════════════════════════════════════════════════
-MODULE 32 : PERSISTENCE WINDOWS - EXERCICES
-═══════════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
 
-AVERTISSEMENT STRICT : Usage éducatif UNIQUEMENT.
-NE PAS utiliser sur systèmes de production sans autorisation.
+EXERCICES - MODULE 32 : WINDOWS PERSISTENCE
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 1 : Registry Persistence Complète
-═══════════════════════════════════════════════════════════════════════
+[ ] 1. REGISTRY RUN KEYS COMPLETS
+Implémenter tous Registry autorun locations :
+- HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run
+- HKCU\\...\\RunOnce
+- HKLM\\...\\Run (nécessite admin)
+- HKLM\\...\\RunOnceEx
+- HKCU\\...\\Explorer\\User Shell Folders
+- Winlogon registry keys
 
-Objectif : Implémenter plusieurs méthodes de persistence par registre
+Référence : Autoruns locations (Sysinternals)
 
-Clés à utiliser :
-1. HKCU\Software\Microsoft\Windows\CurrentVersion\Run
-2. HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce
-3. HKLM\Software\Microsoft\Windows\CurrentVersion\Run
-4. HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders
+[ ] 2. SCHEDULED TASKS VIA COM API
+Utiliser Task Scheduler COM au lieu de schtasks.exe :
+- ITaskService interface
+- Créer tâche déclenchée par logon/boot
+- Run as SYSTEM si privilèges
+- Hidden task (pas visible Task Scheduler GUI)
+- Persistence quotidienne ou au boot
 
-Auto-évaluation :
-[ ] Ajout/suppression de clés HKCU\Run
-[ ] Ajout/suppression de clés HKLM\Run
-[ ] Gestion des erreurs et permissions
-[ ] Tests dans VM isolée
+Référence : MSDN Task Scheduler 2.0
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 2 : Scheduled Task Creation
-═══════════════════════════════════════════════════════════════════════
+[ ] 3. WINDOWS SERVICE COMPLET
+Service malveillant fonctionnel :
+- ServiceMain et ServiceCtrlHandler
+- Start/Stop/Pause controls
+- Auto-restart si crash
+- Run as SYSTEM account
+- Description légitime (masquerade)
+- Service dependencies
 
-Objectif : Créer des tâches planifiées programmatiquement
+Référence : Windows Service development
 
-Déclencheurs :
-1. Au démarrage (ONSTART)
-2. À la connexion (ONLOGON)
-3. Quotidien (DAILY)
-4. Sur événement spécifique
+[ ] 4. WMI EVENT SUBSCRIPTIONS
+Permanent WMI consumers :
+- EventFilter (trigger condition)
+- CommandLineEventConsumer (exécution)
+- ActiveScriptEventConsumer (VBScript/JScript)
+- FilterToConsumerBinding
+- Déclencheurs: time-based, process start, etc.
 
-Auto-évaluation :
-[ ] Utilisation de schtasks ou API COM
-[ ] Plusieurs déclencheurs implémentés
-[ ] Suppression de tâches
-[ ] Tests effectués
+Référence : WMI persistence (ATT&CK T1546.003)
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 3 : Windows Service Installation
-═══════════════════════════════════════════════════════════════════════
+[ ] 5. DLL HIJACKING
+Trouver et exploiter DLL hijack :
+- Scan apps pour missing DLLs (Process Monitor)
+- DLL search order exploitation
+- Phantom DLL hijacking
+- DLL side-loading
+- Proxy DLL forwarding (load original + malicious)
 
-Objectif : Créer et installer un service Windows
+Référence : DLL hijacking techniques
 
-Spécifications :
-1. Utiliser OpenSCManager et CreateService
-2. Service auto-start
-3. Gestion du lifecycle (start/stop)
-4. Désinstallation propre
+[ ] 6. COM HIJACKING
+Détourner COM objects :
+- Trouver CLSIDs auto-launched (Explorer, Office)
+- Registry TreatAs ou InprocServer32 modification
+- Hijack COM object utilisé au boot
+- Load original COM + inject malicious
 
-Auto-évaluation :
-[ ] Service créé avec succès
-[ ] Démarrage automatique configuré
-[ ] Gestion des erreurs
-[ ] Désinstallation fonctionnelle
+Référence : COM hijacking (ATT&CK T1546.015)
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 4 : WMI Event Subscription
-═══════════════════════════════════════════════════════════════════════
+[ ] 7. PRINT MONITORS / PORT MONITORS
+Persistence via print spooler :
+- AddMonitor API
+- Monitor DLL chargée par spoolsv.exe (SYSTEM)
+- Très furtive, rarement scannée
+- Nécessite admin
+- Survit à reimaging parfois (persistent entre OS)
 
-Objectif : Utiliser WMI pour persistence basée sur événements
+Référence : Print monitor persistence
 
-Types d'événements :
-1. Démarrage système
-2. Connexion utilisateur
-3. Insertion USB
-4. Modification de fichier
+[ ] 8. MULTI-METHOD REDUNDANCY
+Implémenter 5+ méthodes simultanées :
+- Registry Run + Scheduled Task + Service
+- Si une détectée/supprimée, autres restaurent
+- Watchdog threads vérifient persistence
+- Auto-repair si mécanisme supprimé
+- Logs pour tracking détections
 
-Auto-évaluation :
-[ ] WMI event filter créé
-[ ] Event consumer configuré
-[ ] Binding fonctionnel
-[ ] Tests sous VM
+Référence : APT persistence redundancy (Duqu, Stuxnet)
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 5 : DLL Hijacking Proof-of-Concept
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Démontrer le DLL hijacking (environnement contrôlé)
-
-Étapes :
-1. Créer une DLL custom
-2. Identifier une application vulnérable
-3. Placer la DLL au bon endroit
-4. Vérifier le chargement
-
-Auto-évaluation :
-[ ] DLL créée avec DllMain
-[ ] Application test identifiée
-[ ] Chargement vérifié
-[ ] Nettoyage effectué
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 6 : COM Hijacking
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Détourner un objet COM pour persistence
-
-Méthode :
-1. Identifier un CLSID utilisé
-2. Créer entrée dans HKCU\Software\Classes\CLSID
-3. Pointer vers exécutable malveillant
-4. Tester le détournement
-
-Auto-évaluation :
-[ ] CLSID identifié
-[ ] Entrée registre créée
-[ ] Redirection fonctionnelle
-[ ] Restauration possible
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 7 : Startup Folder Persistence
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Utiliser le dossier Startup pour persistence
-
-Dossiers :
-1. %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
-2. C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
-
-Auto-évaluation :
-[ ] Copie dans Startup user
-[ ] Copie dans Startup all users
-[ ] Création de raccourcis
-[ ] Suppression propre
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 8 : Système de Persistence Multi-Méthodes
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Combiner plusieurs techniques pour persistence robuste
-
-Fonctionnalités :
-1. Au moins 5 méthodes différentes
-2. Installation silencieuse
-3. Détection d'échec et fallback
-4. Désinstallation complète
-5. Logging des opérations
-
-Auto-évaluation :
-[ ] 5+ méthodes implémentées
-[ ] Système de fallback
-[ ] Désinstallation complète
-[ ] Tests exhaustifs
-[ ] Documentation fournie
-
-═══════════════════════════════════════════════════════════════════════
-IMPORTANT
-═══════════════════════════════════════════════════════════════════════
-
-- Testez UNIQUEMENT dans une VM isolée
-- Ne déployez JAMAIS sur systèmes de production
-- Documentez tout changement système
-- Nettoyez complètement après tests
-- Usage éducatif STRICT
-
-═══════════════════════════════════════════════════════════════════════
+NOTES :
+- Registry = le plus détectable (Autoruns scan)
+- WMI = très furtif mais nécessite admin
+- Scheduled Tasks = bon compromis détection/efficacité
+- Services = très visible (services.msc)
+- DLL/COM hijacking = furtif mais complexe
+- Combiner multiples pour redondance
+- Tester détection avec Autoruns, Process Monitor

@@ -1,59 +1,57 @@
-# Module 32 : Persistence Windows
+# Windows Persistence - Survivre aux Redémarrages
 
-## Vue d'ensemble
+Registry Run keys, Scheduled Tasks, Windows Services, WMI Event Subscriptions, DLL Hijacking - techniques pour maintenir accès après redémarrage système. Utilisé par APT et ransomwares pour persistance long-terme.
 
-Ce module explore les techniques de persistence sur Windows permettant à un programme de s'exécuter automatiquement au démarrage ou lors d'événements système spécifiques.
+⚠️ AVERTISSEMENT STRICT : Techniques de malware development avancées. Usage éducatif uniquement. Tests sur VM isolées. Usage malveillant = PRISON.
 
-## Concepts abordés
+```c
+// Registry Run key persistence
+HKEY hkey;
+RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+              0, KEY_SET_VALUE, &hkey);
+RegSetValueExA(hkey, "MyApp", 0, REG_SZ, (BYTE*)path, strlen(path));
+RegCloseKey(hkey);
 
-### 1. Registry Run Keys
-Clés de registre pour l'exécution automatique au démarrage.
-
-**Clés principales** :
+// Scheduled Task (schtasks)
+system("schtasks /create /tn MyTask /tr C:\\malware.exe /sc onlogon /ru SYSTEM");
 ```
-HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
-HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run
-HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce
+
+## Compilation
+
+```bash
+gcc example.c -o persistence.exe -ladvapi32
 ```
 
-### 2. Scheduled Tasks
-Création de tâches planifiées via Task Scheduler.
+## Concepts clés
 
-### 3. Windows Services
-Installation d'un service Windows pour exécution en arrière-plan.
+- **Registry Run Keys** : HKCU/HKLM\\...\\Run, RunOnce (démarrage user/system)
+- **Scheduled Tasks** : schtasks.exe ou Task Scheduler COM API
+- **Windows Services** : CreateService pour exécution SYSTEM
+- **WMI Event Subscriptions** : Permanent event consumer (furtif)
+- **Startup Folder** : shell:startup, shell:common startup
+- **DLL Hijacking** : Remplacer DLL légitime chargée par app
+- **COM Hijacking** : Détourner CLSID pour auto-launch
 
-### 4. WMI Event Subscriptions
-Utilisation de WMI pour déclencher l'exécution sur événements.
+## Techniques utilisées par
 
-### 5. DLL Hijacking
-Exploitation de l'ordre de chargement des DLL.
+- **Emotot** : Registry Run keys + Scheduled Tasks
+- **TrickBot** : WMI Event Subscriptions (très furtif)
+- **APT29 (Cozy Bear)** : Windows Services + DLL hijacking
+- **Ryuk Ransomware** : Scheduled Tasks SYSTEM level
+- **Cobalt Strike** : Multiple persistence methods (autoruns)
 
-### 6. COM Hijacking
-Détournement d'objets COM pour persistence.
+## Détection et Mitigation
 
-## AVERTISSEMENT LÉGAL STRICT
+**Indicateurs** :
+- Nouvelles entrées Registry Run keys (Autoruns tool)
+- Scheduled Tasks suspects (Task Scheduler, schtasks /query)
+- Services non-Microsoft (services.msc, sc query)
+- WMI subscriptions anormales (Get-WmiObject)
+- DLLs non-signées dans System32
 
-**DANGER** : Ces techniques sont EXTRÊMEMENT sensibles et utilisées par les malwares.
-
-**Utilisations légitimes UNIQUEMENT** :
-- Développement d'applications légitimes nécessitant démarrage automatique
-- Recherche en sécurité informatique dans environnement contrôlé
-- Apprentissage de la sécurité défensive
-
-**STRICTEMENT INTERDIT** :
-- Installation non autorisée sur systèmes tiers
-- Création de malware ou backdoors
-- Toute activité malveillante
-
-**RESPONSABILITÉ** : L'utilisateur est SEUL et ENTIÈREMENT responsable.
-L'utilisation malveillante peut entraîner des poursuites pénales.
-
-## Ressources
-
-- Microsoft Documentation - Services
-- MITRE ATT&CK - Persistence Techniques
-- Windows Sysinternals - Autoruns
-
-## Exercices
-
-Consultez `exercice.txt` et `solution.txt`.
+**Mitigations** :
+- Autoruns (Sysinternals) scan régulier
+- AppLocker/WDAC pour whitelist binaires
+- Scheduled Tasks monitoring (Sysmon Event ID 4698)
+- Service creation alerts (Event ID 7045)
+- DLL signature verification

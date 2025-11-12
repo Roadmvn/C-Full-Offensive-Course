@@ -1,108 +1,60 @@
-# Module 31 : Anti-VM et Anti-Sandbox
+# Anti-VM & Anti-Sandbox - Détection Environnements d'Analyse
 
-## Vue d'ensemble
+CPUID checks, MAC address OUI, VM artifacts, sandbox behavior - techniques pour détecter VMware/VirtualBox/Cuckoo/Any.run et refuser exécution. Évite analyse automatisée par SOC/CERT.
 
-Ce module explore les techniques de détection de machines virtuelles (VM) et de sandboxes utilisées pour l'analyse de logiciels. Ces techniques permettent à un programme de détecter s'il s'exécute dans un environnement d'analyse.
+⚠️ AVERTISSEMENT STRICT : Techniques de malware development avancées. Usage éducatif uniquement. Tests sur VM isolées. Usage malveillant = PRISON.
 
-## Concepts abordés
+```c
+// CPUID VM detection
+void cpuid(int leaf, int* eax, int* ebx, int* ecx, int* edx) {
+    __asm__ __volatile__("cpuid" : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx) : "a"(leaf));
+}
 
-### 1. Détection de VM
+// VMware hypercall
+int detect_vmware() {
+    unsigned int magic = 0x564D5868;  // 'VMXh'
+    unsigned int port = 0x5658;       // 'VX'
+    __asm__ __volatile__("in %%dx, %%eax" : : "a"(magic), "d"(port));
+    // Si VM : pas d'exception, sinon : crash
+}
+```
 
-**Hyperviseurs détectables** :
-- VMware (Workstation, Player, ESXi)
-- VirtualBox (Oracle)
-- QEMU/KVM
-- Hyper-V (Microsoft)
-- Parallels Desktop
+## Compilation
 
-**Méthodes de détection** :
-- Vérification de fichiers spécifiques
-- Clés de registre (Windows)
-- Instructions CPUID
-- Périphériques virtuels
-- Artefacts système
+```bash
+gcc example.c -o anti_vm
+```
 
-### 2. Détection de Sandbox
+## Concepts clés
 
-**Sandboxes courantes** :
-- Cuckoo Sandbox
-- Any.run
-- Joe Sandbox
-- VirusTotal
-- Hybrid Analysis
+- **CPUID Leaf 0x40000000** : Hypervisor vendor string
+- **VM Artifacts** : Fichiers VMware Tools, VBox Guest Additions
+- **MAC Address OUI** : 00:0C:29 (VMware), 08:00:27 (VBox)
+- **Registry Keys** : HKLM\\SOFTWARE\\VMware, VirtualBox
+- **Processes** : vmtoolsd.exe, vboxservice.exe
+- **Sleep Acceleration** : Sandbox skip Sleep() pour vitesse
+- **User Interaction** : Sandbox pas de clics souris/clavier
+
+## Techniques utilisées par
+
+- **Emotet** : CPUID, registry keys, process names checks
+- **TrickBot** : Sleep acceleration, user interaction detection
+- **Dridex** : CPUID, MAC OUI, VM file artifacts
+- **APT malwares** : Multi-layer VM detection avant payload
+- **Ransomware** : Éviter infection sandboxes (perte Bitcoin)
+
+## Détection et Mitigation
 
 **Indicateurs** :
-- Noms de machine spécifiques
-- Utilisateurs par défaut
-- Faible uptime système
-- Ressources limitées
-- Absence d'interaction utilisateur
+- CPUID instructions répétées
+- Registry/file checks VM paths
+- MAC address queries
+- Sleep() calls avec timing checks
+- Mouse/keyboard input monitoring
 
-### 3. Sleep Acceleration
-
-Détection basée sur la manipulation du temps par les sandboxes.
-
-```c
-time_t start = time(NULL);
-Sleep(10000);  // 10 secondes
-time_t end = time(NULL);
-
-if ((end - start) < 9) {
-    // Sandbox détectée (temps accéléré)
-}
-```
-
-### 4. User Interaction Check
-
-Vérification de l'interaction réelle d'un utilisateur.
-
-```c
-// Vérifier les mouvements de souris
-// Compter les clics
-// Détecter l'activité clavier
-```
-
-### 5. CPUID Checks
-
-Utilisation de l'instruction CPUID pour détecter la virtualisation.
-
-```c
-// CPUID leaf 0x1, bit 31 de ECX = hypervisor bit
-int cpuid_hypervisor(void) {
-    unsigned int ecx;
-    __asm__ volatile("cpuid"
-        : "=c"(ecx)
-        : "a"(1)
-        : "ebx", "edx");
-    return (ecx >> 31) & 1;
-}
-```
-
-## Avertissements et considérations
-
-### AVERTISSEMENT LÉGAL
-
-**IMPORTANT** : Ces techniques sont présentées UNIQUEMENT à des fins éducatives.
-
-**Utilisations légitimes** :
-- Protection contre l'analyse automatisée de malware
-- Détection d'environnements d'émulation
-- Recherche en sécurité informatique
-- Tests de robustesse
-
-**Utilisations ILLÉGALES** :
-- Évasion de détection de malware
-- Contournement d'analyses de sécurité
-- Distribution de logiciels malveillants
-
-**L'utilisateur est SEUL RESPONSABLE** de l'usage qu'il fait de ces techniques.
-
-## Ressources complémentaires
-
-- "Evasive Malware" - Paranoid Fish
-- VMware Detection Techniques
-- Pafish (Paranoid Fish) - Outil de détection
-
-## Exercices pratiques
-
-Consultez `exercice.txt` et `solution.txt` pour les implémentations détaillées.
+**Bypass VM Detection** :
+- Patch CPUID results
+- Hide VM artifacts (files, registry)
+- Spoof MAC address OUI
+- Pafish tool pour tester détections
+- Bare metal analysis (pas de VM)

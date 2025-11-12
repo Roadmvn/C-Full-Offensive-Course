@@ -1,103 +1,90 @@
-═══════════════════════════════════════════════════════════════════════════
-            MODULE 27 : NETWORKING & SOCKETS - EXERCICES
-═══════════════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
 
-⚠️  AVERTISSEMENT : Tests uniquement sur réseaux/systèmes autorisés
+EXERCICES - MODULE 27 : NETWORKING & SOCKETS
 
-═══════════════════════════════════════════════════════════════════════════
+[ ] 1. REVERSE SHELL TCP ROBUSTE
+Implémenter reverse shell avec features avancées :
+- Retry logic avec backoff exponentiel (3s, 6s, 12s...)
+- Jitter aléatoire pour éviter détection pattern
+- Socket keep-alive pour maintenir connexion
+- Redirection I/O complète (stdin/stdout/stderr)
+- Support Windows (CreateProcess) et Linux (execve)
 
-EXERCICE 1 : Chat TCP Client/Serveur
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Créer un chat bidirectionnel avec threading
+Référence : Metasploit reverse_tcp payload, Cobalt Strike beacon
 
-Auto-évaluation :
-[ ] Serveur multi-clients (threads)
-[ ] Messages bidirectionnels en temps réel
-[ ] Déconnexion propre gérée
-[ ] Broadcast des messages à tous les clients
+[ ] 2. HTTP/HTTPS C2 BEACON
+Communication C2 via HTTP avec malleable profile :
+- Beacons périodiques avec jitter (+/- 30%)
+- User-Agent rotation (Firefox, Chrome, Edge)
+- Headers HTTP légitimes (Accept, Accept-Language, etc.)
+- URI paths qui ressemblent à API REST (/api/v1/status)
+- Parsing commandes depuis response body (JSON)
+- Exfiltration data via POST multipart/form-data
 
-═══════════════════════════════════════════════════════════════════════════
+Référence : Cobalt Strike HTTP beacon, Empire C2
 
-EXERCICE 2 : Port Scanner TCP
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Scanner les ports ouverts d'une machine
+[ ] 3. DNS TUNNELING EXFILTRATION
+Exfiltration de données via DNS queries :
+- Encoder data en base32/base64 pour subdomains
+- Découpage en chunks de 63 chars (limite label DNS)
+- Séquençage pour reconstruction côté serveur
+- Utiliser TXT records pour C2 bidirectionnel
+- Rate limiting pour éviter détection (pas plus de 10 req/min)
 
-Auto-évaluation :
-[ ] Scan de plage de ports (1-1024)
-[ ] Multi-threading pour vitesse
-[ ] Timeout configurable
-[ ] Affichage des services détectés
+Référence : Iodine, DNSCat2, APT29 DNS tunneling
 
-═══════════════════════════════════════════════════════════════════════════
+[ ] 4. ICMP TUNNELING (COVERT CHANNEL)
+Communication via ICMP Echo packets :
+- Raw socket IPPROTO_ICMP
+- Construction manuelle paquet ICMP
+- Injection data dans payload (ping normal = vide)
+- Calcul checksum ICMP correct
+- Nécessite CAP_NET_RAW (Linux) ou admin (Windows)
 
-EXERCICE 3 : Raw Socket ICMP Ping
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Implémenter ping avec raw sockets
+Référence : ptunnel, ICMP backdoors APT
 
-Auto-évaluation :
-[ ] Construction manuelle du paquet ICMP
-[ ] Calcul du checksum
-[ ] Mesure du RTT (Round Trip Time)
-[ ] Fonctionne avec privilèges admin
+[ ] 5. PORT KNOCKING C2
+Activation C2 via séquence de ports :
+- Écouter séquence spécifique (ex: 7000, 8000, 9000)
+- Ouvrir port C2 seulement après knock correct
+- Fermer port après timeout (30s)
+- Support UDP/TCP pour knock
+- Logging des tentatives
 
-═══════════════════════════════════════════════════════════════════════════
+Référence : Port knocking technique, covert C2
 
-EXERCICE 4 : Reverse Shell TCP
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Créer un reverse shell basique
+[ ] 6. DOMAIN FRONTING HTTPS
+C2 via CDN fronting pour masquer C2 réel :
+- Connexion HTTPS vers domaine légitime (cloudflare.com)
+- Header Host: contient vrai C2 (evil.attacker.com)
+- CDN route vers C2 basé sur Host header
+- Bypass firewall/IPS qui whitelist domaine façade
 
-Auto-évaluation :
-[ ] Connexion à un listener distant
-[ ] Redirection stdin/stdout/stderr vers socket
-[ ] Exécution de commandes shell
-[ ] Reconnexion automatique si perte
+Référence : Cobalt Strike domain fronting, APT29/APT28
 
-═══════════════════════════════════════════════════════════════════════════
+[ ] 7. WEBSOCKET C2 BIDIRECTIONNEL
+Communication temps réel via WebSocket :
+- Handshake HTTP Upgrade to WebSocket
+- Full-duplex communication
+- Framing protocol WebSocket correct
+- Heartbeat/ping-pong pour keep-alive
+- Blend in web traffic (wss:// = HTTPS)
 
-EXERCICE 5 : HTTP C2 avec Beacon
-─────────────────────────────────────────────────────────────────────────────
-Objectif : C2 via HTTP avec beacons périodiques
+Référence : Modern C2 frameworks (Mythic, Havoc)
 
-Auto-évaluation :
-[ ] Beacons HTTP GET/POST
-[ ] Jitter pour éviter patterns réguliers
-[ ] User-Agent légitime
-[ ] Parsing de commandes depuis réponse HTTP
+[ ] 8. SOCKS5 PROXY TUNNELING
+Tunnel réseau complet via SOCKS5 :
+- Handshake SOCKS5 protocol
+- Support authentication (username/password)
+- Proxy TCP connections arbitrary
+- Support SOCKS5 CONNECT, BIND, UDP ASSOCIATE
+- Utiliser pour pivoter dans réseau interne
 
-═══════════════════════════════════════════════════════════════════════════
+Référence : Metasploit socks5 module, Cobalt Strike pivot
 
-EXERCICE 6 : DNS Tunneling (Exfiltration)
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Exfiltrer des données via requêtes DNS
-
-Auto-évaluation :
-[ ] Encoding de données en subdomains
-[ ] Envoi de requêtes DNS A ou TXT
-[ ] Fragmentation si données volumineuses
-[ ] Serveur DNS qui décode les données
-
-═══════════════════════════════════════════════════════════════════════════
-
-EXERCICE 7 : SSL/TLS Socket (HTTPS)
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Communication chiffrée avec OpenSSL
-
-Auto-évaluation :
-[ ] Initialisation SSL/TLS
-[ ] Connexion HTTPS
-[ ] Vérification de certificat
-[ ] Requête HTTPS fonctionnelle
-
-═══════════════════════════════════════════════════════════════════════════
-
-EXERCICE 8 : SOCKS Proxy
-─────────────────────────────────────────────────────────────────────────────
-Objectif : Implémenter un proxy SOCKS4/5 basique
-
-Auto-évaluation :
-[ ] Handshake SOCKS fonctionnel
-[ ] Tunneling TCP
-[ ] Support authentification
-[ ] Compatible avec navigateurs/outils
-
-═══════════════════════════════════════════════════════════════════════════
+NOTES :
+- Tous les C2 doivent avoir retry logic robuste
+- Beaconing DOIT avoir jitter aléatoire (éviter patterns)
+- User-Agents doivent être légitimes (copier Chrome/Firefox)
+- Tester détection avec Wireshark, Zeek/Suricata IDS
