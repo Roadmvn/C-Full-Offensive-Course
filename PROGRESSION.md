@@ -1,356 +1,181 @@
-# 📊 Progression détaillée - Apprentissage C pour Red Teaming
+# Progression - Learning C pour Red Teaming
 
-## 🎯 Vue d'ensemble
+## Vue d'ensemble
 
-**Durée totale estimée** : 4-6 semaines (40-60 heures)
-**Niveau de départ** : Débutant absolu
-**Niveau final** : Bases solides en exploitation
-
----
-
-## 📅 PHASE 1 : Bases Absolues (1-2 semaines)
-
-### Semaine 1 : Les fondamentaux
-
-#### ✅ Exercice 01 : Hello World
-**Durée** : 30-45 minutes
-**Concepts** :
-- Structure d'un programme C
-- `#include` et bibliothèques
-- La fonction `main()`
-- `printf()` pour l'affichage
-- Compilation avec gcc
-- Exécution d'un programme
-
-**Tu sauras** : Écrire, compiler et exécuter ton premier programme C
+**Durée totale** : 3-6 mois (120-200 heures)
+**Niveau départ** : Débutant absolu
+**Niveau final** : Malware developer / Red teamer
 
 ---
 
-#### ✅ Exercice 02 : Variables et Types
-**Durée** : 45-60 minutes
-**Concepts** :
-- Déclaration de variables
-- Types de données : `int`, `char`, `float`, `double`
-- Initialisation
-- `sizeof()` pour connaître la taille en mémoire
-- Affichage avec `printf()`
+## Phase 1 : Bases C (Modules 01-09)
+**Durée** : 1-2 semaines | **Style** : Bro Code ultra-concis
 
-**Tu sauras** : Manipuler différents types de données et comprendre leur stockage
+Apprentissage des fondamentaux du langage C avec exemples neutres et pédagogiques.
 
----
+### Modules
+- **01 - Hello World** (30-45 min) : Premier programme, compilation gcc
+- **02 - Variables et Types** (45-60 min) : int, char, float, double, sizeof()
+- **03 - Printf et Scanf** (1h) : Format specifiers, saisie utilisateur
+- **04 - Opérateurs** (1h) : Arithmétiques, logiques, bit à bit
+- **05 - If/Else/Switch** (1-1.5h) : Conditions, opérateur ternaire
+- **06 - Loops** (1.5-2h) : for, while, do-while, break, continue
+- **07 - Arrays** (1.5-2h) : Tableaux 1D et 2D, parcours
+- **08 - Strings** (2h) : Chaînes, string.h, manipulation de texte
+- **09 - Functions** (2h) : Déclaration, paramètres, return, scope
 
-#### ✅ Exercice 03 : Printf et Scanf
-**Durée** : 1 heure
-**Concepts** :
-- Format specifiers (`%d`, `%c`, `%f`, `%s`, `%p`)
-- `printf()` avancé
-- `scanf()` pour la saisie utilisateur
-- L'opérateur `&` (adresse)
-- Lire différents types de données
-
-**Tu sauras** : Interagir avec l'utilisateur et formater l'affichage
+### Compétences acquises
+✓ Syntaxe C de base
+✓ Structures de contrôle
+✓ Manipulation de données
+✓ Organisation du code en fonctions
 
 ---
 
-#### ✅ Exercice 04 : Opérateurs
-**Durée** : 1 heure
-**Concepts** :
-- Opérateurs arithmétiques (`+`, `-`, `*`, `/`, `%`)
-- Opérateurs de comparaison (`==`, `!=`, `<`, `>`, `<=`, `>=`)
-- Opérateurs logiques (`&&`, `||`, `!`)
-- Incrémentation (`++`, `--`)
-- Priorité des opérateurs
+## Phase 2 : Transition (Modules 10-14)
+**Durée** : 1 semaine | **Style** : Bases avancées + notes red team
 
-**Tu sauras** : Effectuer des calculs et des comparaisons
+Concepts avancés du C avec une **section "Application Red Team"** dans chaque README expliquant l'usage en sécurité offensive.
 
----
+### Modules
+- **10 - Pointeurs Intro** (2-3h) : &, *, NULL, manipulation mémoire
+  - *Red team : WriteProcessMemory, injection de code*
 
-#### ✅ Exercice 05 : If, Else, Switch
-**Durée** : 1-1.5 heures
-**Concepts** :
-- Structure conditionnelle `if`
-- `else if` et `else`
-- Opérateur ternaire `? :`
-- `switch case`
-- Programme de décision
+- **11 - Pointeurs Avancés** (2-3h) : Arithmétique, **, relation arrays/pointeurs
+  - *Red team : Parsing PE, IAT hooking*
 
-**Tu sauras** : Créer des programmes qui prennent des décisions
+- **12 - Malloc et Free** (2-3h) : Stack vs Heap, allocation dynamique
+  - *Red team : VirtualAlloc, heap spray*
 
----
+- **13 - Structures** (2h) : struct, typedef, . vs ->
+  - *Red team : PROCESS_INFORMATION, PE headers*
 
-### Semaine 2 : Structures de contrôle et données
+- **14 - Fichiers** (2h) : fopen, fread, fwrite, binaire
+  - *Red team : Droppers, PE parsing, payloads*
 
-#### ✅ Exercice 06 : Loops (Boucles)
-**Durée** : 1.5-2 heures
-**Concepts** :
-- Boucle `for`
-- Boucle `while`
-- Boucle `do-while`
-- `break` et `continue`
-- Boucles imbriquées
-
-**Tu sauras** : Répéter des actions et parcourir des données
+### Compétences acquises
+✓ Gestion mémoire avancée
+✓ Structures de données
+✓ Manipulation de fichiers
+✓ Compréhension des usages en sécurité
 
 ---
 
-#### ✅ Exercice 07 : Arrays (Tableaux)
-**Durée** : 1.5-2 heures
-**Concepts** :
-- Déclaration d'arrays
-- Initialisation
-- Accès aux éléments `array[index]`
-- Parcourir avec des boucles
-- Arrays 2D (matrices)
-- Limites et dépassements
+## Phase 3 : Exploitation (Modules 15-20)
+**Durée** : 1-2 semaines | **Style** : Code vulnérable, exploitation
 
-**Tu sauras** : Stocker et manipuler des collections de données
+Code **intentionnellement vulnérable** avec avertissements légaux stricts.
 
----
+### Modules
+- **15 - Buffer Concept** (2-3h) : Buffers, overflow simple, strcpy dangereux
+- **16 - Stack Overflow** (3-4h) : Stack frame, écraser return address
+- **17 - Shellcode** (3-4h) : Shellcode x86/x64, execve, NOP sled
+- **18 - Format String** (3-4h) : printf() vulnérable, %n pour écrire
+- **19 - Heap Exploitation** (4h) : Use-after-free, double-free, heap spray
+- **20 - Reverse Shell** (4h) : Socket TCP, dup2(), shell over network
 
-#### ✅ Exercice 08 : Strings (Chaînes)
-**Durée** : 2 heures
-**Concepts** :
-- String = array de `char`
-- Terminaison `\0` (null terminator)
-- `<string.h>` : `strlen()`, `strcpy()`, `strcmp()`, `strcat()`
-- Manipulation de strings
-- Lecture sécurisée
-
-**Tu sauras** : Travailler avec du texte en C
+### Compétences acquises
+✓ Comprendre les vulnérabilités binaires
+✓ Exploiter des buffer overflows
+✓ Créer et injecter du shellcode
+✓ Développer des reverse shells
 
 ---
 
-#### ✅ Exercice 09 : Functions (Fonctions)
-**Durée** : 2 heures
-**Concepts** :
-- Déclaration et définition de fonctions
-- Paramètres et arguments
-- Valeurs de retour
-- Prototypes
-- Scope des variables (locale vs globale)
-- Modularité du code
+## Phase 4 : Malware Development (Modules 21-45)
+**Durée** : 3-4 semaines | **Style** : Techniques réelles APT/malware
 
-**Tu sauras** : Organiser ton code en fonctions réutilisables
+Techniques **professionnelles** utilisées par Cobalt Strike, Metasploit et APT groups.
 
----
+### Architecture Offensive (21-27)
+- **21 - Process & Threads** (3-5h) : fork, CreateProcess, pthread, IPC
+- **22 - Syscalls Directs** (4h) : Hell's Gate, Halo's Gate, bypass EDR hooks
+- **23 - Windows APIs** (3-4h) : VirtualAlloc, OpenProcess, GetProcAddress
+- **24 - Process Injection** (4-5h) : CreateRemoteThread, QueueUserAPC, Process Hollowing
+- **25 - DLL Injection** (4h) : LoadLibrary, Manual Mapping, Reflective DLL
+- **26 - API Hooking** (4h) : IAT, Inline hooking, Trampolines, Unhooking
+- **27 - Networking & C2** (4h) : Sockets, HTTP/DNS C2, beaconing
 
-## 📅 PHASE 2 : Niveau Intermédiaire (1 semaine)
+### Evasion (28-33)
+- **28 - Cryptographie** (3-4h) : XOR, AES, string obfuscation, crypters
+- **29 - Obfuscation** (3-4h) : Control flow, opaque predicates, junk code
+- **30 - Anti-Debugging** (3-4h) : IsDebuggerPresent, PEB, RDTSC timing
+- **31 - Anti-VM/Sandbox** (3-4h) : CPUID, sleep acceleration, VM artifacts
+- **32 - Persistence Windows** (4h) : Registry, scheduled tasks, services
+- **33 - Persistence Linux** (3h) : Cron, systemd, LD_PRELOAD, bashrc
 
-### Semaine 3 : Mémoire et structures
+### Techniques Avancées (34-40)
+- **34 - Token Manipulation** (4-5h) : OpenProcessToken, SeDebugPrivilege, impersonation
+- **35 - Registry Manipulation** (3h) : RegOpenKey, RegSetValue, data hiding
+- **36 - Memory Mapping** (3-4h) : mmap, MapViewOfFile, shared memory
+- **37 - Reflective Loading** (5-6h) : Reflective DLL, manual PE loading
+- **38 - ROP Chains** (5-6h) : Gadgets, bypass DEP/NX, ret2libc
+- **39 - Code Caves** (4h) : PE injection, backdooring binaries
+- **40 - Packing/Unpacking** (4h) : UPX, custom packers, entropy
 
-#### ✅ Exercice 10 : Introduction aux Pointeurs
-**Durée** : 2-3 heures
-**⚠️ CRUCIAL** - Les pointeurs sont la base de tout ce qui suit
+### EDR Bypass & Post-Exploitation (41-45)
+- **41 - ETW Patching** (4-5h) : Patching EtwEventWrite, bypass EDR logging
+- **42 - AMSI Bypass** (4h) : Patching AmsiScanBuffer, PowerShell bypass
+- **43 - Credential Dumping** (5-6h) : LSASS, Mimikatz, SAM database
+- **44 - Lateral Movement** (5h) : PsExec, WMI, Pass-the-Hash, RDP
+- **45 - C2 Development** (6-8h) : Architecture C2, multi-protocol, tasking
 
-**Concepts** :
-- Qu'est-ce qu'un pointeur ?
-- Opérateur `&` (adresse de)
-- Opérateur `*` (déréférence)
-- Relation pointeur-variable
-- Affichage d'adresses mémoire
-- `NULL` pointer
-
-**Tu sauras** : Comprendre comment les variables sont stockées en mémoire
-
----
-
-#### ✅ Exercice 11 : Pointeurs Avancés
-**Durée** : 2-3 heures
-**Concepts** :
-- Arithmétique de pointeurs (`ptr++`, `ptr+n`)
-- Relation pointeurs-arrays
-- Passer des pointeurs aux fonctions
-- Pointeurs de pointeurs (`**ptr`)
-- `void*` (pointeur générique)
-
-**Tu sauras** : Manipuler la mémoire de manière avancée
-
----
-
-#### ✅ Exercice 12 : Malloc et Free
-**Durée** : 2-3 heures
-**Concepts** :
-- Stack vs Heap
-- Allocation dynamique : `malloc()`, `calloc()`, `realloc()`
-- Libération : `free()`
-- Memory leaks (fuites mémoire)
-- Valgrind pour détecter les fuites
-
-**Tu sauras** : Gérer la mémoire dynamiquement
+### Compétences acquises
+✓ Injection de code avancée
+✓ Bypass EDR/AV
+✓ Techniques de persistence
+✓ Privilege escalation
+✓ Développement C2 complet
+✓ Toutes les compétences pour **OSWA**
 
 ---
 
-#### ✅ Exercice 13 : Structures
-**Durée** : 2 heures
-**Concepts** :
-- Définir une `struct`
-- Accès aux membres (`.` et `->`)
-- Structures et pointeurs
-- Arrays de structures
-- `typedef` pour simplifier
+## Progression recommandée
 
-**Tu sauras** : Créer des types de données personnalisés
+### Tempo optimal
+- **1-2h par jour** en semaine
+- **4-6h** le weekend
+- **6-8 semaines** au total pour finir les 45 modules
 
----
+### Checkpoints importants
+- [ ] **Module 09 complété** : Tu maîtrises les bases du C
+- [ ] **Module 14 complété** : Tu comprends la gestion mémoire avancée
+- [ ] **Module 20 complété** : Tu sais exploiter des vulnérabilités
+- [ ] **Module 33 complété** : Tu maîtrises injection et persistence
+- [ ] **Module 45 complété** : Tu es prêt pour OSWA et Red Team jobs
 
-#### ✅ Exercice 14 : Fichiers
-**Durée** : 2 heures
-**Concepts** :
-- `fopen()`, `fclose()`
-- Modes : `"r"`, `"w"`, `"a"`, `"rb"`, `"wb"`
-- `fwrite()`, `fread()`
-- `fprintf()`, `fscanf()`
-- `fgets()`, `fputs()`
-- Manipulation de fichiers binaires
+### Conseils
+✅ Fais les modules dans l'ordre strict
+✅ Compile et teste TOUS les exemples
+✅ Fais au minimum 6/8 exercices par module
+✅ Relis les modules précédents si bloqué
+✅ Prends des notes dans un carnet
+✅ Pratique sur des VMs isolées (modules 15+)
 
-**Tu sauras** : Lire et écrire des données dans des fichiers
-
----
-
-## 📅 PHASE 3 : Exploitation et Sécurité (1-2 semaines)
-
-### Semaine 4-5 : Introduction à l'exploitation
-
-#### ⚠️ Exercice 15 : Concept de Buffer
-**Durée** : 2-3 heures
-**⚠️ Début de la partie sécurité**
-
-**Concepts** :
-- Qu'est-ce qu'un buffer ?
-- Buffer fixe vs dynamique
-- Écrire dans un buffer
-- Introduction au concept d'overflow
-- Visualiser avec `printf()` et addresses
-
-**Tu sauras** : Comprendre les bases des buffers et leurs limites
+❌ Ne saute AUCUN module
+❌ Ne copie pas sans comprendre
+❌ Ne teste PAS les techniques sur des systèmes réels sans autorisation
 
 ---
 
-#### 🔴 Exercice 16 : Stack Overflow
-**Durée** : 3-4 heures
-**⚠️ IMPORTANT** - Premier exploit réel
+## Après avoir terminé
 
-**Concepts** :
-- Organisation de la stack
-- Stack frame (frame pointer, return address)
-- Buffer overflow simple
-- Écraser une variable adjacente
-- Écraser la return address
-- Compilation sans protections (`-fno-stack-protector`)
-- GDB pour visualiser la stack
+Tu seras capable de :
+- Développer des exploits en C
+- Créer des implants malware custom
+- Bypasser EDR/AV modernes
+- Passer la certification **OSWA**
+- Postuler pour des postes **Red Team** (FAANG, sécurité)
 
-**Tu sauras** : Comprendre et exploiter un buffer overflow basique
-
----
-
-#### 🔴 Exercice 17 : Shellcode
-**Durée** : 3-4 heures
-**Concepts** :
-- Qu'est-ce qu'un shellcode ?
-- Function pointers
-- Exécuter du code depuis un buffer
-- Shellcode simple (`execve("/bin/sh")`)
-- NOP sled (0x90)
-- Flags de compilation : `-z execstack`
-
-**Tu sauras** : Injecter et exécuter du code arbitraire
+### Prochaines étapes
+1. **CTF** : Practice sur HackTheBox, TryHackMe
+2. **Certifications** : OSWA → OSCP → OSCE
+3. **Assembleur** : Apprendre x86-64 pour reverse engineering
+4. **Outils** : Maîtriser IDA/Ghidra/Binary Ninja
+5. **Projects** : Développer ton propre C2 framework
 
 ---
 
-#### 🔴 Exercice 18 : Format String
-**Durée** : 3-4 heures
-**Concepts** :
-- Vulnérabilité `printf(user_input)`
-- Lire la stack avec `%x`, `%p`
-- `%s` pour leak des strings
-- `%n` pour écrire en mémoire
-- Exploitation basique
+**Bonne chance dans ton apprentissage ! 🔥**
 
-**Tu sauras** : Exploiter les format strings pour leak et écrire en mémoire
-
----
-
-#### 🔴 Exercice 19 : Heap Exploitation
-**Durée** : 4 heures
-**Concepts** :
-- Organisation du heap
-- Heap overflow
-- Use-after-free (UAF)
-- Double-free
-- Heap spray
-- Exploitation simple du heap
-
-**Tu sauras** : Comprendre les vulnérabilités du heap
-
----
-
-#### 🔴 Exercice 20 : Reverse Shell
-**Durée** : 4 heures
-**🎓 PROJET FINAL**
-
-**Concepts** :
-- Socket programming (`socket()`, `bind()`, `listen()`, `accept()`)
-- Client/server TCP
-- `dup2()` pour rediriger stdin/stdout/stderr
-- Envoyer des commandes
-- Recevoir l'output
-- Shell over network
-
-**Tu sauras** : Créer un reverse shell fonctionnel
-
----
-
-## 🎯 Checklist de progression
-
-Coche au fur et à mesure :
-
-### Phase 1 : Bases
-- [ ] 01 - Hello World
-- [ ] 02 - Variables et Types
-- [ ] 03 - Printf et Scanf
-- [ ] 04 - Opérateurs
-- [ ] 05 - If/Else/Switch
-- [ ] 06 - Loops
-- [ ] 07 - Arrays
-- [ ] 08 - Strings
-- [ ] 09 - Functions
-
-### Phase 2 : Intermédiaire
-- [ ] 10 - Pointeurs (intro)
-- [ ] 11 - Pointeurs (avancé)
-- [ ] 12 - Malloc/Free
-- [ ] 13 - Structures
-- [ ] 14 - Fichiers
-
-### Phase 3 : Exploitation
-- [ ] 15 - Buffer concept
-- [ ] 16 - Stack Overflow
-- [ ] 17 - Shellcode
-- [ ] 18 - Format String
-- [ ] 19 - Heap Exploitation
-- [ ] 20 - Reverse Shell
-
----
-
-## 🏆 Après avoir tout complété
-
-Tu auras acquis :
-- ✅ Maîtrise du langage C
-- ✅ Compréhension profonde de la gestion mémoire
-- ✅ Bases de l'exploitation de binaires
-- ✅ Capacité à lire et analyser du code C
-- ✅ Fondations pour des CTFs et le bug bounty
-
-## 🚀 Prochaines étapes
-
-1. **Pratiquer sur des CTFs** : HackTheBox, TryHackMe, PicoCTF
-2. **Apprendre l'assembleur x86/x64** : Pour comprendre plus en profondeur
-3. **Étudier les protections modernes** : ASLR, DEP, Stack Canaries, PIE
-4. **Reverse engineering** : IDA, Ghidra, Binary Ninja
-5. **Exploitation avancée** : ROP chains, ret2libc, heap feng shui
-
----
-
-**Bon courage dans ton apprentissage ! 🔥**
-
-*N'oublie pas : Chaque expert a été un débutant. La clé est la persistance.*
+*"Chaque expert a été un débutant. La clé est la persistance."*

@@ -1,169 +1,97 @@
-═══════════════════════════════════════════════════════════════════════
-MODULE 33 : PERSISTENCE LINUX - EXERCICES
-═══════════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
 
-AVERTISSEMENT : Usage éducatif UNIQUEMENT dans VM isolée.
+EXERCICES - MODULE 33 : LINUX PERSISTENCE
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 1 : Cron Job Persistence
-═══════════════════════════════════════════════════════════════════════
+[ ] 1. CRON PERSISTENCE MULTI-TRIGGERS
+Implémenter multiple cron triggers :
+- @reboot pour démarrage
+- @daily pour exécution quotidienne
+- Toutes les heures (0 * * * *)
+- Backup crontab si détecté/supprimé
+- Vérifier existence avec crontab -l
 
-Objectif : Créer des cron jobs programmatiquement
+Référence : man 5 crontab
 
-Spécifications :
-1. Ajouter cron job avec @reboot
-2. Ajouter cron job périodique
-3. Lister les cron jobs existants
-4. Supprimer cron job spécifique
+[ ] 2. SYSTEMD SERVICE COMPLET
+Service systemd malveillant fonctionnel :
+- ServiceType=forking (daemon)
+- Restart=always (auto-restart si crash)
+- StandardOutput=null (pas de logs)
+- User=root si disponible
+- WantedBy=multi-user.target
+- systemctl enable pour autostart
 
-Auto-évaluation :
-[ ] Ajout de cron job @reboot
-[ ] Ajout de cron job périodique
-[ ] Listing fonctionnel
-[ ] Suppression fonctionnelle
+Référence : systemd.service man page
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 2 : Systemd Service Installation
-═══════════════════════════════════════════════════════════════════════
+[ ] 3. BASHRC/PROFILE STEALTHY
+Persistence dans shell RC files :
+- ~/.bashrc, ~/.bash_profile, ~/.profile
+- ~/.zshrc si Zsh détecté
+- /etc/profile si root (global)
+- Commentaires légitimes pour masquer
+- Background execution (&) silencieuse
+- Vérifier si ligne déjà présente (éviter duplications)
 
-Objectif : Créer et installer un service systemd
+Référence : Bash startup files
 
-Étapes :
-1. Créer fichier .service
-2. Copier dans /etc/systemd/system/
-3. Recharger systemd (daemon-reload)
-4. Activer le service (enable)
-5. Désinstaller proprement
+[ ] 4. LD_PRELOAD ROOTKIT
+Créer bibliothèque LD_PRELOAD malveillante :
+- Intercepter getuid() retourner 0 (fake root)
+- Intercepter readdir() cacher fichiers/processus
+- Intercepter fopen() rediriger /etc/passwd
+- Ajouter à /etc/ld.so.preload
+- Compiler : gcc -shared -fPIC -o hook.so hook.c
 
-Auto-évaluation :
-[ ] Fichier .service créé
-[ ] Installation réussie
-[ ] Service démarre au boot
-[ ] Désinstallation propre
+Référence : ld.so man page, LD_PRELOAD tricks
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 3 : Shell RC Files Modification
-═══════════════════════════════════════════════════════════════════════
+[ ] 5. XDG AUTOSTART DESKTOP
+Persistence via XDG autostart (GNOME/KDE) :
+- ~/.config/autostart/app.desktop
+- [Desktop Entry] avec Exec=
+- Hidden=false ou true selon furtivité
+- X-GNOME-Autostart-enabled=true
+- Icon et Name légitimes (masquerade)
+- NoDisplay=true pour cacher
 
-Objectif : Modifier les fichiers RC pour persistence
+Référence : XDG Autostart spec
 
-Fichiers à modifier :
-1. ~/.bashrc
-2. ~/.profile
-3. ~/.zshrc (si applicable)
+[ ] 6. INIT SCRIPTS (LEGACY)
+Init scripts pour SysV (systèmes legacy) :
+- /etc/rc.local (exécuté au boot)
+- /etc/init.d/script avec start/stop
+- update-rc.d pour activer
+- Runlevels 2-5 pour multi-user
+- LSB header (### BEGIN INIT INFO)
 
-Spécifications :
-- Ajout discret en fin de fichier
-- Vérification avant ajout (pas de duplicatas)
-- Suppression propre
+Référence : SysV init scripts
 
-Auto-évaluation :
-[ ] Ajout dans .bashrc
-[ ] Détection de duplicatas
-[ ] Suppression sans corruption du fichier
-[ ] Tests effectués
+[ ] 7. MULTI-METHOD REDUNDANCY
+Implémenter 5+ méthodes simultanées :
+- Cron + .bashrc + systemd + XDG
+- Watchdog vérifiant présence chaque méthode
+- Auto-repair si une supprimée
+- Logging vers C2 si détection
+- Sleep aléatoire entre vérifications
 
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 4 : LD_PRELOAD Library Hijacking
-═══════════════════════════════════════════════════════════════════════
+Référence : APT persistence redundancy
 
-Objectif : Créer une bibliothèque LD_PRELOAD
+[ ] 8. KERNEL MODULE PERSISTENCE (AVANCÉ)
+Rootkit kernel module (nécessite root) :
+- insmod malicious.ko
+- Cacher module avec list_del(&__this_module.list)
+- /etc/modules-load.d/ pour autoload
+- Hook sys_call_table
+- Cacher fichiers/processus au niveau kernel
 
-Étapes :
-1. Créer bibliothèque partagée (.so)
-2. Intercepter une fonction système (ex: getuid)
-3. Tester avec LD_PRELOAD
-4. Nettoyage complet
+Référence : Linux kernel module programming
 
-Auto-évaluation :
-[ ] Bibliothèque .so créée
-[ ] Fonction interceptée
-[ ] Tests réussis
-[ ] Nettoyage effectué
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 5 : User Service (systemd --user)
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Créer un service systemd utilisateur
-
-Différence avec service système :
-- Pas besoin de root
-- ~/.config/systemd/user/
-- systemctl --user
-
-Auto-évaluation :
-[ ] Service user créé
-[ ] Activation sans root
-[ ] Démarrage automatique
-[ ] Tests complets
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 6 : XDG Autostart
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Utiliser XDG autostart pour persistence GUI
-
-Emplacement :
-~/.config/autostart/myapp.desktop
-
-Spécifications :
-- Créer fichier .desktop valide
-- Exécution au login graphique
-- Compatible GNOME/KDE/XFCE
-
-Auto-évaluation :
-[ ] Fichier .desktop créé
-[ ] Autostart fonctionnel
-[ ] Tests sous environnement GUI
-[ ] Suppression propre
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 7 : SSH Authorized Keys Backdoor
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Ajouter une clé SSH pour accès persistant
-
-Étapes :
-1. Générer paire de clés SSH
-2. Ajouter clé publique à ~/.ssh/authorized_keys
-3. Tester connexion
-4. Supprimer proprement
-
-Auto-évaluation :
-[ ] Clés SSH générées
-[ ] Ajout dans authorized_keys
-[ ] Connexion SSH réussie
-[ ] Suppression complète
-
-═══════════════════════════════════════════════════════════════════════
-EXERCICE 8 : Système Multi-Méthodes Complet
-═══════════════════════════════════════════════════════════════════════
-
-Objectif : Combiner plusieurs techniques de persistence
-
-Fonctionnalités :
-1. Au moins 5 méthodes différentes
-2. Installation silencieuse
-3. Détection d'échec et fallback
-4. Désinstallation complète
-5. Logging des opérations
-
-Auto-évaluation :
-[ ] 5+ méthodes implémentées
-[ ] Système de fallback
-[ ] Désinstallation complète
-[ ] Tests exhaustifs
-[ ] Documentation fournie
-
-═══════════════════════════════════════════════════════════════════════
-IMPORTANT
-═══════════════════════════════════════════════════════════════════════
-
-- Testez UNIQUEMENT dans VM isolée
-- Documentez tous les changements
-- Nettoyez complètement après tests
-- Ne déployez JAMAIS sans autorisation
-- Usage éducatif STRICT
-
-═══════════════════════════════════════════════════════════════════════
+NOTES :
+- Cron = facile détecter (crontab -l)
+- .bashrc = exécution login, visible .bash_history
+- Systemd = systemctl list-units detect
+- LD_PRELOAD = chkrootkit détecte
+- XDG = desktop uniquement, facile scan
+- Init scripts = rkhunter scan
+- Kernel modules = lsmod, mais peut se cacher
+- Combiner multiples pour redondance

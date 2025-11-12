@@ -1,265 +1,219 @@
-# Formation Complète en Langage C pour le Red Teaming
+# Learning C - Red Team Development
 
-[![Language](https://img.shields.io/badge/Language-C-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
-[![Level](https://img.shields.io/badge/Level-Beginner%20to%20Advanced-green.svg)]()
-[![License](https://img.shields.io/badge/License-Educational-orange.svg)]()
+Formation progressive en C du niveau débutant absolu au malware development avancé.
 
-## Présentation
+## Objectif
 
-Ce programme de formation progressive offre une approche structurée et méthodique de l'apprentissage du langage C, avec un focus particulier sur les concepts de sécurité offensive et de red teaming. L'ensemble du cursus est organisé en modules progressifs, conçus pour accompagner l'apprenant depuis les fondamentaux jusqu'aux techniques avancées d'exploitation.
-
-### Objectifs pédagogiques
-
-Le langage C constitue la pierre angulaire de la compréhension des systèmes informatiques et de la sécurité offensive :
-
-- **Architecture mémoire** : Compréhension approfondie de la gestion et manipulation de la mémoire
-- **Interaction système** : Maîtrise des mécanismes d'interfaçage avec le système d'exploitation
-- **Analyse de vulnérabilités** : Identification et compréhension des failles de sécurité
-- **Développement d'exploits** : Conception d'outils et de techniques d'exploitation
+Apprendre le C avec une **progression naturelle** vers le red teaming :
+- **Modules 01-09** : Bases du C (style Bro Code)
+- **Modules 10-14** : Concepts avancés + premières notes red team
+- **Modules 15-20** : Exploitation (buffer overflow, shellcode, etc.)
+- **Modules 21-45** : Malware development complet (OSWA prep)
 
 ## Prérequis
 
-### Connaissances requises
+**AUCUN** - Ce cours part de zéro.
 
-Niveau débutant accepté. Les compétences suivantes sont recommandées :
-
-- Utilisation basique du terminal et de la ligne de commande
-- Navigation dans l'arborescence des fichiers (`cd`, `ls`, `pwd`)
-- Compréhension élémentaire des concepts informatiques
-- Capacité d'analyse et résolution de problèmes
-
-### Environnement technique
-
-- Système d'exploitation : Linux, macOS, ou WSL (Windows Subsystem for Linux)
-- Compilateur GCC (GNU Compiler Collection)
-- Make (outil de construction automatisé)
-- GDB (GNU Debugger)
+Tu dois juste savoir :
+- Utiliser un terminal
+- Naviguer dans les dossiers (cd, ls)
 
 ## Installation
 
-### Déploiement automatisé
-
 ```bash
-# Clonage du repository
-git clone https://github.com/votre-username/learning-c.git
-cd learning-c
-
-# Configuration des permissions d'exécution
 chmod +x setup.sh
-
-# Installation des dépendances et outils
 ./setup.sh
 ```
 
-### Vérification de l'installation
+Ou manuellement :
+```bash
+# macOS
+brew install gcc
+
+# Linux
+sudo apt install build-essential gcc
+
+# Windows
+# Utilise WSL ou MinGW
+```
+
+## Structure
+
+Chaque module contient **4 fichiers** :
+```
+XX_nom_module/
+├── README.md       # Cours concis + exemples
+├── example.c       # Code d'exemple commenté
+├── exercice.txt    # 8 défis pratiques avec [ ] auto-évaluation
+└── solution.txt    # Solutions complètes
+```
+
+**Plus de Makefile** - Compilation simple : `gcc example.c -o program`
+
+## Progression
+
+### Phase 1 : Bases C (01-09) - 1-2 semaines
+Style **Bro Code** : ultra-concis, exemples neutres
+
+- 01 : Hello World
+- 02 : Variables et types
+- 03 : Printf et scanf
+- 04 : Opérateurs
+- 05 : If/else/switch
+- 06 : Loops (for, while, do-while)
+- 07 : Arrays
+- 08 : Strings
+- 09 : Functions
+
+### Phase 2 : Transition (10-14) - 1 semaine
+Bases avancées + **section Red Team** à la fin de chaque README
+
+- 10 : Pointeurs intro
+- 11 : Pointeurs avancés
+- 12 : Malloc et free
+- 13 : Structures
+- 14 : Fichiers
+
+### Phase 3 : Exploitation (15-20) - 1-2 semaines
+Code **vulnérable intentionnel**, avertissements légaux
+
+- 15 : Buffer concept
+- 16 : Stack overflow
+- 17 : Shellcode
+- 18 : Format string
+- 19 : Heap exploitation
+- 20 : Reverse shell
+
+### Phase 4 : Malware Dev (21-45) - 3-4 semaines
+Techniques **réelles** utilisées par APT groups
+
+- 21 : Process & threads
+- 22 : Syscalls directs (Hell's Gate, Halo's Gate)
+- 23 : Windows APIs
+- 24 : Process injection
+- 25 : DLL injection
+- 26 : API hooking
+- 27 : Networking sockets & C2
+- 28 : Cryptographie
+- 29 : Obfuscation
+- 30 : Anti-debugging
+- 31 : Anti-VM/sandbox
+- 32 : Persistence Windows
+- 33 : Persistence Linux
+- 34 : Token manipulation
+- 35 : Registry manipulation
+- 36 : Memory mapping
+- 37 : Reflective loading
+- 38 : ROP chains
+- 39 : Code caves
+- 40 : Packing/unpacking
+- 41 : ETW patching
+- 42 : AMSI bypass
+- 43 : Credential dumping
+- 44 : Lateral movement
+- 45 : C2 development
+
+## Comment utiliser
+
+### Pour chaque module :
 
 ```bash
-gcc --version
-make --version
-gdb --version
-```
+cd exercices/01_hello_world/
 
-## Architecture du projet
-
-```
-learning-c/
-├── README.md                  # Documentation principale
-├── PROGRESSION.md             # Plan de formation détaillé
-├── setup.sh                   # Script d'installation automatisé
-├── .gitignore                 # Fichiers exclus du versioning
-└── exercices/
-    ├── 01_hello_world/        # Introduction au langage
-    ├── 02_variables_types/    # Types de données et variables
-    ├── 03_printf_scanf/       # Entrées/Sorties standard
-    └── ...                    # 45 modules au total
-```
-
-## Curriculum de formation
-
-### Phase 1 : Fondamentaux (Modules 01-09)
-**Durée estimée : 1 à 2 semaines**
-
-Acquisition des concepts de base :
-- Compilation et exécution de programmes
-- Types de données et déclaration de variables
-- Fonctions d'entrée/sortie (printf, scanf)
-- Structures de contrôle (conditions, boucles)
-- Tableaux et chaînes de caractères
-- Fonctions et passage de paramètres
-
-### Phase 2 : Concepts intermédiaires (Modules 10-14)
-**Durée estimée : 1 semaine**
-
-Approfondissement des mécanismes système :
-- Pointeurs et arithmétique des pointeurs
-- Allocation dynamique de mémoire (malloc, free)
-- Structures de données personnalisées
-- Manipulation de fichiers et flux
-- Introduction aux concepts de buffer
-
-### Phase 3 : Sécurité et exploitation (Modules 15-33)
-**Durée estimée : 3 à 4 semaines**
-
-Techniques de sécurité offensive :
-- Buffer overflow et stack overflow
-- Shellcode et exécution de code arbitraire
-- Vulnérabilités de format string
-- Exploitation du heap
-- Reverse shells et C2 (Command & Control)
-- Process injection et DLL injection
-- API hooking et manipulation système
-- Techniques de persistence (Windows/Linux)
-- Anti-debugging et anti-VM
-
-### Phase 4 : Techniques avancées (Modules 34-45)
-**Durée estimée : 2 à 3 semaines**
-
-Concepts experts en red teaming :
-- Token manipulation et privilege escalation
-- Registry manipulation et code caves
-- Reflective DLL loading
-- ROP chains (Return-Oriented Programming)
-- Packing/Unpacking et obfuscation
-- ETW patching et AMSI bypass
-- Credential dumping techniques
-- Lateral movement et développement C2
-
-## Méthodologie d'apprentissage
-
-### Workflow par module
-
-#### 1. Étude de la documentation
-```bash
-cd exercices/[numero_module]/
+# 1. Lire le cours
 cat README.md
-```
 
-#### 2. Analyse du code source
-```bash
+# 2. Étudier le code
 cat example.c
-# Lecture attentive des commentaires et annotations
-```
 
-#### 3. Compilation et tests
-```bash
-make
+# 3. Compiler et tester
+gcc example.c -o program
 ./program
-```
 
-#### 4. Exercices pratiques
-```bash
+# 4. Faire les exercices
 cat exercice.txt
-# Modification du code et re-compilation
-make clean && make
-```
 
-#### 5. Validation et solutions
-```bash
+# 5. Vérifier les solutions
 cat solution.txt
-# Consultation uniquement après tentative personnelle
 ```
 
-### Bonnes pratiques
+### Règles d'apprentissage :
 
-#### Recommandations
+✅ Faire les modules dans l'ordre (01 → 02 → 03 → ...)
+✅ Lire TOUS les commentaires dans le code
+✅ Faire les exercices avant de regarder les solutions
+✅ Réé crire le code sans regarder pour mémoriser
 
-- Respecter la séquence ordonnée des modules
-- Lire et comprendre l'intégralité des commentaires
-- Expérimenter avec des modifications du code
-- Documenter les apprentissages dans un journal technique
-- Pratiquer la réécriture de code sans consultation
-- Ne jamais ignorer les avertissements du compilateur
+❌ Ne pas sauter de modules
+❌ Ne pas copier-coller sans comprendre
+❌ Ne pas ignorer les warnings du compilateur
 
-#### À éviter
+## Temps estimé
 
-- Copier-coller du code sans compréhension
-- Sauter des modules intermédiaires
-- Passer aux concepts avancés prématurément
-- Négliger les messages d'erreur et warnings
+| Modules | Durée par module |
+|---------|------------------|
+| 01-09 | 30-60 min |
+| 10-14 | 1-2h |
+| 15-20 | 2-4h |
+| 21-33 | 3-5h |
+| 34-45 | 4-6h |
 
-## Estimation temporelle
+**Total** : 120-200 heures (~3-6 mois à temps partiel)
 
-### Durée par catégorie
+## Après ce cours
 
-| Modules | Temps par module | Difficulté |
-|---------|------------------|------------|
-| 01-05 | 30-60 minutes | Débutant |
-| 06-09 | 1-2 heures | Débutant-Intermédiaire |
-| 10-14 | 2-3 heures | Intermédiaire |
-| 15-33 | 3-5 heures | Avancé |
-| 34-45 | 4-6 heures | Expert |
+Tu sauras :
+- ✓ Coder en C de manière professionnelle
+- ✓ Comprendre l'architecture mémoire et système
+- ✓ Exploiter des vulnérabilités binaires
+- ✓ Développer des outils de red teaming
+- ✓ Passer la certification **OSWA**
+- ✓ Préparer des entretiens **FAANG Red Team**
 
-**Durée totale du programme** : 120-200 heures de formation intensive
+## Prochaines étapes
 
-## Ressources complémentaires
+- **CTF** : HackTheBox, TryHackMe, PicoCTF
+- **Certifications** : OSWA, OSCP, OSCE
+- **Assembleur** : x86/x64 pour reverse engineering
+- **Outils** : IDA, Ghidra, Binary Ninja
+- **Advanced** : ROP, ret2libc, heap feng shui
 
-### Documentation officielle
+## Ressources
 
-- [GCC Documentation](https://gcc.gnu.org/onlinedocs/) - Référence du compilateur GNU
-- [GDB Manual](https://sourceware.org/gdb/documentation/) - Guide du débogueur
-- [C Reference](https://en.cppreference.com/w/c) - Documentation complète du langage C
+- [GCC Docs](https://gcc.gnu.org/onlinedocs/)
+- [GDB Tutorial](https://www.gdbtutorial.com/)
+- [C Reference](https://en.cppreference.com/w/c)
+- **Bro Code** : [YouTube C Tutorial](https://www.youtube.com/watch?v=87SH2Cn0s9A)
 
-### Ouvrages recommandés
+## ⚠️ AVERTISSEMENT LÉGAL
 
-- *The C Programming Language* - Brian Kernighan & Dennis Ritchie
-- *Hacking: The Art of Exploitation* - Jon Erickson
-- *Practical Malware Analysis* - Michael Sikorski & Andrew Honig
+**Les techniques enseignées sont à des fins ÉDUCATIVES UNIQUEMENT.**
 
-## Compétences acquises
+**Usage autorisé sur** :
+- Tes propres systèmes
+- VM de test isolées
+- CTF légaux
+- Bug bounty avec autorisation
+- Red team contractuel
 
-À l'issue de ce programme de formation, vous disposerez de :
+**INTERDIT** :
+- Systèmes sans autorisation
+- Usage malveillant
+- Attaques réelles
 
-- ✓ Maîtrise approfondie du langage C et de ses spécificités
-- ✓ Compréhension fine de l'architecture mémoire et système
-- ✓ Capacités d'analyse et d'exploitation de vulnérabilités
-- ✓ Compétences en développement d'outils de red teaming
-- ✓ Fondations solides pour les CTF et programmes de bug bounty
-- ✓ Expertise en techniques d'offensive security
+**Usage illégal = PRISON**. Nous déclinons toute responsabilité.
 
-## Contribution
-
-Les contributions à ce projet éducatif sont les bienvenues. Procédure recommandée :
-
-1. Identification de problèmes ou suggestions d'amélioration
-2. Documentation détaillée des modifications proposées
-3. Soumission via issues ou pull requests
-4. Respect des standards de code et documentation
-
-## Avertissement légal et éthique
-
-### Cadre d'utilisation
-
-**IMPORTANT** : Les connaissances et techniques enseignées dans ce programme sont strictement destinées à des fins éducatives et de recherche en sécurité.
-
-### Usage autorisé exclusivement sur :
-
-- Systèmes personnels dont vous êtes propriétaire
-- Environnements de test et laboratoires autorisés
-- Plateformes CTF (Capture The Flag) légales
-- Programmes de bug bounty avec autorisation formelle
-- Missions de red teaming contractuelles et documentées
-
-### Interdictions formelles
-
-**Toute utilisation non autorisée, malveillante ou illégale de ces techniques constitue une violation des lois en vigueur sur la cybercriminalité et peut entraîner des poursuites pénales.**
-
-Le contributeur et les utilisateurs de ce repository déclinent toute responsabilité en cas d'usage inapproprié ou illégal des connaissances partagées.
-
-## Démarrage
+## Démarrage rapide
 
 ```bash
 cd exercices/01_hello_world/
 cat README.md
-make
+gcc example.c -o program
 ./program
 ```
 
----
-
-**Auteur** : Roadmvn
-**Licence** : Usage Éducatif  
-**Dernière mise à jour** : 2025
+**Bonne chance ! 🔥**
 
 ---
 
-*"La maîtrise du langage C est la clé de voûte de la compréhension des systèmes informatiques et de la sécurité offensive."*
+*"Le C est la clé pour comprendre comment les systèmes fonctionnent réellement."*

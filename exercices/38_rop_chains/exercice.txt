@@ -1,189 +1,93 @@
-═══════════════════════════════════════════════════════════════════
-EXERCICES - Module 38 : ROP Chains
-═══════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
 
-⚠️  CTF ET VM ISOLÉE UNIQUEMENT - JAMAIS SUR SYSTÈMES RÉELS
+EXERCICES - MODULE 38 : ROP CHAINS
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 1 : ROPgadget Finder
-═══════════════════════════════════════════════════════════════════
+[ ] 1. GADGET FINDER
+Trouver gadgets dans binaire :
+- Use ROPgadget --binary ./vuln
+- Find pop rdi ; ret
+- Find pop rsi ; ret
+- Find pop rdx ; ret
+- Find syscall ; ret
+- Save addresses for ROP chain
 
-Créer un outil cherchant des gadgets dans un binaire.
+Référence : ROPgadget, ropper tools
 
-Fonction :
-    void trouver_gadgets(const char *binaire, const char *pattern);
+[ ] 2. BASIC RET2WIN
+Simple ROP : overflow to win() function :
+- Calculate offset to saved RIP
+- Overflow buffer with padding
+- Overwrite RIP with win_function address
+- No gadgets needed (direct call)
+- Verify execution reaches win()
 
-Patterns à chercher :
-- pop rdi ; ret
-- pop rsi ; ret
+Référence : ROP Emporium ret2win
+
+[ ] 3. RET2LIBC EXPLOITATION
+Call system("/bin/sh") via libc :
+- Find system() address in libc
+- Find "/bin/sh" string in libc
+- Build payload: pop_rdi + binsh + system
+- Send payload via buffer overflow
+- Get shell
+
+Référence : Classic ret2libc attack
+
+[ ] 4. FULL ROP CHAIN (EXECVE)
+Build complete ROP chain for execve syscall :
+- pop rdi ; ret  -> "/bin/sh"
+- pop rsi ; ret  -> NULL
+- pop rdx ; ret  -> NULL
+- pop rax ; ret  -> 59 (execve)
 - syscall ; ret
-- mov rax, [rdi] ; ret
+- Test exploitation
 
-Critères :
-[ ] Désassemble le binaire
-[ ] Trouve gadgets utiles
-[ ] Affiche adresses et instructions
-[ ] Export vers fichier
+Référence : x64 syscall conventions
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 2 : ret2libc Exploit
-═══════════════════════════════════════════════════════════════════
+[ ] 5. ASLR BYPASS (INFO LEAK)
+Bypass ASLR via information disclosure :
+- Exploit format string or read() to leak libc address
+- Calculate libc base from leak
+- Find system/binsh offsets from base
+- Build ROP chain with calculated addresses
+- Exploit with ASLR enabled
 
-Exploiter un buffer overflow avec ret2libc.
+Référence : ASLR bypass techniques
 
-Programme vulnérable :
-    void vuln() { char buf[64]; gets(buf); }
+[ ] 6. STACK PIVOTING
+Redirect RSP to controlled memory :
+- Find xchg rsp, rax ; ret gadget
+- Control RAX with ROP
+- Pivot stack to heap/bss
+- Execute ROP chain from new stack
+- Useful when stack space limited
 
-Objectif : Appeler system("/bin/sh")
+Référence : Stack pivoting exploitation
 
-Critères :
-[ ] Calculer offset jusqu'à saved RIP
-[ ] Trouver adresse de system() dans libc
-[ ] Trouver chaîne "/bin/sh"
-[ ] Construire payload
-[ ] Obtenir shell
+[ ] 7. SIGROP (SIGRETURN ROP)
+Use sigreturn for arbitrary register control :
+- Setup rt_sigreturn frame on stack
+- Call sigreturn syscall (rax=15)
+- Control all registers (rdi, rsi, rdx, rip)
+- Execute execve with full control
+- One gadget technique
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 3 : ROP Chain Builder (pwntools)
-═══════════════════════════════════════════════════════════════════
+Référence : SROP exploitation (pwntools)
 
-Utiliser pwntools pour construire une ROP chain.
+[ ] 8. JIT-ROP (ADVANCED)
+Dynamic ROP in presence of randomization :
+- Read executable memory to find gadgets
+- Build ROP chain at runtime
+- Adapt to ASLR addresses
+- Chain read + execute primitives
+- Advanced browser exploit technique
 
-Script Python :
-    from pwn import *
-    # Construire chaîne execve("/bin/sh")
+Référence : JIT-ROP paper, browser exploits
 
-Critères :
-[ ] Utiliser ROP() de pwntools
-[ ] Appeler execve avec arguments corrects
-[ ] Tester sur binaire vulnérable
-[ ] Shell obtenu
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 4 : ASLR Bypass via Info Leak
-═══════════════════════════════════════════════════════════════════
-
-Contourner ASLR en fuiant une adresse.
-
-Scénario : printf(buf) où buf contrôlé
-
-Étapes :
-1. Fuir une adresse de libc
-2. Calculer base de libc
-3. Calculer adresses absolues
-4. ROP chain
-
-Critères :
-[ ] Leak d'adresse réussi
-[ ] Calcul correct de base
-[ ] ROP chain fonctionnel malgré ASLR
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 5 : Stack Pivoting
-═══════════════════════════════════════════════════════════════════
-
-Pivoter la stack vers une zone contrôlée.
-
-Gadgets requis :
-- xchg rsp, rax ; ret
-- mov rsp, rbp ; ret
-
-Scénario : Buffer trop petit pour ROP chain complète
-
-Critères :
-[ ] Identifier gadget de pivoting
-[ ] Préparer ROP chain dans zone contrôlée
-[ ] Pivoter RSP vers cette zone
-[ ] Exécution réussie
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 6 : Multi-Stage ROP
-═══════════════════════════════════════════════════════════════════
-
-ROP chain en plusieurs étapes.
-
-Étapes :
-1. Stage 1 : read() pour lire stage 2
-2. Stage 2 : ROP chain complète
-
-Critères :
-[ ] Première ROP appelle read()
-[ ] Deuxième ROP appelle execve()
-[ ] Coordination des stages
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 7 : SROP (Sigreturn-Oriented Programming)
-═══════════════════════════════════════════════════════════════════
-
-Utiliser sigreturn pour contrôler tous les registres.
-
-Gadget : syscall ; ret
-
-Payload :
-- Préparer sigreturn frame
-- Appeler sigreturn (rax=15)
-
-Critères :
-[ ] Comprendre sigreturn
-[ ] Construire frame correcte
-[ ] Contrôle complet des registres
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 8 : JOP (Jump-Oriented Programming)
-═══════════════════════════════════════════════════════════════════
-
-Utiliser des gadgets se terminant par jmp/call au lieu de ret.
-
-Gadgets JOP :
-- jmp rax
-- call [rax]
-
-Critères :
-[ ] Trouver gadgets JOP
-[ ] Chaîner via jmp au lieu de ret
-[ ] Contourner protections anti-ROP
-
-═══════════════════════════════════════════════════════════════════
-CHALLENGES RECOMMANDÉS
-═══════════════════════════════════════════════════════════════════
-
-ROPEmporium :
-  ret2win, split, callme, write4, badchars, fluff, pivot, ret2csu
-
-pwnable.kr :
-  bof, passcode, random, input
-
-Exploit Education :
-  Phoenix (Stack/Format/Heap)
-
-HackTheBox :
-  Challenges pwn variés
-
-═══════════════════════════════════════════════════════════════════
-OUTILS REQUIS
-═══════════════════════════════════════════════════════════════════
-
-Installation :
-  pip install pwntools
-  pip install ROPgadget
-  pip install ropper
-
-GDB plugins :
-  pwndbg, GEF, ou peda
-
-═══════════════════════════════════════════════════════════════════
-LÉGALITÉ RAPPEL
-═══════════════════════════════════════════════════════════════════
-
-AUTORISÉ :
-✓ Challenges CTF
-✓ VM personnelles
-✓ Pentest contractuel
-✓ Recherche académique
-
-INTERDIT :
-✗ Exploitation de systèmes sans autorisation
-✗ Développement d'exploits malveillants
-✗ Tests sur infrastructure production
-
-═══════════════════════════════════════════════════════════════════
+NOTES :
+- Disable ASLR: echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
+- Compile vulnerable: gcc -fno-stack-protector -z execstack -no-pie vuln.c
+- Use pwntools for exploitation
+- GDB + pwndbg for debugging
+- CFI/CET defeats ROP (modern protection)

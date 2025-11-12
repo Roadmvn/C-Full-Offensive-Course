@@ -1,242 +1,91 @@
-═══════════════════════════════════════════════════════════════════
-EXERCICES - Module 36 : Memory Mapping
-═══════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
 
-⚠️  AVERTISSEMENT : Utilisez uniquement dans un environnement de test
+EXERCICES - MODULE 36 : MEMORY MAPPING
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 1 : Database Memory-Mapped File
-═══════════════════════════════════════════════════════════════════
+[ ] 1. FILELESS SHELLCODE EXECUTION
+Exécuter shellcode sans fichier disque :
+- mmap() anonymous avec PROT_EXEC
+- Download shellcode depuis socket
+- Copy to RWX memory
+- Cast to function pointer et execute
+- munmap cleanup
 
-Créer une base de données simple utilisant un fichier memory-mapped
-pour stocker des enregistrements d'utilisateurs.
+Référence : Metasploit fileless stagers
 
-Structure :
-    typedef struct {
-        int id;
-        char nom[50];
-        char email[100];
-        int age;
-    } Utilisateur;
+[ ] 2. SHARED MEMORY C2 IPC
+Communication C2 via shared memory :
+- shm_open() / CreateFileMapping named
+- Process A (implant) write beacons
+- Process B (handler) read commands
+- Mutex synchronization
+- Delete on exit (shm_unlink)
 
-Fonctions à implémenter :
-    void* creer_base_donnees(const char *fichier, int nb_max_utilisateurs);
-    void ajouter_utilisateur(void *db, Utilisateur *user);
-    Utilisateur* rechercher_par_id(void *db, int id);
-    void lister_tous_utilisateurs(void *db);
+Référence : Advanced IPC techniques
 
-Critères de réussite :
-[ ] Fichier mappé avec permissions RW
-[ ] Ajout/recherche efficaces (O(1) ou O(log n))
-[ ] Synchronisation automatique avec disque
-[ ] Gestion correcte de la concurrence (plusieurs processus)
-[ ] Pas de corruption de données
+[ ] 3. MEMORY-MAPPED PE LOADER
+Charger PE/ELF depuis memory mapping :
+- Map PE file in memory
+- Parse headers (DOS, NT, sections)
+- Relocate if needed (fix base address)
+- Resolve imports
+- Execute entry point
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 2 : Shared Memory Producer-Consumer
-═══════════════════════════════════════════════════════════════════
+Référence : Reflective DLL injection
 
-Implémenter un système producer-consumer utilisant shared memory
-avec synchronisation (semaphores ou mutex).
+[ ] 4. COW (COPY-ON-WRITE) EXPLOITATION
+Exploiter MAP_PRIVATE COW :
+- mmap() file MAP_PRIVATE
+- Fork() child process
+- Modify in child (COW triggered)
+- Parent sees original
+- Race condition exploitation
 
-Fonctions à implémenter :
-    void* creer_buffer_partage(const char *nom, int taille);
-    void produire_donnees(void *buffer, const char *donnees);
-    char* consommer_donnees(void *buffer);
+Référence : Dirty COW vulnerability
 
-Spécifications :
-- Buffer circulaire en mémoire partagée
-- Synchronisation thread-safe
-- Gestion des conditions de buffer plein/vide
-- Support multi-producteurs/multi-consommateurs
+[ ] 5. CROSS-PROCESS MEMORY DUMP
+Dump autre processus via mapping :
+- OpenProcess (Windows) / ptrace (Linux)
+- CreateFileMapping on target process
+- MapViewOfFile remote memory
+- Dump PE headers, .text section
+- Extract credentials/keys
 
-Critères de réussite :
-[ ] Shared memory correctement créée (Linux et Windows)
-[ ] Synchronisation sans race conditions
-[ ] Buffer circulaire fonctionnel
-[ ] Tests avec plusieurs processus simultanés
-[ ] Nettoyage correct des ressources
+Référence : Mimikatz lsass dumping
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 3 : Large File Processor (Big Data)
-═══════════════════════════════════════════════════════════════════
+[ ] 6. ANTI-FORENSICS MEMORY WIPE
+Secure wipe mapped memory :
+- mmap() puis write sensitive data
+- memset() zeros before munmap
+- mlock() prevent swapping to disk
+- msync(MS_INVALIDATE) clear cache
+- Verify no disk artifacts
 
-Créer un outil de traitement de fichiers volumineux (> 1 GB)
-utilisant memory mapping pour performance optimale.
+Référence : Memory forensics evasion
 
-Fonctions à implémenter :
-    void traiter_fichier_volumineux(const char *fichier_entree, const char *fichier_sortie);
-    void appliquer_transformation(char *data, size_t taille);
+[ ] 7. LARGE FILE PROCESSING
+Process 10GB+ files via mapping :
+- mmap() file (don't load all in RAM)
+- Process by chunks (page-by-page)
+- Search/replace patterns
+- Memory efficient (lazy loading)
+- Performance comparison vs read()
 
-Transformations à implémenter :
-- Comptage de mots/lignes
-- Recherche de patterns
-- Remplacement de texte
-- Statistiques (moyenne, médiane pour données numériques)
+Référence : Big data memory-mapped I/O
 
-Critères de réussite :
-[ ] Support de fichiers > 1 GB sans charger tout en RAM
-[ ] Utilisation de mapping par fenêtres (windowing)
-[ ] Performance supérieure à read/write classique
-[ ] Gestion de fichiers plus grands que la RAM disponible
-[ ] Traitement en parallèle (multithreading sur chunks)
+[ ] 8. MEMORY PERMISSION JUGGLING
+RW -> RX technique (DEP bypass) :
+- Allocate RW (mmap PROT_READ|PROT_WRITE)
+- Write shellcode
+- mprotect() change to RX
+- Execute (DEP not triggered)
+- Compare vs direct RWX allocation
 
-═══════════════════════════════════════════════════════════════════
-EXERCICE 4 : Memory Arena Allocator
-═══════════════════════════════════════════════════════════════════
+Référence : DEP bypass techniques
 
-Implémenter un allocateur mémoire custom utilisant mmap pour gérer
-une arena de mémoire.
-
-Fonctions à implémenter :
-    void* arena_create(size_t taille);
-    void* arena_alloc(void *arena, size_t taille);
-    void arena_reset(void *arena);
-    void arena_destroy(void *arena);
-
-Fonctionnalités :
-- Allocation rapide (bump allocator)
-- Pas de free individuel (reset global)
-- Alignment correct (8 ou 16 bytes)
-- Expansion automatique si nécessaire
-
-Critères de réussite :
-[ ] Allocations O(1)
-[ ] Pas de fragmentation
-[ ] Support de multiples arenas
-[ ] Reset instantané
-[ ] Performance meilleure que malloc/free
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 5 : Copy-on-Write (COW) Implementation
-═══════════════════════════════════════════════════════════════════
-
-Créer un système démontrant le Copy-on-Write en utilisant
-MAP_PRIVATE et fork().
-
-Fonctions à implémenter :
-    void demonstrer_cow();
-    void tester_modification_parent(void *mem);
-    void tester_modification_enfant(void *mem);
-
-Scénario :
-1. Parent crée mapping MAP_PRIVATE
-2. Parent fork() enfant
-3. Enfant et parent partagent initialement les pages
-4. Modification déclenche copie
-
-Critères de réussite :
-[ ] Démonstration claire du partage initial
-[ ] Copie uniquement sur modification
-[ ] Mesure de l'utilisation mémoire réelle
-[ ] Comparaison avec MAP_SHARED
-[ ] Explication détaillée du comportement
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 6 : RWX Shellcode Loader (ÉDUCATIF UNIQUEMENT)
-═══════════════════════════════════════════════════════════════════
-
-⚠️  ATTENTION : À des fins éducatives UNIQUEMENT
-
-Créer un loader de shellcode utilisant memory mapping RWX.
-
-Fonctions à implémenter :
-    void* allouer_zone_executable(size_t taille);
-    void charger_shellcode(void *zone, const unsigned char *code, size_t taille);
-    void executer_shellcode(void *zone);
-
-Shellcode de test (NON malveillant) :
-    // Linux x86-64 : exit(42)
-    unsigned char shellcode[] = {
-        0x48, 0xc7, 0xc0, 0x3c, 0x00, 0x00, 0x00,  // mov rax, 60
-        0x48, 0xc7, 0xc7, 0x2a, 0x00, 0x00, 0x00,  // mov rdi, 42
-        0x0f, 0x05                                  // syscall
-    };
-
-Critères de réussite :
-[ ] Zone mémoire RWX allouée
-[ ] Shellcode copié correctement
-[ ] Exécution réussie
-[ ] Détection des protections (DEP/NX)
-[ ] Nettoyage correct
-
-RAPPEL : ENVIRONNEMENT DE TEST ISOLÉ UNIQUEMENT
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 7 : Process Memory Viewer
-═══════════════════════════════════════════════════════════════════
-
-Créer un outil affichant toutes les zones memory-mapped d'un processus.
-
-Fonctions à implémenter :
-    void lister_mappings_processus(int pid);
-    void analyser_permissions(const char *perms);
-    void detecter_zones_suspectes();
-
-Sources :
-- Linux : /proc/[pid]/maps
-- Windows : VirtualQueryEx en boucle
-
-Informations à extraire :
-- Adresses de début/fin
-- Permissions (RWX)
-- Type (file-backed, anonymous, stack, heap)
-- Chemins de fichiers
-
-Critères de réussite :
-[ ] Liste complète des mappings
-[ ] Détection de zones RWX (suspectes)
-[ ] Identification des segments (code, data, stack)
-[ ] Export formaté (JSON/CSV)
-[ ] Comparaison avec état normal
-
-═══════════════════════════════════════════════════════════════════
-EXERCICE 8 : Synchronized Shared State Machine
-═══════════════════════════════════════════════════════════════════
-
-Implémenter une machine à états partagée entre plusieurs processus
-via shared memory avec synchronisation complète.
-
-Structure :
-    typedef struct {
-        int etat_actuel;
-        int compteur;
-        char derniere_action[100];
-        // Mutex/semaphore pour synchronisation
-    } StateMachine;
-
-Fonctions à implémenter :
-    StateMachine* creer_state_machine(const char *nom);
-    void transition_etat(StateMachine *sm, int nouvel_etat);
-    void incrementer_compteur(StateMachine *sm);
-    void afficher_etat(StateMachine *sm);
-
-Critères de réussite :
-[ ] Shared memory avec state machine
-[ ] Synchronisation thread-safe
-[ ] Plusieurs processus peuvent interagir
-[ ] Pas de race conditions
-[ ] Logs de transitions
-
-═══════════════════════════════════════════════════════════════════
-NOTES IMPORTANTES
-═══════════════════════════════════════════════════════════════════
-
-SÉCURITÉ :
-- RWX détecté par DEP/NX, ASLR, EDR
-- Shared memory : synchronisation obligatoire
-- Toujours munmap/UnmapViewOfFile
-- Vérifier les permissions avant mapping
-
-PERFORMANCE :
-- mmap() plus rapide que read/write pour fichiers volumineux
-- Lazy loading : pages chargées à la demande
-- Cache du noyau partagé entre processus
-
-PORTABILITÉ :
-- APIs différentes : mmap (POSIX) vs CreateFileMapping (Windows)
-- Tester sur les deux plateformes si possible
-
-═══════════════════════════════════════════════════════════════════
-FIN DES EXERCICES
-═══════════════════════════════════════════════════════════════════
+NOTES :
+- RWX pages = highly suspicious
+- /proc/[pid]/maps shows all mappings (Linux)
+- Process Explorer shows memory regions (Windows)
+- Sysmon Event ID 10 detects suspicious access
+- DEP/NX blocks RWX, force RW->RX juggling
