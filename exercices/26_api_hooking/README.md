@@ -1,120 +1,55 @@
-# Module 26 : API Hooking
+# API Hooking - IAT, EAT & Inline Hooking
 
-## Objectifs d'apprentissage
+Hooking de fonctions Windows pour interception d'appels API. IAT hooking (Import Address Table), inline hooking (hot patching), et trampoline functions pour redirection d'exécution.
 
-Ce module explore les techniques de hooking (détournement) d'API Windows pour intercepter et modifier le comportement des fonctions. Vous apprendrez :
+⚠️ AVERTISSEMENT STRICT : Techniques de malware development avancées. Usage éducatif uniquement. Tests sur VM isolées. Usage malveillant = PRISON.
 
-- **IAT Hooking** : Modification de l'Import Address Table
-- **Inline Hooking** : Patching direct du code d'une fonction (hot patching)
-- **Microsoft Detours** : Framework professionnel de hooking
-- **API Unhooking** : Bypass des hooks EDR pour évasion
+```c
+// Inline hook avec trampoline
+BYTE original_bytes[5];
+memcpy(original_bytes, target_func, 5);
 
-## Concepts clés
+// Patch JMP vers hook
+BYTE jmp_patch[5] = { 0xE9, 0, 0, 0, 0 };
+*(DWORD*)(jmp_patch + 1) = (BYTE*)hook_func - (BYTE*)target_func - 5;
 
-### IAT Hooking
-Modification de la table d'imports :
-- Localiser l'IAT du processus/module cible
-- Trouver l'entrée de la fonction à hooker
-- Remplacer l'adresse par celle de la fonction hook
-- Simple mais limité aux imports
-
-### Inline Hooking (Hot Patching)
-Modification directe du code machine :
-- Écrire un JMP au début de la fonction cible
-- Sauvegarder les bytes originaux (trampoline)
-- Rediriger vers la fonction hook
-- Permet d'appeler la fonction originale
-
-### Microsoft Detours
-Framework professionnel :
-- Gestion automatique des trampolines
-- Support multi-architecture (x86/x64/ARM)
-- API simple et robuste
-- Utilisé en production
-
-### API Unhooking
-Bypass des hooks EDR :
-- EDR hookent les API pour monitoring
-- Unhook en restaurant les bytes originaux
-- Lecture depuis ntdll.dll sur disque
-- Permet d'éviter la détection
-
-## Architecture d'un Hook
-
-```
-┌─────────────────────────────────────────────────┐
-│           Inline Hook Architecture              │
-├─────────────────────────────────────────────────┤
-│                                                 │
-│  [Original Function]                            │
-│  0x00: E9 XX XX XX XX    ← JMP to hook         │
-│  0x05: [bytes sauvegardés]                      │
-│                                                 │
-│         │                                       │
-│         └──────────────┐                        │
-│                        ▼                        │
-│              [Hook Function]                    │
-│                   │                             │
-│                   ├─→ Log/Monitor/Modify        │
-│                   │                             │
-│                   └─→ Call trampoline           │
-│                            │                    │
-│                            ▼                    │
-│                   [Trampoline]                  │
-│                   [Bytes originaux]             │
-│                   JMP suite de la fonction      │
-│                                                 │
-└─────────────────────────────────────────────────┘
+VirtualProtect(target_func, 5, PAGE_EXECUTE_READWRITE, &old);
+memcpy(target_func, jmp_patch, 5);
+VirtualProtect(target_func, 5, old, &old);
 ```
 
 ## Compilation
 
-```bash
-# Avec MinGW-w64
-gcc -o api_hooking main.c
+gcc example.c -o hook.exe
 
-# Avec MSVC
-cl /Fe:api_hooking.exe main.c
+## Concepts clés
 
-# Avec Microsoft Detours
-cl /Fe:hook.exe main.c /I"C:\Detours\include" /link "C:\Detours\lib\detours.lib"
-```
+- **IAT Hooking** : Modifier Import Address Table pour rediriger imports
+- **Inline Hooking** : Patch premiers bytes fonction (JMP/CALL) vers hook
+- **Trampoline** : Sauvegarder opcodes originaux pour appeler fonction légitime
+- **EAT Hooking** : Modifier Export Address Table
+- **VTable Hooking** : Hooking de virtual tables C++
+- **SSDT Hooking** : System Service Descriptor Table (kernel-mode)
+- **API Unhooking** : Restaurer opcodes originaux pour bypass EDR
 
-## ⚠️ AVERTISSEMENT LÉGAL CRITIQUE ⚠️
+## Techniques utilisées par
 
-**LE HOOKING D'API EST UNE TECHNIQUE EXTRÊMEMENT SENSIBLE**
+- **EDRs/AVs** : Inline hooks sur APIs critiques (VirtualAlloc, CreateProcess, etc.)
+- **Rootkits** : SSDT hooking en kernel pour cacher processus
+- **Game cheats** : VTable hooking pour Direct3D
+- **Banking trojans** : IAT hooking de send/recv pour MitM
+- **Malware** : API unhooking pour désactiver EDR hooks
 
-### Utilisation autorisée :
-- Environnements de test isolés uniquement
-- Développement d'outils de sécurité légitimes
-- Debugging et reverse engineering autorisé
-- Red teaming avec autorisation écrite
+## Détection et Mitigation
 
-### INTERDIT :
-- Contournement d'anti-cheat (violations de ToS)
-- Bypass d'EDR sans autorisation
-- Vol de credentials
-- Keylogging malveillant
-- Toute activité illégale
+**Indicateurs** :
+- Opcodes anormaux au début de fonctions (0xE9, 0xEB)
+- IAT entries pointant hors modules légitimes
+- VirtualProtect sur .text sections
+- Discrepancies entre disk et memory
 
-### Détection
-- EDR détectent les modifications de code
-- Kernel Patch Protection (PatchGuard) en kernel mode
-- Signature scanning des patterns de hook
-- Behavioral analysis
-
-**USAGE ÉDUCATIF UNIQUEMENT**
-
-## Exercices pratiques
-
-Consultez `exercice.txt` pour 8 défis progressifs.
-
-## Prérequis
-
-- Connaissance de l'assembleur x86/x64
-- Compréhension du format PE
-- Modules 24-25 complétés
-
----
-
-**RAPPEL** : Utilisation strictement éducative dans des environnements contrôlés.
+**Mitigations** :
+- Kernel Patch Protection (PatchGuard)
+- Code Integrity Guard
+- Memory integrity checking
+- ETW pour monitor VirtualProtect

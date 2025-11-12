@@ -1,110 +1,128 @@
-═══════════════════════════════════════════════════════════════════════════
-            MODULE 26 : API HOOKING - SOLUTIONS
-═══════════════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT - Usage éducatif uniquement
 
-SOLUTION EXERCICE 1 : IAT Hook sur CreateFileA
-─────────────────────────────────────────────────────────────────────────────
+SOLUTIONS - MODULE 26 : API HOOKING
 
-// Hook function
-HANDLE WINAPI hooked_CreateFileA(
-    LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
-    LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,
-    DWORD dwFlagsAndAttributes, HANDLE hTemplateFile
-) {
-    printf("[HOOK] CreateFileA appelé: %s\n", lpFileName);
+===============================================================================
+SOLUTION 1 : TRAMPOLINE COMPLÈTE
+===============================================================================
 
-    // Appeler l'original
-    typedef HANDLE (WINAPI *pCreateFileA)(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
-    pCreateFileA orig = (pCreateFileA)original_CreateFileA;
+typedef int (WINAPI *MessageBoxA_t)(HWND, LPCSTR, LPCSTR, UINT);
+MessageBoxA_t original_messagebox_trampoline = NULL;
 
-    return orig(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
-                dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-}
+void* create_trampoline(void* target, size_t stolen_bytes) {
+    void* trampoline = VirtualAlloc(NULL, stolen_bytes + 5,
+                                   MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 
-// Installation
-iat_hook_function("kernel32.dll", "CreateFileA", hooked_CreateFileA, &original_CreateFileA);
+    // Copier bytes volés
+    memcpy(trampoline, target, stolen_bytes);
 
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 2 : Inline Hook avec Trampoline
-─────────────────────────────────────────────────────────────────────────────
-
-// Créer une trampoline
-LPVOID create_trampoline(LPVOID original, BYTE* saved_bytes) {
-    // Allouer de la mémoire RWX pour la trampoline
-    LPVOID trampoline = VirtualAlloc(NULL, 64, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-
-    // Copier les bytes originaux
-    memcpy(trampoline, saved_bytes, 5);
-
-    // Ajouter un JMP vers le reste de la fonction
-    BYTE* ptr = (BYTE*)trampoline + 5;
-    *ptr = 0xE9;  // JMP
-    *(DWORD*)(ptr + 1) = (DWORD)((BYTE*)original + 5 - (ptr + 5));
+    // JMP back vers fonction originale
+    BYTE jmp_back[5] = { 0xE9 };
+    *(DWORD*)(jmp_back + 1) = ((BYTE*)target + stolen_bytes) - ((BYTE*)trampoline + stolen_bytes) - 5;
+    memcpy((BYTE*)trampoline + stolen_bytes, jmp_back, 5);
 
     return trampoline;
 }
 
-// Hook avec trampoline
-LPVOID trampoline = create_trampoline(target, saved_bytes);
-inline_hook_function(target, hook_function, &hook_info);
+void install_hook_with_trampoline() {
+    // Créer trampoline
+    original_messagebox_trampoline = (MessageBoxA_t)create_trampoline(MessageBoxA, 5);
 
-// Dans le hook, appeler le trampoline pour exécuter l'original
+    // Installer hook
+    BYTE jmp[5] = { 0xE9 };
+    *(DWORD*)(jmp + 1) = (BYTE*)Hooked_MessageBoxA - (BYTE*)MessageBoxA - 5;
 
-═══════════════════════════════════════════════════════════════════════════
+    DWORD old;
+    VirtualProtect(MessageBoxA, 5, PAGE_EXECUTE_READWRITE, &old);
+    memcpy(MessageBoxA, jmp, 5);
+    VirtualProtect(MessageBoxA, 5, old, &old);
+}
 
-SOLUTION EXERCICE 4 : API Unhooking (Bypass EDR)
-─────────────────────────────────────────────────────────────────────────────
+int WINAPI Hooked_MessageBoxA(...) {
+    printf("[HOOK] Intercepted\n");
+    // Appeler via trampoline
+    return original_messagebox_trampoline(hWnd, lpText, lpCaption, uType);
+}
 
-BOOL unhook_ntdll(void) {
-    // Charger une copie propre de ntdll.dll depuis le disque
-    HANDLE hFile = CreateFileA("C:\\Windows\\System32\\ntdll.dll", GENERIC_READ,
-                               FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+===============================================================================
+SOLUTION 3 : API UNHOOKING (PERUN'S FART)
+===============================================================================
 
-    DWORD fileSize = GetFileSize(hFile, NULL);
-    LPVOID clean_ntdll = malloc(fileSize);
-    ReadFile(hFile, clean_ntdll, fileSize, &bytesRead, NULL);
-    CloseHandle(hFile);
+BOOL unhook_ntdll() {
+    // Charger ntdll.dll propre depuis disk
+    HANDLE hFile = CreateFileA("C:\\Windows\\System32\\ntdll.dll",
+                              GENERIC_READ, FILE_SHARE_READ, NULL,
+                              OPEN_EXISTING, 0, NULL);
 
-    // Récupérer ntdll chargé en mémoire
-    HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
+    HANDLE hMapping = CreateFileMappingA(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+    LPVOID clean_ntdll = MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, 0);
 
-    // Parser et comparer .text section
-    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)clean_ntdll;
-    PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)((BYTE*)clean_ntdll + dosHeader->e_lfanew);
+    // Obtenir hooked ntdll
+    HMODULE hooked_ntdll = GetModuleHandleA("ntdll.dll");
 
-    // Trouver la section .text
-    PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(ntHeaders);
-    for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++) {
-        if (strcmp((char*)section->Name, ".text") == 0) {
-            // Restaurer la section .text
-            DWORD oldProtect;
-            VirtualProtect((BYTE*)hNtdll + section->VirtualAddress,
-                          section->Misc.VirtualSize, PAGE_EXECUTE_READWRITE, &oldProtect);
+    // Comparer .text section
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)clean_ntdll;
+    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)((BYTE*)clean_ntdll + dos->e_lfanew);
+    PIMAGE_SECTION_HEADER sections = IMAGE_FIRST_SECTION(nt);
 
-            memcpy((BYTE*)hNtdll + section->VirtualAddress,
-                   (BYTE*)clean_ntdll + section->VirtualAddress,
-                   section->Misc.VirtualSize);
+    for (int i = 0; i < nt->FileHeader.NumberOfSections; i++) {
+        if (strcmp((char*)sections[i].Name, ".text") == 0) {
+            DWORD old;
+            VirtualProtect((BYTE*)hooked_ntdll + sections[i].VirtualAddress,
+                          sections[i].Misc.VirtualSize,
+                          PAGE_EXECUTE_READWRITE, &old);
 
-            VirtualProtect((BYTE*)hNtdll + section->VirtualAddress,
-                          section->Misc.VirtualSize, oldProtect, &oldProtect);
+            // Restaurer bytes originaux
+            memcpy((BYTE*)hooked_ntdll + sections[i].VirtualAddress,
+                  (BYTE*)clean_ntdll + sections[i].VirtualAddress,
+                  sections[i].Misc.VirtualSize);
 
-            printf("[+] ntdll.dll unhooké!\n");
+            VirtualProtect((BYTE*)hooked_ntdll + sections[i].VirtualAddress,
+                          sections[i].Misc.VirtualSize, old, &old);
             break;
         }
-        section++;
     }
 
-    free(clean_ntdll);
+    UnmapViewOfFile(clean_ntdll);
+    CloseHandle(hMapping);
+    CloseHandle(hFile);
+
+    printf("[+] ntdll.dll unhooked\n");
     return TRUE;
 }
 
-═══════════════════════════════════════════════════════════════════════════
+===============================================================================
+SOLUTION 6 : HARDWARE BREAKPOINT HOOK
+===============================================================================
 
-Pour les solutions complètes des exercices 3, 5-8, consultez :
-- PolyHook 2 : https://github.com/stevemk14ebr/PolyHook_2_0
-- MinHook : https://github.com/TsudaKageyu/minhook
-- Microsoft Detours : https://github.com/microsoft/Detours
+LONG WINAPI VEH_Handler(EXCEPTION_POINTERS* ExceptionInfo) {
+    if (ExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_SINGLE_STEP) {
+        // Vérifier si c'est notre breakpoint
+        if (ExceptionInfo->ContextRecord->Rip == (DWORD64)MessageBoxA) {
+            printf("[HWBP HOOK] MessageBoxA intercepted\n");
 
-RAPPEL : Usage éducatif uniquement
-═══════════════════════════════════════════════════════════════════════════
+            // Modifier arguments
+            ExceptionInfo->ContextRecord->Rdx = (DWORD64)"[HOOKED] Text";
+
+            return EXCEPTION_CONTINUE_EXECUTION;
+        }
+    }
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
+void install_hwbp_hook(void* target) {
+    AddVectoredExceptionHandler(1, VEH_Handler);
+
+    CONTEXT ctx;
+    ctx.ContextFlags = CONTEXT_DEBUG_REGISTERS;
+    GetThreadContext(GetCurrentThread(), &ctx);
+
+    // Dr0 = address to break on
+    ctx.Dr0 = (DWORD64)target;
+    // Dr7 = enable Dr0
+    ctx.Dr7 = 0x1;
+
+    SetThreadContext(GetCurrentThread(), &ctx);
+}
+
+Référence : Polyhook, Detours, MinHook projects

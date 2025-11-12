@@ -1,203 +1,53 @@
-# Module 25 : DLL Injection
+# DLL Injection - LoadLibrary & Manual Mapping
 
-## Objectifs d'apprentissage
+Injection de DLLs via LoadLibrary classique, manual mapping PE loader, et reflective DLL injection. Techniques pour charger du code arbitraire dans un processus distant sans laisser de traces sur disque.
 
-Ce module explore les techniques avancées d'injection de DLL (Dynamic Link Library) dans des processus Windows. Vous apprendrez :
-
-- **Classic DLL Injection** : Injection via LoadLibrary
-- **Manual Mapping** : Chargement manuel de DLL sans LoadLibrary
-- **Reflective DLL Injection** : DLL auto-chargeables
-- **DLL Hijacking** : Exploitation de l'ordre de chargement des DLL
-
-## Concepts clés
-
-### Classic DLL Injection
-Méthode la plus courante d'injection de DLL :
-1. Allouer de la mémoire dans le processus cible
-2. Écrire le chemin de la DLL dans cette mémoire
-3. Créer un thread distant pointant vers LoadLibraryA/W
-4. LoadLibrary charge la DLL dans le processus cible
-
-### Manual Mapping
-Technique avancée évitant LoadLibrary :
-- Parse du PE (Portable Executable) de la DLL
-- Allocation et copie manuelle des sections
-- Résolution manuelle des imports
-- Relocation de la base address
-- Appel du DllMain manuellement
-
-### Reflective DLL Injection
-DLL capable de se charger elle-même :
-- La DLL contient son propre loader
-- Pas besoin de dropper de fichier sur le disque
-- Entièrement en mémoire (fileless)
-- Utilisé par Metasploit et Cobalt Strike
-
-### DLL Hijacking
-Exploitation de l'ordre de recherche Windows :
-- Windows cherche les DLL dans un ordre spécifique
-- Placer une DLL malveillante dans un chemin prioritaire
-- L'application légitime charge la DLL malveillante
-- Pas besoin d'injection active
-
-## Architecture DLL Injection
-
-```
-┌─────────────────────────────────────────────────┐
-│           Classic DLL Injection Flow            │
-├─────────────────────────────────────────────────┤
-│                                                 │
-│  [Injector]                                     │
-│      │                                          │
-│      ├─→ OpenProcess(target_pid)                │
-│      │                                          │
-│      ├─→ VirtualAllocEx()                       │
-│      │   (Allocate for DLL path)                │
-│      │                                          │
-│      ├─→ WriteProcessMemory()                   │
-│      │   (Write "C:\malicious.dll")             │
-│      │                                          │
-│      └─→ CreateRemoteThread()                   │
-│          ├─→ lpStartAddress = LoadLibraryA      │
-│          └─→ lpParameter = DLL path             │
-│                      │                          │
-│                      ▼                          │
-│          [Target Process]                       │
-│                      │                          │
-│          LoadLibraryA("C:\malicious.dll")       │
-│                      │                          │
-│                      ▼                          │
-│          DllMain(DLL_PROCESS_ATTACH)            │
-│                      │                          │
-│                      └─→ Malicious code runs    │
-│                                                 │
-└─────────────────────────────────────────────────┘
-```
-
-## Structure d'une DLL injectable
+⚠️ AVERTISSEMENT STRICT : Techniques de malware development avancées. Usage éducatif uniquement. Tests sur VM isolées. Usage malveillant = PRISON.
 
 ```c
-#include <windows.h>
+// Classic LoadLibrary injection
+HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+LPVOID mem = VirtualAllocEx(hProc, NULL, strlen(dll_path) + 1, MEM_COMMIT, PAGE_READWRITE);
+WriteProcessMemory(hProc, mem, dll_path, strlen(dll_path) + 1, NULL);
 
-// Point d'entrée de la DLL
-BOOL APIENTRY DllMain(
-    HMODULE hModule,
-    DWORD  ul_reason_for_call,
-    LPVOID lpReserved
-) {
-    switch (ul_reason_for_call) {
-        case DLL_PROCESS_ATTACH:
-            // Code exécuté lors de l'injection
-            MessageBox(NULL, "DLL Injected!", "Success", MB_OK);
-            break;
+HMODULE kernel32 = GetModuleHandleA("kernel32.dll");
+FARPROC loadlib = GetProcAddress(kernel32, "LoadLibraryA");
 
-        case DLL_THREAD_ATTACH:
-        case DLL_THREAD_DETACH:
-        case DLL_PROCESS_DETACH:
-            break;
-    }
-    return TRUE;
-}
+CreateRemoteThread(hProc, NULL, 0, (LPTHREAD_START_ROUTINE)loadlib, mem, 0, NULL);
 ```
 
 ## Compilation
 
-### Créer une DLL injectable
-```bash
-# Avec MinGW-w64
-gcc -shared -o malicious.dll dll_source.c -luser32
+gcc example.c -o inject_dll.exe
 
-# Avec MSVC
-cl /LD dll_source.c /Fe:malicious.dll user32.lib
-```
+## Concepts clés
 
-### Compiler l'injecteur
-```bash
-# Avec MinGW-w64
-gcc -o dll_injector main.c -lpsapi
+- **LoadLibrary Injection** : Classique, facile, détectée (CreateRemoteThread + LoadLibraryA)
+- **Manual Mapping** : Mapper PE manuellement, fix relocations/imports, pas dans PEB
+- **Reflective DLL Injection** : DLL se charge elle-même sans LoadLibrary
+- **DLL Hijacking** : Remplacer DLL légitime dans search order
+- **DLL Proxying** : Forward exports vers DLL légitime, hook certaines fonctions
+- **AppInit_DLLs** : Registry persistence (deprecated mais utilisé)
+- **Thread Local Storage (TLS) Callbacks** : Execute code avant entry point
 
-# Avec MSVC
-cl /Fe:dll_injector.exe main.c psapi.lib
-```
+## Techniques utilisées par
 
-## ⚠️ AVERTISSEMENT LÉGAL CRITIQUE ⚠️
+- **Cobalt Strike** : Reflective DLL injection pour beacons stealthés
+- **Meterpreter** : Manual mapping pour éviter PEB/EDR detection
+- **APT groups** : DLL hijacking pour persistence (OneDrive.exe, etc.)
+- **Banking trojans** : Reflective injection dans browsers
+- **Ransomware** : Manual mapping pour éviter AV hooking
 
-**L'INJECTION DE DLL EST UNE TECHNIQUE EXTRÊMEMENT SENSIBLE**
+## Détection et Mitigation
 
-### Utilisation STRICTEMENT limitée à :
-- Environnements de test isolés (VM déconnectées)
-- Développement d'outils de sécurité légitimes
-- Recherche en cybersécurité autorisée
-- Red teaming avec autorisation écrite explicite
-- Analyse de malware dans des sandboxes
+**Indicateurs** :
+- CreateRemoteThread avec LoadLibraryA comme start routine
+- DLLs non-signées chargées dans processus sensibles
+- Modules absents de PEB mais présents en mémoire
+- Suspicious DLL load from temp/AppData
 
-### ABSOLUMENT INTERDIT :
-- Injection dans des processus sans autorisation
-- Distribution de DLL malveillantes
-- Contournement de protections anti-cheat
-- Vol de données ou credentials
-- Toute activité illégale ou non autorisée
-
-### Conséquences légales
-- Poursuites criminelles pour accès non autorisé
-- Violation du Computer Fraud and Abuse Act (CFAA)
-- Peines de prison et amendes importantes
-- Responsabilité civile pour dommages
-- Interdiction professionnelle
-
-### Détection
-Les techniques de DLL injection sont détectées par :
-- Antivirus et EDR modernes
-- Windows Defender et AMSI
-- Sysmon (Event ID 7, 8, 10)
-- Process monitoring tools
-- Behavioral analysis systems
-
-**USAGE ÉDUCATIF UNIQUEMENT - ENVIRONNEMENTS CONTRÔLÉS OBLIGATOIRES**
-
-## Ordre de recherche des DLL (DLL Search Order)
-
-Windows cherche les DLL dans cet ordre :
-1. Répertoire de l'application
-2. Répertoire système (C:\Windows\System32)
-3. Répertoire Windows (C:\Windows)
-4. Répertoire courant
-5. Répertoires dans PATH
-
-→ DLL Hijacking exploite cet ordre
-
-## Exercices pratiques
-
-Consultez `exercice.txt` pour 8 défis progressifs couvrant :
-- Classic DLL injection
-- Manual mapping
-- Reflective DLL
-- DLL hijacking
-- Techniques d'évasion
-
-## Références techniques
-
-- Microsoft PE/COFF Specification
-- Windows Internals (Russinovich, Solomon, Ionescu)
-- Reflective DLL Injection (Stephen Fewer)
-- Malware Analyst's Cookbook
-- MSDN: Dynamic-Link Libraries
-
-## Prérequis
-
-- Compréhension du format PE (Portable Executable)
-- Connaissance de l'architecture x86/x64
-- Bases de la programmation Windows
-- Module 24 (Process Injection) complété
-
-## Outils utiles
-
-- **PE-bear** : Visualisation du format PE
-- **CFF Explorer** : Analyse de PE
-- **Process Hacker** : Monitoring de DLL
-- **x64dbg** : Debugging de DLL injection
-- **Sysmon** : Logging de chargement de DLL
-
----
-
-**RAPPEL FINAL** : Ce module est destiné UNIQUEMENT à l'apprentissage de la cybersécurité. Toute utilisation malveillante est strictement interdite et constitue un crime.
+**Mitigations** :
+- DLL signature verification (Code Integrity)
+- Safe DLL search mode enabled
+- Process Mitigation Policies
+- EDR hooking de LdrLoadDll

