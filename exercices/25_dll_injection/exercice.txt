@@ -1,0 +1,358 @@
+═══════════════════════════════════════════════════════════════════════════
+                MODULE 25 : DLL INJECTION - EXERCICES
+═══════════════════════════════════════════════════════════════════════════
+
+⚠️  AVERTISSEMENT LÉGAL ⚠️
+Ces exercices sont STRICTEMENT à usage éducatif pour la cybersécurité.
+L'injection de DLL sans autorisation est ILLÉGALE.
+Utilisez UNIQUEMENT dans des environnements de test isolés (VM).
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 1 : Créer une DLL injectable de test
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif :
+Créer une DLL simple qui affiche une MessageBox lors de son injection.
+
+Description :
+Créez un fichier test_dll.c avec :
+1. Un point d'entrée DllMain
+2. Détection de DLL_PROCESS_ATTACH
+3. Affichage d'une MessageBox "DLL Injected!"
+4. Compilation en DLL avec gcc ou MSVC
+
+La DLL doit :
+- S'exécuter correctement lors de l'injection
+- Ne pas crasher le processus hôte
+- Afficher des informations de debug (PID, module base, etc.)
+
+Concepts à maîtriser :
+- Structure d'une DLL Windows
+- Point d'entrée DllMain
+- Raisons d'appel (DLL_PROCESS_ATTACH, etc.)
+- Compilation de DLL
+
+Auto-évaluation :
+[ ] La DLL compile sans erreurs
+[ ] DllMain est correctement implémenté
+[ ] MessageBox s'affiche lors de l'injection
+[ ] La DLL ne crashe pas le processus hôte
+[ ] Les informations de debug sont affichées
+
+Critères de réussite :
+- DLL fonctionnelle et stable
+- MessageBox visible lors de l'injection
+- Pas de crash du processus cible
+- Code propre et commenté
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 2 : Classic DLL Injection complète
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif :
+Implémenter une injection DLL complète avec LoadLibrary et vérification
+du chargement.
+
+Description :
+Créez une fonction inject_dll() qui :
+1. Vérifie que la DLL existe sur le disque
+2. Convertit le chemin en chemin absolu
+3. Alloue, écrit et injecte via LoadLibraryA
+4. Vérifie le HMODULE retourné (non-NULL = succès)
+5. Liste les modules du processus pour confirmer l'injection
+
+Ajoutez une fonction list_process_modules() pour vérifier.
+
+Concepts à maîtriser :
+- Gestion de chemins absolus (GetFullPathNameA)
+- Vérification de fichier (GetFileAttributesA)
+- Énumération de modules (EnumProcessModules, GetModuleFileNameExA)
+- Validation du chargement de DLL
+
+Auto-évaluation :
+[ ] La fonction gère les chemins relatifs et absolus
+[ ] Vérification que la DLL existe avant injection
+[ ] Le HMODULE retourné est vérifié
+[ ] Les modules du processus sont listés après injection
+[ ] La DLL apparaît dans la liste des modules
+
+Critères de réussite :
+- Injection réussie avec vérification
+- La DLL est visible dans la liste des modules
+- Gestion d'erreurs robuste
+- Code production-ready
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 3 : DLL Ejection (unload)
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif :
+Implémenter une fonction pour décharger (eject) une DLL précédemment
+injectée d'un processus.
+
+Description :
+Créez une fonction eject_dll() qui :
+1. Énumère les modules du processus cible
+2. Trouve la DLL par son nom
+3. Récupère son HMODULE
+4. Crée un thread distant avec FreeLibrary comme start routine
+5. Vérifie que la DLL a bien été déchargée
+
+Concepts à maîtriser :
+- EnumProcessModules pour trouver la DLL
+- FreeLibrary pour décharger une DLL
+- CreateRemoteThread avec FreeLibrary
+- Vérification du déchargement
+
+Auto-évaluation :
+[ ] La DLL est correctement identifiée dans le processus
+[ ] FreeLibrary est appelé dans le processus distant
+[ ] La DLL est déchargée sans crasher le processus
+[ ] Vérification que la DLL n'apparaît plus dans les modules
+[ ] Cleanup complet de toutes les ressources
+
+Critères de réussite :
+- DLL déchargée avec succès
+- Processus cible stable après éjection
+- Vérification du déchargement
+- Pas de fuites de ressources
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 4 : Manual Mapping - Parse PE complet
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif :
+Parser complètement les headers PE d'une DLL et afficher toutes les
+informations pertinentes.
+
+Description :
+Créez une fonction parse_pe_complete() qui extrait et affiche :
+1. DOS Header (e_magic, e_lfanew)
+2. NT Headers (Signature, Machine, TimeDateStamp)
+3. Optional Header (ImageBase, EntryPoint, SizeOfImage)
+4. Toutes les sections (.text, .data, .rdata, etc.)
+5. Import Directory (DLL importées et fonctions)
+6. Export Directory (fonctions exportées)
+7. Relocation Directory
+
+Concepts à maîtriser :
+- Format PE (Portable Executable)
+- Structures IMAGE_DOS_HEADER, IMAGE_NT_HEADERS
+- IMAGE_SECTION_HEADER
+- Data Directories (imports, exports, relocations)
+
+Auto-évaluation :
+[ ] Tous les headers PE sont correctement parsés
+[ ] Les sections sont listées avec leurs caractéristiques
+[ ] Les imports sont affichés (DLL + fonctions)
+[ ] Les exports sont affichés si présents
+[ ] Les relocations sont identifiées
+
+Critères de réussite :
+- Parse complet et sans erreur du PE
+- Affichage formaté de toutes les informations
+- Support x86 et x64
+- Code réutilisable
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 5 : Manual Mapping - Résolution des imports
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif :
+Implémenter la résolution manuelle de l'Import Address Table (IAT).
+
+Description :
+Créez une fonction resolve_imports() qui :
+1. Parse l'Import Directory de la DLL
+2. Pour chaque DLL importée :
+   - Charge la DLL avec LoadLibrary
+   - Résout chaque fonction avec GetProcAddress
+   - Écrit l'adresse dans l'IAT
+3. Gère les imports par nom et par ordinal
+4. Affiche chaque résolution pour debug
+
+Concepts à maîtriser :
+- Import Address Table (IAT)
+- Import Directory Table
+- IMAGE_IMPORT_DESCRIPTOR
+- Résolution de fonctions (GetProcAddress)
+- Imports par nom vs ordinal
+
+Auto-évaluation :
+[ ] L'Import Directory est correctement parsée
+[ ] Toutes les DLL importées sont chargées
+[ ] Toutes les fonctions sont résolues
+[ ] L'IAT est correctement remplie avec les adresses
+[ ] Les imports par ordinal sont gérés
+
+Critères de réussite :
+- IAT complètement résolue
+- Support des imports par nom et ordinal
+- Affichage de debug pour chaque résolution
+- Gestion d'erreurs si une fonction n'existe pas
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 6 : Manual Mapping - Relocations
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif :
+Implémenter l'application des relocations pour permettre le chargement
+de la DLL à une adresse différente de son ImageBase préféré.
+
+Description :
+Créez une fonction apply_relocations() qui :
+1. Parse le Base Relocation Directory
+2. Calcule le delta entre ImageBase et l'adresse réelle
+3. Pour chaque relocation :
+   - Identifie le type (IMAGE_REL_BASED_DIR64, etc.)
+   - Applique le patch d'adresse
+4. Supporte x86 (32-bit) et x64 (64-bit)
+
+Concepts à maîtriser :
+- Base Relocation Table
+- IMAGE_BASE_RELOCATION
+- Types de relocations (DIR64, HIGHLOW)
+- Calcul de delta et patching d'adresses
+
+Auto-évaluation :
+[ ] Le Relocation Directory est correctement parsé
+[ ] Le delta est calculé correctement
+[ ] Les relocations sont appliquées
+[ ] Support x86 et x64
+[ ] La DLL peut être chargée à n'importe quelle adresse
+
+Critères de réussite :
+- Relocations appliquées correctement
+- Support des deux architectures
+- DLL fonctionnelle à une adresse arbitraire
+- Code optimisé et efficace
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 7 : Reflective DLL Injection (concept)
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif :
+Créer une DLL réflective simple qui contient son propre loader.
+
+Description :
+Créez une DLL qui :
+1. Contient une fonction ReflectiveLoader() exportée
+2. Cette fonction se charge elle-même en mémoire :
+   - Parse ses propres headers PE
+   - Résout ses propres imports
+   - Applique ses relocations
+   - Appelle son DllMain
+3. Peut être injectée sans LoadLibrary
+4. Fonctionne entièrement en mémoire
+
+Structure :
+- ReflectiveLoader() : point d'entrée du loader
+- LoadLibraryR() : fonction pour charger la DLL réflective
+- La DLL se localise elle-même en mémoire (return address analysis)
+
+Concepts à maîtriser :
+- Reflective DLL Injection (technique de Stephen Fewer)
+- Auto-parsing de PE
+- Position Independent Code (PIC)
+- Return address analysis
+
+Auto-évaluation :
+[ ] ReflectiveLoader est correctement implémenté
+[ ] La DLL se localise elle-même en mémoire
+[ ] Tous les imports sont résolus automatiquement
+[ ] Les relocations sont appliquées
+[ ] DllMain est appelé avec succès
+
+Critères de réussite :
+- DLL complètement auto-chargeante
+- Fonctionne sans LoadLibrary
+- Pas de fichier sur disque nécessaire
+- Compatible avec frameworks comme Metasploit
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 8 : DLL Hijacking (Order de recherche)
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif :
+Démontrer une attaque DLL Hijacking en exploitant l'ordre de recherche
+des DLL de Windows.
+
+Description :
+Créez une démonstration complète :
+1. Identifiez une application vulnérable au DLL hijacking
+2. Listez les DLL qu'elle charge (Process Monitor)
+3. Trouvez une DLL manquante ou non signée
+4. Créez une DLL malveillante avec le même nom
+5. Placez-la dans un répertoire prioritaire
+6. Démontrez que votre DLL est chargée à la place
+
+Utilisez Process Monitor (Procmon) pour :
+- Identifier les DLL "NAME NOT FOUND"
+- Analyser l'ordre de recherche
+- Confirmer le hijacking
+
+Concepts à maîtriser :
+- DLL Search Order de Windows
+- Process Monitor / Procmon
+- DLL Proxying (forwarding vers la vraie DLL)
+- SafeDllSearchMode
+
+Auto-évaluation :
+[ ] Une application vulnérable est identifiée
+[ ] L'ordre de recherche est compris et analysé
+[ ] Une DLL hijackable est trouvée
+[ ] La DLL malveillante est créée et placée
+[ ] Le hijacking est confirmé (DLL chargée)
+[ ] DLL Proxying implémenté pour éviter le crash
+
+Critères de réussite :
+- Hijacking réussi avec preuve
+- Application continue de fonctionner (proxy)
+- Analyse complète avec Procmon
+- Documentation du processus
+
+Bonus :
+- Implémenter DLL Proxying complet (forward des exports)
+- Tester avec SafeDllSearchMode activé/désactivé
+- Identifier des applications réelles vulnérables
+
+═══════════════════════════════════════════════════════════════════════════
+
+NOTES IMPORTANTES
+─────────────────────────────────────────────────────────────────────────────
+
+Outils recommandés :
+- Process Hacker : Monitoring de DLL en temps réel
+- CFF Explorer : Analyse de PE
+- PE-bear : Visualisation de PE
+- x64dbg : Debugging de DLL injection
+- Procmon : Analyse de chargement de DLL
+
+Détection :
+- Sysmon Event ID 7 : Image loaded
+- EDR détectent CreateRemoteThread + LoadLibrary
+- Manual mapping plus furtif mais détectable par analyse comportementale
+- AMSI peut scanner les DLL en mémoire
+
+Évasion (concepts avancés) :
+- Module stomping (réutiliser un module existant)
+- Process ghosting
+- Phantom DLL Hollowing
+- Heaven's Gate (WoW64 transitions)
+
+Architecture :
+- Les DLL x64 ne peuvent pas être injectées dans des processus x86
+- Vérifiez l'architecture avec IsWow64Process
+- Compilez des versions x86 et x64 de votre DLL si nécessaire
+
+═══════════════════════════════════════════════════════════════════════════
+RAPPEL : Usage ÉDUCATIF uniquement - Toute utilisation malveillante = ILLÉGAL
+═══════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,169 @@
+═══════════════════════════════════════════════════════════════════════
+MODULE 33 : PERSISTENCE LINUX - EXERCICES
+═══════════════════════════════════════════════════════════════════════
+
+AVERTISSEMENT : Usage éducatif UNIQUEMENT dans VM isolée.
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 1 : Cron Job Persistence
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Créer des cron jobs programmatiquement
+
+Spécifications :
+1. Ajouter cron job avec @reboot
+2. Ajouter cron job périodique
+3. Lister les cron jobs existants
+4. Supprimer cron job spécifique
+
+Auto-évaluation :
+[ ] Ajout de cron job @reboot
+[ ] Ajout de cron job périodique
+[ ] Listing fonctionnel
+[ ] Suppression fonctionnelle
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 2 : Systemd Service Installation
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Créer et installer un service systemd
+
+Étapes :
+1. Créer fichier .service
+2. Copier dans /etc/systemd/system/
+3. Recharger systemd (daemon-reload)
+4. Activer le service (enable)
+5. Désinstaller proprement
+
+Auto-évaluation :
+[ ] Fichier .service créé
+[ ] Installation réussie
+[ ] Service démarre au boot
+[ ] Désinstallation propre
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 3 : Shell RC Files Modification
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Modifier les fichiers RC pour persistence
+
+Fichiers à modifier :
+1. ~/.bashrc
+2. ~/.profile
+3. ~/.zshrc (si applicable)
+
+Spécifications :
+- Ajout discret en fin de fichier
+- Vérification avant ajout (pas de duplicatas)
+- Suppression propre
+
+Auto-évaluation :
+[ ] Ajout dans .bashrc
+[ ] Détection de duplicatas
+[ ] Suppression sans corruption du fichier
+[ ] Tests effectués
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 4 : LD_PRELOAD Library Hijacking
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Créer une bibliothèque LD_PRELOAD
+
+Étapes :
+1. Créer bibliothèque partagée (.so)
+2. Intercepter une fonction système (ex: getuid)
+3. Tester avec LD_PRELOAD
+4. Nettoyage complet
+
+Auto-évaluation :
+[ ] Bibliothèque .so créée
+[ ] Fonction interceptée
+[ ] Tests réussis
+[ ] Nettoyage effectué
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 5 : User Service (systemd --user)
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Créer un service systemd utilisateur
+
+Différence avec service système :
+- Pas besoin de root
+- ~/.config/systemd/user/
+- systemctl --user
+
+Auto-évaluation :
+[ ] Service user créé
+[ ] Activation sans root
+[ ] Démarrage automatique
+[ ] Tests complets
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 6 : XDG Autostart
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Utiliser XDG autostart pour persistence GUI
+
+Emplacement :
+~/.config/autostart/myapp.desktop
+
+Spécifications :
+- Créer fichier .desktop valide
+- Exécution au login graphique
+- Compatible GNOME/KDE/XFCE
+
+Auto-évaluation :
+[ ] Fichier .desktop créé
+[ ] Autostart fonctionnel
+[ ] Tests sous environnement GUI
+[ ] Suppression propre
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 7 : SSH Authorized Keys Backdoor
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Ajouter une clé SSH pour accès persistant
+
+Étapes :
+1. Générer paire de clés SSH
+2. Ajouter clé publique à ~/.ssh/authorized_keys
+3. Tester connexion
+4. Supprimer proprement
+
+Auto-évaluation :
+[ ] Clés SSH générées
+[ ] Ajout dans authorized_keys
+[ ] Connexion SSH réussie
+[ ] Suppression complète
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 8 : Système Multi-Méthodes Complet
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Combiner plusieurs techniques de persistence
+
+Fonctionnalités :
+1. Au moins 5 méthodes différentes
+2. Installation silencieuse
+3. Détection d'échec et fallback
+4. Désinstallation complète
+5. Logging des opérations
+
+Auto-évaluation :
+[ ] 5+ méthodes implémentées
+[ ] Système de fallback
+[ ] Désinstallation complète
+[ ] Tests exhaustifs
+[ ] Documentation fournie
+
+═══════════════════════════════════════════════════════════════════════
+IMPORTANT
+═══════════════════════════════════════════════════════════════════════
+
+- Testez UNIQUEMENT dans VM isolée
+- Documentez tous les changements
+- Nettoyez complètement après tests
+- Ne déployez JAMAIS sans autorisation
+- Usage éducatif STRICT
+
+═══════════════════════════════════════════════════════════════════════

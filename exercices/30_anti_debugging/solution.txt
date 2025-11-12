@@ -1,0 +1,390 @@
+═══════════════════════════════════════════════════════════════════════
+MODULE 30 : ANTI-DEBUGGING - SOLUTIONS DÉTAILLÉES
+═══════════════════════════════════════════════════════════════════════
+
+Les solutions complètes sont disponibles dans le code source du module.
+Voici les concepts clés et implémentations de référence.
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 1 : Multi-Timing Anti-Debug
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <windows.h>
+#include <stdint.h>
+
+typedef struct {
+    uint64_t rdtsc_delta;
+    uint64_t qpc_delta;
+    uint32_t tickcount_delta;
+} TimingResult;
+
+TimingResult measure_multi_timing(void) {
+    TimingResult result = {0};
+    LARGE_INTEGER freq, start_qpc, end_qpc;
+    uint32_t start_tick, end_tick;
+    uint64_t start_tsc, end_tsc;
+
+    QueryPerformanceFrequency(&freq);
+
+    // Début des mesures
+    start_tsc = __rdtsc();
+    QueryPerformanceCounter(&start_qpc);
+    start_tick = GetTickCount();
+
+    // Code à mesurer
+    volatile int x = 0;
+    for (int i = 0; i < 1000; i++) x++;
+
+    // Fin des mesures
+    end_tsc = __rdtsc();
+    QueryPerformanceCounter(&end_qpc);
+    end_tick = GetTickCount();
+
+    result.rdtsc_delta = end_tsc - start_tsc;
+    result.qpc_delta = (end_qpc.QuadPart - start_qpc.QuadPart) * 1000000 / freq.QuadPart;
+    result.tickcount_delta = end_tick - start_tick;
+
+    return result;
+}
+
+int detect_timing_inconsistency(void) {
+    TimingResult t = measure_multi_timing();
+
+    // Vérifier les incohérences
+    if (t.rdtsc_delta > 100000 || t.tickcount_delta > 10) {
+        return 1;  // Timing anormal détecté
+    }
+
+    return 0;
+}
+```
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 2 : PEB Walking Avancé
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <windows.h>
+#include <winternl.h>
+
+typedef struct {
+    BOOL being_debugged;
+    BOOL nt_global_flag;
+    BOOL heap_flags;
+    int confidence_score;
+} DebugDetectionResult;
+
+DebugDetectionResult check_peb_advanced(void) {
+    DebugDetectionResult result = {0};
+
+    #ifdef _WIN64
+    PPEB pPeb = (PPEB)__readgsqword(0x60);
+    #else
+    PPEB pPeb = (PPEB)__readfsdword(0x30);
+    #endif
+
+    if (!pPeb) return result;
+
+    // 1. BeingDebugged
+    if (pPeb->BeingDebugged) {
+        result.being_debugged = TRUE;
+        result.confidence_score += 40;
+    }
+
+    // 2. NtGlobalFlag
+    DWORD ntGlobalFlag = *(PDWORD)((PBYTE)pPeb + 0xBC);
+    if (ntGlobalFlag & 0x70) {  // FLG_HEAP_* flags
+        result.nt_global_flag = TRUE;
+        result.confidence_score += 30;
+    }
+
+    // 3. ProcessHeap Flags
+    PVOID heap = pPeb->ProcessHeap;
+    if (heap) {
+        DWORD flags = *(PDWORD)((PBYTE)heap + 0x40);
+        DWORD forceFlags = *(PDWORD)((PBYTE)heap + 0x44);
+
+        if (flags & ~HEAP_GROWABLE || forceFlags != 0) {
+            result.heap_flags = TRUE;
+            result.confidence_score += 30;
+        }
+    }
+
+    return result;
+}
+```
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 3 : Exception-Based Anti-Debug
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <windows.h>
+
+int check_int3_exception(void) {
+    __try {
+        __debugbreak();  // Génère INT3
+        return 1;  // Pas de débogueur (exception gérée)
+    }
+    __except(GetExceptionCode() == EXCEPTION_BREAKPOINT ?
+             EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+        return 0;  // Exception capturée normalement
+    }
+}
+
+int check_closehandle_exception(void) {
+    __try {
+        CloseHandle((HANDLE)0xDEADBEEF);
+        return 0;
+    }
+    __except(GetExceptionCode() == EXCEPTION_INVALID_HANDLE ?
+             EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+        return 1;  // Exception attendue sous débogueur
+    }
+}
+```
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 4 : Parent Process Analysis
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <windows.h>
+#include <tlhelp32.h>
+#include <string.h>
+
+const char* known_debuggers[] = {
+    "x64dbg.exe", "x32dbg.exe", "ollydbg.exe", "windbg.exe",
+    "devenv.exe", "ida.exe", "ida64.exe", "idaq.exe", "idaq64.exe",
+    "immunitydebugger.exe", "debugview.exe", NULL
+};
+
+DWORD get_parent_process_id(void) {
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snapshot == INVALID_HANDLE_VALUE) return 0;
+
+    PROCESSENTRY32 pe = {sizeof(PROCESSENTRY32)};
+    DWORD current_pid = GetCurrentProcessId();
+    DWORD parent_pid = 0;
+
+    if (Process32First(snapshot, &pe)) {
+        do {
+            if (pe.th32ProcessID == current_pid) {
+                parent_pid = pe.th32ParentProcessID;
+                break;
+            }
+        } while (Process32Next(snapshot, &pe));
+    }
+
+    CloseHandle(snapshot);
+    return parent_pid;
+}
+
+int check_parent_is_debugger(void) {
+    DWORD parent_pid = get_parent_process_id();
+    if (parent_pid == 0) return 0;
+
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snapshot == INVALID_HANDLE_VALUE) return 0;
+
+    PROCESSENTRY32 pe = {sizeof(PROCESSENTRY32)};
+    int detected = 0;
+
+    if (Process32First(snapshot, &pe)) {
+        do {
+            if (pe.th32ProcessID == parent_pid) {
+                for (int i = 0; known_debuggers[i]; i++) {
+                    if (_stricmp(pe.szExeFile, known_debuggers[i]) == 0) {
+                        detected = 1;
+                        break;
+                    }
+                }
+                break;
+            }
+        } while (Process32Next(snapshot, &pe));
+    }
+
+    CloseHandle(snapshot);
+    return detected;
+}
+```
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 5 : Code Integrity Checks
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <stdint.h>
+#include <string.h>
+
+uint32_t calculate_crc32(const void* data, size_t len) {
+    uint32_t crc = 0xFFFFFFFF;
+    const uint8_t* buf = (const uint8_t*)data;
+
+    for (size_t i = 0; i < len; i++) {
+        crc ^= buf[i];
+        for (int j = 0; j < 8; j++) {
+            crc = (crc >> 1) ^ (0xEDB88320 * (crc & 1));
+        }
+    }
+
+    return ~crc;
+}
+
+typedef struct {
+    void* start_addr;
+    size_t length;
+    uint32_t checksum;
+} CodeSection;
+
+#define MAX_PROTECTED_SECTIONS 16
+static CodeSection protected_sections[MAX_PROTECTED_SECTIONS];
+static int section_count = 0;
+
+void register_protected_section(void* start, size_t len) {
+    if (section_count >= MAX_PROTECTED_SECTIONS) return;
+
+    protected_sections[section_count].start_addr = start;
+    protected_sections[section_count].length = len;
+    protected_sections[section_count].checksum = calculate_crc32(start, len);
+    section_count++;
+}
+
+int verify_code_integrity(void) {
+    for (int i = 0; i < section_count; i++) {
+        uint32_t current = calculate_crc32(
+            protected_sections[i].start_addr,
+            protected_sections[i].length
+        );
+
+        if (current != protected_sections[i].checksum) {
+            return 1;  // Code modifié détecté
+        }
+    }
+    return 0;
+}
+```
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 6 : Thread Detection
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <windows.h>
+#include <tlhelp32.h>
+
+int check_suspicious_threads(void) {
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    if (snapshot == INVALID_HANDLE_VALUE) return 0;
+
+    THREADENTRY32 te = {sizeof(THREADENTRY32)};
+    DWORD current_pid = GetCurrentProcessId();
+    int suspicious_count = 0;
+
+    if (Thread32First(snapshot, &te)) {
+        do {
+            if (te.th32OwnerProcessID == current_pid) {
+                HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION,
+                                           FALSE, te.th32ThreadID);
+                if (hThread) {
+                    // Vérifier le thread start address
+                    // Un thread créé par le débogueur aura une adresse suspecte
+                    CloseHandle(hThread);
+                }
+            }
+        } while (Thread32Next(snapshot, &te));
+    }
+
+    CloseHandle(snapshot);
+    return suspicious_count > 0;
+}
+```
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 7 : Anti-Attach Protection
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <windows.h>
+#include <process.h>
+
+volatile int watchdog_active = 1;
+
+unsigned __stdcall watchdog_thread(void* arg) {
+    while (watchdog_active) {
+        if (IsDebuggerPresent()) {
+            ExitProcess(1);  // Détection immédiate
+        }
+
+        // Intervalle aléatoire entre 100ms et 1000ms
+        Sleep(100 + (rand() % 900));
+    }
+    return 0;
+}
+
+void start_anti_attach_protection(void) {
+    _beginthreadex(NULL, 0, watchdog_thread, NULL, 0, NULL);
+}
+```
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 8 : Système Anti-Debug Complet
+═══════════════════════════════════════════════════════════════════════
+
+Voir le fichier main.c pour l'implémentation complète combinant toutes
+les techniques avec obfuscation et système de scoring.
+
+Structure recommandée :
+
+```c
+typedef struct {
+    int score;
+    int detections[16];  // Une entrée par technique
+    char techniques_detected[256];
+} AntiDebugResult;
+
+AntiDebugResult comprehensive_check(void) {
+    AntiDebugResult result = {0};
+
+    // Exécuter toutes les vérifications
+    if (check_IsDebuggerPresent()) {
+        result.score += 15;
+        result.detections[0] = 1;
+    }
+
+    if (check_peb_advanced().confidence_score > 50) {
+        result.score += 25;
+        result.detections[1] = 1;
+    }
+
+    // ... autres vérifications
+
+    return result;
+}
+
+void react_to_detection(int score) {
+    if (score < 30) {
+        // Exécution normale
+    } else if (score < 60) {
+        // Altération subtile
+    } else if (score < 80) {
+        // Warnings
+    } else {
+        // Arrêt
+        exit(1);
+    }
+}
+```
+
+═══════════════════════════════════════════════════════════════════════
+NOTES SUPPLÉMENTAIRES
+═══════════════════════════════════════════════════════════════════════
+
+1. Toutes ces techniques peuvent être contournées par un analyste expérimenté
+2. L'obfuscation (module 29) rend la détection et le contournement plus difficiles
+3. Combiner plusieurs techniques augmente la robustesse
+4. Utiliser avec des réactions variées et subtiles
+5. Respecter la légalité et l'éthique dans l'utilisation
+
+═══════════════════════════════════════════════════════════════════════

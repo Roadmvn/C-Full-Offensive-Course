@@ -1,0 +1,155 @@
+═══════════════════════════════════════════════════════════════════════
+MODULE 31 : ANTI-VM ET ANTI-SANDBOX - EXERCICES PRATIQUES
+═══════════════════════════════════════════════════════════════════════
+
+AVERTISSEMENT : Usage éducatif uniquement.
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 1 : Détection Multi-VM Complète
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Détecter VMware, VirtualBox, QEMU, Hyper-V et Parallels
+
+Spécifications :
+1. Vérifier les clés de registre (Windows)
+2. Vérifier les fichiers système (Linux)
+3. Détecter les pilotes virtuels
+4. Vérifier les services spécifiques
+
+Auto-évaluation :
+[ ] Détection de 5 hyperviseurs différents
+[ ] Tests sous vraie VM effectués
+[ ] Faux positifs minimisés
+[ ] Code multi-plateforme
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 2 : Sandbox Evasion Complète
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Détecter Cuckoo, Any.run, Joe Sandbox, VirusTotal
+
+Techniques :
+1. Sleep acceleration
+2. Vérification du nom de machine
+3. Vérification de l'uptime
+4. Détection d'interaction utilisateur
+5. Vérification des ressources système
+
+Auto-évaluation :
+[ ] Au moins 5 techniques implémentées
+[ ] Score de confiance calculé
+[ ] Tests dans sandbox réelle
+[ ] Documentation complète
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 3 : User Interaction Detection
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Détecter une vraie interaction utilisateur
+
+Vérifications :
+1. Mouvements de souris
+2. Clics souris
+3. Activité clavier
+4. Changements de fenêtre active
+5. Historique du presse-papiers
+
+Auto-évaluation :
+[ ] Détection des mouvements souris
+[ ] Comptage des interactions
+[ ] Système de scoring
+[ ] Pas de blocage si interaction réelle
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 4 : Hardware Fingerprinting
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Identifier le matériel virtuel
+
+Vérifications :
+1. Nombre de cœurs CPU
+2. Taille de la RAM
+3. Espace disque
+4. Carte graphique
+5. Périphériques USB
+
+Auto-évaluation :
+[ ] Énumération du matériel
+[ ] Détection de valeurs suspectes
+[ ] Comparaison avec profils normaux
+[ ] Rapport détaillé généré
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 5 : Timing Attacks Avancés
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Détecter manipulation du temps
+
+Techniques :
+1. Sleep acceleration
+2. RDTSC variation
+3. Comparaison de plusieurs horloges
+4. Mesure de latence réseau
+
+Auto-évaluation :
+[ ] 4 techniques de timing implémentées
+[ ] Détection des incohérences
+[ ] Robustesse face aux faux positifs
+[ ] Tests sous sandbox
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 6 : Network-Based Detection
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Détecter sandbox par le réseau
+
+Vérifications :
+1. Absence de connexion Internet
+2. MAC address virtuelle
+3. Gateway suspect
+4. DNS resolver par défaut
+5. Latence réseau anormale
+
+Auto-évaluation :
+[ ] Vérifications réseau implémentées
+[ ] Détection MAC virtuelle
+[ ] Tests de connectivité
+[ ] Gestion des environnements sans réseau
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 7 : Process et Service Detection
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Détecter les processus de VM/Sandbox
+
+Processus suspects :
+- vmtoolsd.exe, vboxservice.exe (VM)
+- python.exe, analyzer.exe (Cuckoo)
+- wireshark.exe, procmon.exe (analyse)
+
+Auto-évaluation :
+[ ] Énumération des processus
+[ ] Liste de processus suspects complète
+[ ] Détection case-insensitive
+[ ] Logging des détections
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 8 : Système Anti-VM/Sandbox Complet
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Système complet avec scoring et réaction
+
+Architecture :
+- Detection Layer (10+ techniques)
+- Scoring System (0-100%)
+- Decision Engine
+- Evasion Actions
+
+Auto-évaluation :
+[ ] 10+ techniques intégrées
+[ ] Scoring fonctionnel
+[ ] Réactions variées selon score
+[ ] Tests complets effectués
+[ ] Documentation fournie
+
+═══════════════════════════════════════════════════════════════════════

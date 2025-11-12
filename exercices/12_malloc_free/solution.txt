@@ -1,0 +1,259 @@
+SOLUTION EXERCICE 1 : Premier malloc
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int *ptr = malloc(sizeof(int));
+
+    if (ptr == NULL) {
+        printf("Erreur: allocation échouée\n");
+        return 1;
+    }
+
+    *ptr = 100;
+    printf("Valeur: %d\n", *ptr);
+
+    free(ptr);
+    ptr = NULL;
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 2 : Tableau dynamique
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int taille;
+    printf("Entrez la taille du tableau: ");
+    scanf("%d", &taille);
+
+    int *tableau = malloc(taille * sizeof(int));
+    if (tableau == NULL) {
+        printf("Erreur d'allocation\n");
+        return 1;
+    }
+
+    printf("Remplissage du tableau:\n");
+    for (int i = 0; i < taille; i++) {
+        tableau[i] = i * 10;
+    }
+
+    printf("Contenu: ");
+    for (int i = 0; i < taille; i++) {
+        printf("%d ", tableau[i]);
+    }
+    printf("\n");
+
+    free(tableau);
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 3 : calloc vs malloc
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int *tab_malloc = malloc(10 * sizeof(int));
+    int *tab_calloc = calloc(10, sizeof(int));
+
+    if (tab_malloc == NULL || tab_calloc == NULL) {
+        printf("Erreur d'allocation\n");
+        return 1;
+    }
+
+    printf("Contenu avec malloc (non initialisé):\n");
+    for (int i = 0; i < 10; i++) {
+        printf("%d ", tab_malloc[i]);
+    }
+    printf("\n");
+
+    printf("Contenu avec calloc (initialisé à 0):\n");
+    for (int i = 0; i < 10; i++) {
+        printf("%d ", tab_calloc[i]);
+    }
+    printf("\n");
+
+    free(tab_malloc);
+    free(tab_calloc);
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 4 : realloc
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int *tableau = malloc(5 * sizeof(int));
+    if (tableau == NULL) return 1;
+
+    for (int i = 0; i < 5; i++) {
+        tableau[i] = i + 1;
+    }
+
+    printf("Avant realloc: ");
+    for (int i = 0; i < 5; i++) {
+        printf("%d ", tableau[i]);
+    }
+    printf("\n");
+
+    int *temp = realloc(tableau, 10 * sizeof(int));
+    if (temp == NULL) {
+        free(tableau);
+        return 1;
+    }
+    tableau = temp;
+
+    for (int i = 5; i < 10; i++) {
+        tableau[i] = i + 1;
+    }
+
+    printf("Après realloc: ");
+    for (int i = 0; i < 10; i++) {
+        printf("%d ", tableau[i]);
+    }
+    printf("\n");
+
+    free(tableau);
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 5 : Chaîne dynamique
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main() {
+    char *chaine = malloc(100 * sizeof(char));
+    if (chaine == NULL) {
+        printf("Erreur d'allocation\n");
+        return 1;
+    }
+
+    printf("Entrez une chaîne: ");
+    fgets(chaine, 100, stdin);
+
+    // Enlever le \n de fgets
+    chaine[strcspn(chaine, "\n")] = 0;
+
+    printf("Vous avez entré: %s\n", chaine);
+
+    free(chaine);
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 6 : Tableau de chaînes
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main() {
+    char **noms = malloc(5 * sizeof(char*));
+    if (noms == NULL) return 1;
+
+    for (int i = 0; i < 5; i++) {
+        noms[i] = malloc(50 * sizeof(char));
+        if (noms[i] == NULL) {
+            // Libérer ce qui a déjà été alloué
+            for (int j = 0; j < i; j++) {
+                free(noms[j]);
+            }
+            free(noms);
+            return 1;
+        }
+    }
+
+    strcpy(noms[0], "Alice");
+    strcpy(noms[1], "Bob");
+    strcpy(noms[2], "Charlie");
+    strcpy(noms[3], "Diana");
+    strcpy(noms[4], "Eve");
+
+    printf("Liste des noms:\n");
+    for (int i = 0; i < 5; i++) {
+        printf("%d. %s\n", i+1, noms[i]);
+    }
+
+    // Libération
+    for (int i = 0; i < 5; i++) {
+        free(noms[i]);
+    }
+    free(noms);
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 7 : Détection d'erreur
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    // Tenter d'allouer 1 TB (probablement impossible)
+    size_t taille_enorme = 1024UL * 1024UL * 1024UL * 1024UL;
+
+    printf("Tentative d'allocation de %zu bytes (~1TB)...\n", taille_enorme);
+
+    char *ptr = malloc(taille_enorme);
+
+    if (ptr == NULL) {
+        printf("Erreur: allocation impossible (pas assez de mémoire)\n");
+        printf("Gestion propre de l'erreur - programme continue\n");
+        return 1;
+    } else {
+        printf("Allocation réussie (improbable)\n");
+        free(ptr);
+    }
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 8 : Memory leak
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+void fonction_avec_leak() {
+    int *ptr = malloc(100 * sizeof(int));
+    // ERREUR: pas de free() - memory leak!
+    printf("Allocation sans libération (memory leak)\n");
+}
+
+void fonction_correcte() {
+    int *ptr = malloc(100 * sizeof(int));
+    if (ptr == NULL) return;
+
+    // Utilisation de ptr...
+    printf("Allocation avec libération (correct)\n");
+
+    free(ptr);  // Mémoire libérée
+}
+
+int main() {
+    printf("=== Démonstration Memory Leak ===\n\n");
+
+    printf("1. Fonction avec leak:\n");
+    fonction_avec_leak();
+    printf("-> La mémoire n'est jamais libérée\n\n");
+
+    printf("2. Fonction correcte:\n");
+    fonction_correcte();
+    printf("-> La mémoire est libérée proprement\n");
+
+    return 0;
+}
+```

@@ -1,0 +1,93 @@
+EXERCICE 1 : Lire un nombre
+#include <stdio.h>
+int main() {
+    int nombre;
+    printf("Entrez un nombre : ");
+    scanf("%d", &nombre);
+    printf("Vous avez entré : %d\n", nombre);
+    return 0;
+}
+
+EXERCICE 2 : Calculer un double
+#include <stdio.h>
+int main() {
+    int a, b;
+    printf("Entrez deux nombres : ");
+    scanf("%d %d", &a, &b);
+    printf("Somme : %d\n", a + b);
+    return 0;
+}
+
+EXERCICE 3 : Formatage décimal
+#include <stdio.h>
+int main() {
+    float pi = 3.14159;
+    printf("Pi avec 2 décimales : %.2f\n", pi);
+    printf("Pi avec 5 décimales : %.5f\n", pi);
+    return 0;
+}
+
+EXERCICE 4 : Lire un caractère
+#include <stdio.h>
+int main() {
+    char c;
+    printf("Entrez un caractère : ");
+    scanf(" %c", &c);  // Espace avant %c important
+    printf("Vous avez entré : %c\n", c);
+    return 0;
+}
+Explication : L'espace avant %c ignore les whitespaces (espaces, \n).
+
+EXERCICE 5 : Largeur de champ
+#include <stdio.h>
+int main() {
+    printf("Avec largeur : [%10d]\n", 42);   // "        42"
+    printf("À gauche : [%-10d]\n", 42);      // "42        "
+    return 0;
+}
+
+EXERCICE 6 : Calculette interactive
+#include <stdio.h>
+int main() {
+    float a, b;
+    char op;
+    printf("Entrez calcul (ex: 5 + 3) : ");
+    scanf("%f %c %f", &a, &op, &b);
+
+    if (op == '+') printf("Résultat : %.2f\n", a + b);
+    else if (op == '-') printf("Résultat : %.2f\n", a - b);
+    else if (op == '*') printf("Résultat : %.2f\n", a * b);
+    else if (op == '/') printf("Résultat : %.2f\n", a / b);
+    return 0;
+}
+
+EXERCICE 7 : Afficher une adresse
+#include <stdio.h>
+int main() {
+    int x = 42;
+    printf("Valeur : %d\n", x);
+    printf("Adresse : %p\n", (void*)&x);
+    return 0;
+}
+Explication : %p affiche l'adresse mémoire en hexadécimal.
+
+EXERCICE 8 : Formulaire complet
+#include <stdio.h>
+int main() {
+    char nom[50];
+    int age;
+    float taille;
+
+    printf("Nom : ");
+    scanf("%s", nom);  // Pas de & pour les strings
+    printf("Age : ");
+    scanf("%d", &age);
+    printf("Taille (m) : ");
+    scanf("%f", &taille);
+
+    printf("\nProfil :\n");
+    printf("Nom : %s\n", nom);
+    printf("Age : %d ans\n", age);
+    printf("Taille : %.2f m\n", taille);
+    return 0;
+}

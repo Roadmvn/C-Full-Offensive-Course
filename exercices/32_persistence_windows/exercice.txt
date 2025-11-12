@@ -1,0 +1,162 @@
+═══════════════════════════════════════════════════════════════════════
+MODULE 32 : PERSISTENCE WINDOWS - EXERCICES
+═══════════════════════════════════════════════════════════════════════
+
+AVERTISSEMENT STRICT : Usage éducatif UNIQUEMENT.
+NE PAS utiliser sur systèmes de production sans autorisation.
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 1 : Registry Persistence Complète
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Implémenter plusieurs méthodes de persistence par registre
+
+Clés à utiliser :
+1. HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+2. HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce
+3. HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+4. HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders
+
+Auto-évaluation :
+[ ] Ajout/suppression de clés HKCU\Run
+[ ] Ajout/suppression de clés HKLM\Run
+[ ] Gestion des erreurs et permissions
+[ ] Tests dans VM isolée
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 2 : Scheduled Task Creation
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Créer des tâches planifiées programmatiquement
+
+Déclencheurs :
+1. Au démarrage (ONSTART)
+2. À la connexion (ONLOGON)
+3. Quotidien (DAILY)
+4. Sur événement spécifique
+
+Auto-évaluation :
+[ ] Utilisation de schtasks ou API COM
+[ ] Plusieurs déclencheurs implémentés
+[ ] Suppression de tâches
+[ ] Tests effectués
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 3 : Windows Service Installation
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Créer et installer un service Windows
+
+Spécifications :
+1. Utiliser OpenSCManager et CreateService
+2. Service auto-start
+3. Gestion du lifecycle (start/stop)
+4. Désinstallation propre
+
+Auto-évaluation :
+[ ] Service créé avec succès
+[ ] Démarrage automatique configuré
+[ ] Gestion des erreurs
+[ ] Désinstallation fonctionnelle
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 4 : WMI Event Subscription
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Utiliser WMI pour persistence basée sur événements
+
+Types d'événements :
+1. Démarrage système
+2. Connexion utilisateur
+3. Insertion USB
+4. Modification de fichier
+
+Auto-évaluation :
+[ ] WMI event filter créé
+[ ] Event consumer configuré
+[ ] Binding fonctionnel
+[ ] Tests sous VM
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 5 : DLL Hijacking Proof-of-Concept
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Démontrer le DLL hijacking (environnement contrôlé)
+
+Étapes :
+1. Créer une DLL custom
+2. Identifier une application vulnérable
+3. Placer la DLL au bon endroit
+4. Vérifier le chargement
+
+Auto-évaluation :
+[ ] DLL créée avec DllMain
+[ ] Application test identifiée
+[ ] Chargement vérifié
+[ ] Nettoyage effectué
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 6 : COM Hijacking
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Détourner un objet COM pour persistence
+
+Méthode :
+1. Identifier un CLSID utilisé
+2. Créer entrée dans HKCU\Software\Classes\CLSID
+3. Pointer vers exécutable malveillant
+4. Tester le détournement
+
+Auto-évaluation :
+[ ] CLSID identifié
+[ ] Entrée registre créée
+[ ] Redirection fonctionnelle
+[ ] Restauration possible
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 7 : Startup Folder Persistence
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Utiliser le dossier Startup pour persistence
+
+Dossiers :
+1. %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
+2. C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+
+Auto-évaluation :
+[ ] Copie dans Startup user
+[ ] Copie dans Startup all users
+[ ] Création de raccourcis
+[ ] Suppression propre
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 8 : Système de Persistence Multi-Méthodes
+═══════════════════════════════════════════════════════════════════════
+
+Objectif : Combiner plusieurs techniques pour persistence robuste
+
+Fonctionnalités :
+1. Au moins 5 méthodes différentes
+2. Installation silencieuse
+3. Détection d'échec et fallback
+4. Désinstallation complète
+5. Logging des opérations
+
+Auto-évaluation :
+[ ] 5+ méthodes implémentées
+[ ] Système de fallback
+[ ] Désinstallation complète
+[ ] Tests exhaustifs
+[ ] Documentation fournie
+
+═══════════════════════════════════════════════════════════════════════
+IMPORTANT
+═══════════════════════════════════════════════════════════════════════
+
+- Testez UNIQUEMENT dans une VM isolée
+- Ne déployez JAMAIS sur systèmes de production
+- Documentez tout changement système
+- Nettoyez complètement après tests
+- Usage éducatif STRICT
+
+═══════════════════════════════════════════════════════════════════════

@@ -1,0 +1,92 @@
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
+Tests sur VM isolées. Usage malveillant = PRISON.
+
+EXERCICES - MODULE 23 : WINDOWS APIs
+
+[ ] 1. PROCESS ENUMERATION ET KILLING
+Créer un programme qui :
+- Énumère tous les processus (CreateToolhelp32Snapshot)
+- Trouve les processus AV/EDR par nom (Defender, CrowdStrike, etc.)
+- Les termine avec TerminateProcess (nécessite SeDebugPrivilege)
+
+Techniques : Snapshot API, privilege escalation, process termination
+Référence : Malware killswitch techniques
+
+[ ] 2. MEMORY ALLOCATION PATTERNS
+Implémenter 3 patterns d'allocation :
+- RW puis RX (VirtualProtect après copie)
+- RW dans heap puis copie vers RX (HeapAlloc + VirtualAlloc)
+- Memory stomping (allouer, libérer, réallouer)
+
+Techniques : W^X bypass, memory permission manipulation
+Référence : EDR evasion memory techniques
+
+[ ] 3. DYNAMIC API RESOLUTION
+Créer un système de résolution API sans IAT :
+- GetModuleHandle + GetProcAddress
+- Parser PEB pour trouver modules chargés
+- Hash-based API resolution (CRC32/FNV1a)
+
+Techniques : PEB walking, export table parsing, API hashing
+Référence : Shellcode API resolution, reflective DLL loading
+
+[ ] 4. REMOTE PROCESS INJECTION (CLASSIC)
+Injecter shellcode calc.exe dans notepad.exe :
+- Trouver PID de notepad via snapshot
+- OpenProcess avec PROCESS_ALL_ACCESS
+- VirtualAllocEx RWX
+- WriteProcessMemory shellcode
+- CreateRemoteThread
+
+Techniques : Classic injection, remote memory manipulation
+Référence : Metasploit injection modules
+
+[ ] 5. MODULE ENUMERATION ET EXPORT PARSING
+Pour un processus donné :
+- Énumérer modules (EnumProcessModules)
+- Parser PE headers en mémoire
+- Extraire toutes les fonctions exportées
+- Calculer hash de chaque export
+
+Techniques : PE parsing, export directory analysis
+Référence : Malware analysis techniques
+
+[ ] 6. PRIVILEGE ESCALATION
+Obtenir SeDebugPrivilege :
+- OpenProcessToken sur processus courant
+- LookupPrivilegeValue("SeDebugPrivilege")
+- AdjustTokenPrivileges pour activer
+- Tester en ouvrant LSASS
+
+Techniques : Token manipulation, privilege abuse
+Référence : Windows privilege escalation
+
+[ ] 7. HANDLE ENUMERATION
+Énumérer tous les handles ouverts :
+- NtQuerySystemInformation avec SystemHandleInformation
+- Parser SYSTEM_HANDLE_TABLE_ENTRY_INFO
+- Trouver handles vers fichiers sensibles
+
+Techniques : Undocumented APIs, handle analysis
+Référence : Process Hacker source code
+
+[ ] 8. PEB PARSING COMPLET
+Parser PEB structure :
+- Lire PEB via gs:[0x60] (x64) ou fs:[0x30] (x86)
+- Extraire ImageBaseAddress
+- Lire Ldr (PEB_LDR_DATA)
+- Parcourir InMemoryOrderModuleList
+
+Techniques : PEB structure navigation, list iteration
+Référence : Windows Internals, PEB documentation
+
+DOCUMENTATION :
+- MSDN Windows API Reference
+- Windows Internals (Russinovich)
+- Undocumented NT API (ntdoc.m417z.com)
+
+NOTES :
+- Nécessite droits admin pour certaines APIs
+- EDRs hook VirtualAllocEx, CreateRemoteThread
+- Combiner avec syscalls directs (module 22) pour bypass

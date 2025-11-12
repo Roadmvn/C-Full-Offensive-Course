@@ -1,0 +1,229 @@
+═══════════════════════════════════════════════════════════════════════════
+            MODULE 28 : CRYPTOGRAPHIE - SOLUTIONS
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 2 : AES-256 avec OpenSSL
+─────────────────────────────────────────────────────────────────────────────
+
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+
+int aes_encrypt(unsigned char* plaintext, int plaintext_len,
+                unsigned char* key, unsigned char* iv,
+                unsigned char* ciphertext) {
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    int len, ciphertext_len;
+
+    // Initialiser le chiffrement
+    EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
+
+    // Chiffrer
+    EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len);
+    ciphertext_len = len;
+
+    // Finaliser (padding)
+    EVP_EncryptFinal_ex(ctx, ciphertext + len, &len);
+    ciphertext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return ciphertext_len;
+}
+
+int aes_decrypt(unsigned char* ciphertext, int ciphertext_len,
+                unsigned char* key, unsigned char* iv,
+                unsigned char* plaintext) {
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    int len, plaintext_len;
+
+    EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
+    EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len);
+    plaintext_len = len;
+
+    EVP_DecryptFinal_ex(ctx, plaintext + len, &len);
+    plaintext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return plaintext_len;
+}
+
+// Utilisation :
+unsigned char key[32];  // 256 bits
+unsigned char iv[16];   // 128 bits
+
+// Générer clé et IV aléatoires
+RAND_bytes(key, sizeof(key));
+RAND_bytes(iv, sizeof(iv));
+
+unsigned char plaintext[] = "Secret data to encrypt!";
+unsigned char ciphertext[128];
+unsigned char decrypted[128];
+
+// Chiffrer
+int ct_len = aes_encrypt(plaintext, strlen((char*)plaintext), key, iv, ciphertext);
+
+// Déchiffrer
+int pt_len = aes_decrypt(ciphertext, ct_len, key, iv, decrypted);
+decrypted[pt_len] = '\0';
+
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 3 : SHA-256 Hashing
+─────────────────────────────────────────────────────────────────────────────
+
+#include <openssl/sha.h>
+
+void sha256_file(const char* filename) {
+    FILE* file = fopen(filename, "rb");
+    if (!file) return;
+
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+
+    unsigned char buffer[8192];
+    size_t bytes;
+
+    // Hash par chunks (streaming)
+    while ((bytes = fread(buffer, 1, sizeof(buffer), file)) != 0) {
+        SHA256_Update(&sha256, buffer, bytes);
+    }
+
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_Final(hash, &sha256);
+
+    fclose(file);
+
+    // Afficher en hex
+    printf("SHA-256(%s): ", filename);
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        printf("%02x", hash[i]);
+    }
+    printf("\n");
+}
+
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 4 : String Obfuscation Macro
+─────────────────────────────────────────────────────────────────────────────
+
+// Générateur Python pour créer les strings obfusquées :
+
+"""
+key = 0xAA
+plaintext = "SECRET_STRING"
+
+obfuscated = [c ^ key for c in plaintext.encode()]
+print("unsigned char obf[] = {" + ", ".join(f"0x{b:02X}" for b in obfuscated) + "};")
+"""
+
+// Utilisation en C :
+
+#define XOR_KEY 0xAA
+
+#define OBFUSCATED_STR(name, ...) \
+    static unsigned char name##_obf[] = {__VA_ARGS__}; \
+    static char name[sizeof(name##_obf) + 1]; \
+    static void __attribute__((constructor)) init_##name() { \
+        for(size_t i = 0; i < sizeof(name##_obf); i++) \
+            name[i] = name##_obf[i] ^ XOR_KEY; \
+        name[sizeof(name##_obf)] = '\0'; \
+    }
+
+// Utilisation :
+OBFUSCATED_STR(secret, 0xC2, 0xC5, 0xC3, 0xD2, 0xC5, 0xD4)
+printf("%s\n", secret);  // Affiche "SECRET" déobfusqué
+
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 5 : RSA Key Generation
+─────────────────────────────────────────────────────────────────────────────
+
+#include <openssl/rsa.h>
+#include <openssl/pem.h>
+
+void generate_rsa_keypair(const char* private_key_file, const char* public_key_file) {
+    RSA* rsa = RSA_new();
+    BIGNUM* bn = BN_new();
+
+    BN_set_word(bn, RSA_F4);  // 65537
+
+    // Générer la paire (2048 bits)
+    RSA_generate_key_ex(rsa, 2048, bn, NULL);
+
+    // Sauvegarder la clé privée
+    FILE* priv = fopen(private_key_file, "wb");
+    PEM_write_RSAPrivateKey(priv, rsa, NULL, NULL, 0, NULL, NULL);
+    fclose(priv);
+
+    // Sauvegarder la clé publique
+    FILE* pub = fopen(public_key_file, "wb");
+    PEM_write_RSAPublicKey(pub, rsa);
+    fclose(pub);
+
+    RSA_free(rsa);
+    BN_free(bn);
+}
+
+// Chiffrement RSA :
+int rsa_encrypt(unsigned char* data, int data_len, RSA* rsa, unsigned char* encrypted) {
+    return RSA_public_encrypt(data_len, data, encrypted, rsa, RSA_PKCS1_OAEP_PADDING);
+}
+
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 7 : Payload Encryptor
+─────────────────────────────────────────────────────────────────────════────
+
+// Stub de déchiffrement (à injecter avec le shellcode chiffré)
+unsigned char decryption_stub[] = {
+    // Déchiffrer le shellcode en mémoire avec AES
+    // Appeler le shellcode déchiffré
+    // (Code ASM généré dynamiquement)
+};
+
+// Chiffrer le shellcode
+unsigned char shellcode[] = { /* shellcode ici */ };
+unsigned char key[32], iv[16];
+
+RAND_bytes(key, 32);
+RAND_bytes(iv, 16);
+
+unsigned char encrypted[1024];
+int enc_len = aes_encrypt(shellcode, sizeof(shellcode), key, iv, encrypted);
+
+// Générer le payload final : stub + clé + IV + shellcode chiffré
+// Le stub déchiffre et exécute runtime
+
+═══════════════════════════════════════════════════════════════════════════
+
+⚠️  EXERCICE 8 (Ransomware Simulator) : Solution volontairement omise
+    Code disponible dans des projets open source éducatifs
+
+    Consultez (environnements de test uniquement!) :
+    - Hidden Tear (éducatif, GitHub)
+    - EDA2 (Educational Ransomware)
+
+    ⚠️  STRICTEMENT pour comprendre les mécanismes de défense
+    ⚠️  NE JAMAIS utiliser à des fins malveillantes
+
+═══════════════════════════════════════════════════════════════════════════
+
+RESSOURCES RECOMMANDÉES
+─────────────────────────────────────────────────────────────────────────────
+
+Documentation :
+- OpenSSL Wiki : https://wiki.openssl.org/
+- Crypto101 : https://www.crypto101.io/
+- libsodium : https://doc.libsodium.org/
+
+Livres :
+- "Applied Cryptography" (Bruce Schneier)
+- "Serious Cryptography" (Jean-Philippe Aumasson)
+- "Cryptography Engineering" (Ferguson, Schneier, Kohno)
+
+Outils :
+- OpenSSL CLI (tests rapides)
+- CyberChef (Web-based crypto)
+- Hashcat (cracking de hash)
+
+RAPPEL : Utilisez des bibliothèques éprouvées - Ne créez PAS votre crypto!
+═══════════════════════════════════════════════════════════════════════════

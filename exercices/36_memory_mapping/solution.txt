@@ -1,0 +1,352 @@
+═══════════════════════════════════════════════════════════════════
+SOLUTIONS - Module 36 : Memory Mapping
+═══════════════════════════════════════════════════════════════════
+
+SOLUTION 1 : Database Memory-Mapped File
+═══════════════════════════════════════════════════════════════════
+
+typedef struct {
+    int id;
+    char nom[50];
+    char email[100];
+    int age;
+} Utilisateur;
+
+typedef struct {
+    int nb_max;
+    int nb_actuel;
+    Utilisateur users[];
+} Database;
+
+void* creer_base_donnees(const char *fichier, int nb_max) {
+    int fd = open(fichier, O_RDWR | O_CREAT, 0666);
+    size_t taille = sizeof(Database) + nb_max * sizeof(Utilisateur);
+
+    ftruncate(fd, taille);
+
+    void *db = mmap(NULL, taille, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
+
+    Database *d = (Database*)db;
+    d->nb_max = nb_max;
+    d->nb_actuel = 0;
+
+    return db;
+}
+
+void ajouter_utilisateur(void *db, Utilisateur *user) {
+    Database *d = (Database*)db;
+    if (d->nb_actuel < d->nb_max) {
+        d->users[d->nb_actuel++] = *user;
+        msync(db, sizeof(Database) + d->nb_actuel * sizeof(Utilisateur), MS_SYNC);
+    }
+}
+
+═══════════════════════════════════════════════════════════════════
+SOLUTION 2 : Shared Memory Producer-Consumer
+═══════════════════════════════════════════════════════════════════
+
+#include <semaphore.h>
+
+typedef struct {
+    sem_t mutex;
+    sem_t empty;
+    sem_t full;
+    int head, tail, count, capacity;
+    char data[];
+} CircularBuffer;
+
+void* creer_buffer_partage(const char *nom, int taille) {
+    int shm_fd = shm_open(nom, O_CREAT | O_RDWR, 0666);
+    size_t size = sizeof(CircularBuffer) + taille;
+    ftruncate(shm_fd, size);
+
+    void *buf = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    CircularBuffer *cb = (CircularBuffer*)buf;
+
+    sem_init(&cb->mutex, 1, 1);   // Partagé entre processus
+    sem_init(&cb->empty, 1, taille);
+    sem_init(&cb->full, 1, 0);
+    cb->capacity = taille;
+    cb->head = cb->tail = cb->count = 0;
+
+    return buf;
+}
+
+void produire_donnees(void *buffer, const char *donnees) {
+    CircularBuffer *cb = (CircularBuffer*)buffer;
+
+    sem_wait(&cb->empty);
+    sem_wait(&cb->mutex);
+
+    cb->data[cb->tail] = *donnees;
+    cb->tail = (cb->tail + 1) % cb->capacity;
+    cb->count++;
+
+    sem_post(&cb->mutex);
+    sem_post(&cb->full);
+}
+
+═══════════════════════════════════════════════════════════════════
+SOLUTION 3 : Large File Processor
+═══════════════════════════════════════════════════════════════════
+
+void traiter_fichier_volumineux(const char *fichier_entree, const char *fichier_sortie) {
+    int fd_in = open(fichier_entree, O_RDONLY);
+    struct stat sb;
+    fstat(fd_in, &sb);
+
+    size_t window_size = 256 * 1024 * 1024;  // 256 MB fenêtre
+    size_t offset = 0;
+
+    int fd_out = open(fichier_sortie, O_RDWR | O_CREAT, 0666);
+    ftruncate(fd_out, sb.st_size);
+
+    while (offset < sb.st_size) {
+        size_t map_size = (offset + window_size > sb.st_size) ?
+                          sb.st_size - offset : window_size;
+
+        void *map_in = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fd_in, offset);
+        void *map_out = mmap(NULL, map_size, PROT_WRITE, MAP_SHARED, fd_out, offset);
+
+        // Traitement
+        for (size_t i = 0; i < map_size; i++) {
+            ((char*)map_out)[i] = toupper(((char*)map_in)[i]);
+        }
+
+        munmap(map_in, map_size);
+        msync(map_out, map_size, MS_SYNC);
+        munmap(map_out, map_size);
+
+        offset += window_size;
+    }
+
+    close(fd_in);
+    close(fd_out);
+}
+
+═══════════════════════════════════════════════════════════════════
+SOLUTION 4 : Memory Arena Allocator
+═══════════════════════════════════════════════════════════════════
+
+typedef struct {
+    size_t taille_totale;
+    size_t offset_actuel;
+    unsigned char data[];
+} Arena;
+
+void* arena_create(size_t taille) {
+    size_t total = sizeof(Arena) + taille;
+
+    void *mem = mmap(NULL, total, PROT_READ | PROT_WRITE,
+                    MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+
+    Arena *arena = (Arena*)mem;
+    arena->taille_totale = taille;
+    arena->offset_actuel = 0;
+
+    return mem;
+}
+
+void* arena_alloc(void *arena_ptr, size_t taille) {
+    Arena *arena = (Arena*)arena_ptr;
+
+    // Alignement 16 bytes
+    size_t aligned_size = (taille + 15) & ~15;
+
+    if (arena->offset_actuel + aligned_size > arena->taille_totale) {
+        return NULL;  // Arena pleine
+    }
+
+    void *ptr = arena->data + arena->offset_actuel;
+    arena->offset_actuel += aligned_size;
+
+    return ptr;
+}
+
+void arena_reset(void *arena_ptr) {
+    Arena *arena = (Arena*)arena_ptr;
+    arena->offset_actuel = 0;
+}
+
+void arena_destroy(void *arena_ptr) {
+    Arena *arena = (Arena*)arena_ptr;
+    munmap(arena_ptr, sizeof(Arena) + arena->taille_totale);
+}
+
+═══════════════════════════════════════════════════════════════════
+SOLUTION 5 : Copy-on-Write Demonstration
+═══════════════════════════════════════════════════════════════════
+
+void demonstrer_cow() {
+    size_t size = 4096 * 1000;  // 4 MB
+
+    void *mem = mmap(NULL, size, PROT_READ | PROT_WRITE,
+                    MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+
+    // Remplir la mémoire
+    memset(mem, 'A', size);
+
+    printf("Avant fork : adresse = %p\n", mem);
+
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        // Enfant
+        printf("Enfant : même adresse = %p, contenu partagé\n", mem);
+        sleep(1);
+
+        // Modification déclenche COW
+        printf("Enfant : modification...\n");
+        ((char*)mem)[0] = 'B';
+        printf("Enfant : copie privée créée\n");
+
+        exit(0);
+    } else {
+        // Parent
+        printf("Parent : attend...\n");
+        sleep(2);
+
+        printf("Parent : contenu = %c (inchangé)\n", ((char*)mem)[0]);
+
+        wait(NULL);
+        munmap(mem, size);
+    }
+}
+
+═══════════════════════════════════════════════════════════════════
+SOLUTION 6 : RWX Shellcode Loader (ÉDUCATIF UNIQUEMENT)
+═══════════════════════════════════════════════════════════════════
+
+void* allouer_zone_executable(size_t taille) {
+    void *mem = mmap(NULL, taille, PROT_READ | PROT_WRITE | PROT_EXEC,
+                    MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+
+    if (mem == MAP_FAILED) {
+        perror("mmap échoué (probablement bloqué par NX)");
+        return NULL;
+    }
+
+    return mem;
+}
+
+void charger_shellcode(void *zone, const unsigned char *code, size_t taille) {
+    memcpy(zone, code, taille);
+}
+
+void executer_shellcode(void *zone) {
+    void (*func)() = (void(*)())zone;
+    func();
+}
+
+// Utilisation avec shellcode exit(42) :
+unsigned char shellcode[] = {
+    0x48, 0xc7, 0xc0, 0x3c, 0x00, 0x00, 0x00,
+    0x48, 0xc7, 0xc7, 0x2a, 0x00, 0x00, 0x00,
+    0x0f, 0x05
+};
+
+void *mem = allouer_zone_executable(sizeof(shellcode));
+charger_shellcode(mem, shellcode, sizeof(shellcode));
+executer_shellcode(mem);  // Exit code = 42
+
+═══════════════════════════════════════════════════════════════════
+SOLUTION 7 : Process Memory Viewer
+═══════════════════════════════════════════════════════════════════
+
+void lister_mappings_processus(int pid) {
+    char path[256];
+    snprintf(path, sizeof(path), "/proc/%d/maps", pid);
+
+    FILE *f = fopen(path, "r");
+    if (!f) {
+        perror("Échec ouverture /proc/pid/maps");
+        return;
+    }
+
+    printf("%-20s %-10s %-10s %s\n", "Adresse", "Taille", "Perms", "Path");
+    printf("════════════════════════════════════════════════════════════\n");
+
+    char line[1024];
+    while (fgets(line, sizeof(line), f)) {
+        unsigned long start, end;
+        char perms[5], path[512];
+
+        sscanf(line, "%lx-%lx %4s %*s %*s %*s %s", &start, &end, perms, path);
+
+        unsigned long taille = end - start;
+
+        printf("%016lx-%016lx %10lu %4s %s\n", start, end, taille, perms,
+               path[0] ? path : "[anonymous]");
+
+        // Détection zone suspecte
+        if (strstr(perms, "rwx")) {
+            printf("  ⚠️  ZONE RWX SUSPECTE\n");
+        }
+    }
+
+    fclose(f);
+}
+
+═══════════════════════════════════════════════════════════════════
+SOLUTION 8 : Synchronized Shared State Machine
+═══════════════════════════════════════════════════════════════════
+
+typedef struct {
+    pthread_mutex_t mutex;
+    int etat_actuel;
+    int compteur;
+    char derniere_action[100];
+} StateMachine;
+
+StateMachine* creer_state_machine(const char *nom) {
+    int shm_fd = shm_open(nom, O_CREAT | O_RDWR, 0666);
+    ftruncate(shm_fd, sizeof(StateMachine));
+
+    StateMachine *sm = mmap(NULL, sizeof(StateMachine),
+                           PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+
+    pthread_mutex_init(&sm->mutex, &attr);
+    sm->etat_actuel = 0;
+    sm->compteur = 0;
+
+    return sm;
+}
+
+void transition_etat(StateMachine *sm, int nouvel_etat) {
+    pthread_mutex_lock(&sm->mutex);
+
+    int ancien = sm->etat_actuel;
+    sm->etat_actuel = nouvel_etat;
+    snprintf(sm->derniere_action, 100, "Transition %d -> %d", ancien, nouvel_etat);
+
+    pthread_mutex_unlock(&sm->mutex);
+}
+
+void incrementer_compteur(StateMachine *sm) {
+    pthread_mutex_lock(&sm->mutex);
+    sm->compteur++;
+    pthread_mutex_unlock(&sm->mutex);
+}
+
+═══════════════════════════════════════════════════════════════════
+NOTES FINALES
+═══════════════════════════════════════════════════════════════════
+
+BEST PRACTICES :
+- Toujours munmap/UnmapViewOfFile
+- msync/FlushViewOfFile pour synchronisation explicite
+- Vérifier MAP_FAILED / NULL
+- Utiliser MAP_SHARED pour IPC, MAP_PRIVATE pour isolation
+
+SÉCURITÉ :
+- RWX détecté par toutes les protections modernes
+- Préférer W^X (Write XOR Execute)
+- ASLR randomise les adresses
+- Shared memory nécessite synchronisation
+
+═══════════════════════════════════════════════════════════════════

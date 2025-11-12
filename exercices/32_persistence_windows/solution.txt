@@ -1,0 +1,82 @@
+═══════════════════════════════════════════════════════════════════════
+MODULE 32 : PERSISTENCE WINDOWS - SOLUTIONS
+═══════════════════════════════════════════════════════════════════════
+
+AVERTISSEMENT : Ces solutions sont fournies à titre éducatif uniquement.
+
+═══════════════════════════════════════════════════════════════════════
+CONCEPTS CLÉS
+═══════════════════════════════════════════════════════════════════════
+
+1. Registry Run Keys :
+   - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+   - Exécution au démarrage de session utilisateur
+   - Pas besoin de privilèges admin
+
+2. Scheduled Tasks :
+   - schtasks /create /tn "Name" /tr "path" /sc ONLOGON
+   - Déclencheurs variés (ONSTART, ONLOGON, événements)
+   - Nécessite parfois privilèges élevés
+
+3. Windows Services :
+   - CreateService() API
+   - SERVICE_AUTO_START pour démarrage automatique
+   - Nécessite privilèges admin
+
+4. WMI Event Subscriptions :
+   - Event Filter + Event Consumer + Binding
+   - Exécution sur événements système
+   - Très utilisé par malwares avancés
+
+5. DLL Hijacking :
+   - Exploite l'ordre de chargement des DLL
+   - Placer DLL malveillante dans répertoire application
+   - version.dll, dwmapi.dll sont courantes
+
+6. COM Hijacking :
+   - Détournement d'objets COM
+   - Modification HKCU\Software\Classes\CLSID
+   - Exécution lors d'utilisation de l'objet COM
+
+═══════════════════════════════════════════════════════════════════════
+DÉTECTION
+═══════════════════════════════════════════════════════════════════════
+
+Outils :
+- Autoruns (Sysinternals) : Affiche toutes les persistences
+- Process Monitor : Surveille activités registre/fichiers
+- RegShot : Compare snapshots du registre
+
+Locations communes :
+- HKCU/HKLM\...\Run
+- HKCU/HKLM\...\RunOnce
+- Startup folders
+- Services (services.msc)
+- Scheduled Tasks (taskschd.msc)
+- WMI subscriptions (wbemtest.exe)
+
+═══════════════════════════════════════════════════════════════════════
+SUPPRESSION
+═══════════════════════════════════════════════════════════════════════
+
+Registry :
+  reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "Name"
+
+Scheduled Tasks :
+  schtasks /delete /tn "TaskName" /f
+
+Services :
+  sc delete "ServiceName"
+
+═══════════════════════════════════════════════════════════════════════
+RAPPEL LÉGAL
+═══════════════════════════════════════════════════════════════════════
+
+N'utilisez ces techniques que :
+- Sur vos propres systèmes
+- Dans des environnements contrôlés (VM isolées)
+- À des fins éducatives légitimes
+- Avec autorisation explicite
+
+Toute utilisation malveillante est ILLÉGALE et peut entraîner des
+poursuites pénales sévères.

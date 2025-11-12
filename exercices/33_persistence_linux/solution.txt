@@ -1,0 +1,145 @@
+═══════════════════════════════════════════════════════════════════════
+MODULE 33 : PERSISTENCE LINUX - SOLUTIONS
+═══════════════════════════════════════════════════════════════════════
+
+AVERTISSEMENT : Solutions à titre éducatif uniquement.
+
+═══════════════════════════════════════════════════════════════════════
+CONCEPTS CLÉS
+═══════════════════════════════════════════════════════════════════════
+
+1. Cron Jobs :
+   - crontab -e pour éditer
+   - @reboot /path/to/script pour exécution au démarrage
+   - Format : minute heure jour mois jour_semaine commande
+   - Pas besoin de root pour cron utilisateur
+
+2. Systemd Services :
+   - Fichiers .service dans /etc/systemd/system/
+   - systemctl enable pour activer au démarrage
+   - systemctl start pour démarrer immédiatement
+   - Nécessite root pour services système
+   - systemd --user pour services utilisateur
+
+3. Shell RC Files :
+   - ~/.bashrc : exécuté pour shells interactifs
+   - ~/.profile : exécuté au login
+   - /etc/profile : global (nécessite root)
+   - Ajout en fin de fichier généralement
+
+4. LD_PRELOAD :
+   - export LD_PRELOAD=/path/to/lib.so
+   - /etc/ld.so.preload pour persistence (root)
+   - Interception de fonctions système
+   - Technique de rootkit courante
+
+5. Init Scripts :
+   - /etc/rc.local (obsolète sur systemd)
+   - /etc/init.d/ (SysV init)
+   - Utiliser systemd sur systèmes modernes
+
+═══════════════════════════════════════════════════════════════════════
+EXEMPLES DE CODE
+═══════════════════════════════════════════════════════════════════════
+
+Cron Job (programmatique) :
+```c
+system("(crontab -l 2>/dev/null; echo '@reboot /path/to/script') | crontab -");
+```
+
+Systemd Service :
+```bash
+cat > /etc/systemd/system/myapp.service << EOF
+[Unit]
+Description=My App
+
+[Service]
+ExecStart=/usr/local/bin/myapp
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable myapp.service
+```
+
+Bashrc Modification :
+```c
+FILE* f = fopen(getenv("HOME") "/.bashrc", "a");
+fprintf(f, "\n/path/to/script &\n");
+fclose(f);
+```
+
+LD_PRELOAD Library :
+```c
+// malicious.c
+#include <unistd.h>
+
+uid_t getuid(void) {
+    return 0;  // Toujours root
+}
+
+// Compilation:
+// gcc -shared -fPIC -o malicious.so malicious.c
+```
+
+═══════════════════════════════════════════════════════════════════════
+DÉTECTION
+═══════════════════════════════════════════════════════════════════════
+
+Commandes de détection :
+```bash
+# Cron jobs
+crontab -l
+ls -la /var/spool/cron/crontabs/
+
+# Services systemd
+systemctl list-units --type=service
+systemctl list-unit-files --state=enabled
+
+# Shell RC files
+cat ~/.bashrc ~/.profile
+
+# LD_PRELOAD
+cat /etc/ld.so.preload
+echo $LD_PRELOAD
+
+# Outils de scan
+chkrootkit
+rkhunter --check
+```
+
+═══════════════════════════════════════════════════════════════════════
+SUPPRESSION
+═══════════════════════════════════════════════════════════════════════
+
+Cron :
+  crontab -r  # Supprimer tous les cron jobs
+  crontab -e  # Éditer et supprimer ligne spécifique
+
+Systemd :
+  systemctl disable service.service
+  systemctl stop service.service
+  rm /etc/systemd/system/service.service
+  systemctl daemon-reload
+
+Bashrc :
+  # Éditer manuellement et supprimer ligne ajoutée
+
+LD_PRELOAD :
+  unset LD_PRELOAD
+  # Éditer /etc/ld.so.preload si nécessaire
+
+═══════════════════════════════════════════════════════════════════════
+RAPPEL LÉGAL
+═══════════════════════════════════════════════════════════════════════
+
+Ces techniques ne doivent être utilisées que :
+- Sur vos propres systèmes
+- Dans des VM isolées pour apprentissage
+- Avec autorisation explicite
+- À des fins légitimes
+
+Toute utilisation malveillante est ILLÉGALE et peut entraîner des
+poursuites pénales.

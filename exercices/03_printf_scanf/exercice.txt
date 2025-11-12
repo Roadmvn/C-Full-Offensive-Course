@@ -1,0 +1,39 @@
+EXERCICE 1 : Lire un nombre
+Demande à l'utilisateur un nombre et affiche-le.
+Objectif : Utiliser scanf() pour lire un int
+[ ] Exercice terminé
+
+EXERCICE 2 : Calculer un double
+Lis deux nombres et affiche leur somme.
+Objectif : Lire plusieurs valeurs avec scanf()
+[ ] Exercice terminé
+
+EXERCICE 3 : Formatage décimal
+Affiche pi (3.14159) avec 2, puis 5 décimales.
+Objectif : Utiliser %.Nf pour contrôler les décimales
+[ ] Exercice terminé
+
+EXERCICE 4 : Lire un caractère
+Lis un caractère avec scanf(" %c", &c).
+Objectif : Comprendre l'espace avant %c
+[ ] Exercice terminé
+
+EXERCICE 5 : Largeur de champ
+Affiche 42 avec une largeur de 10 caractères.
+Objectif : Utiliser %10d pour l'alignement
+[ ] Exercice terminé
+
+EXERCICE 6 : Calculette interactive
+Lis deux nombres et un opérateur (+, -, *, /).
+Objectif : Combiner scanf() et opérations
+[ ] Exercice terminé
+
+EXERCICE 7 : Afficher une adresse
+Affiche l'adresse mémoire d'une variable avec %p.
+Objectif : Comprendre les adresses mémoire
+[ ] Exercice terminé
+
+EXERCICE 8 : Formulaire complet
+Lis nom (string), âge (int), taille (float), et affiche tout.
+Objectif : Combiner différents types avec scanf()
+[ ] Exercice terminé

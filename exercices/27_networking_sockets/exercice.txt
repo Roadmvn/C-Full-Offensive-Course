@@ -1,0 +1,103 @@
+═══════════════════════════════════════════════════════════════════════════
+            MODULE 27 : NETWORKING & SOCKETS - EXERCICES
+═══════════════════════════════════════════════════════════════════════════
+
+⚠️  AVERTISSEMENT : Tests uniquement sur réseaux/systèmes autorisés
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 1 : Chat TCP Client/Serveur
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Créer un chat bidirectionnel avec threading
+
+Auto-évaluation :
+[ ] Serveur multi-clients (threads)
+[ ] Messages bidirectionnels en temps réel
+[ ] Déconnexion propre gérée
+[ ] Broadcast des messages à tous les clients
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 2 : Port Scanner TCP
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Scanner les ports ouverts d'une machine
+
+Auto-évaluation :
+[ ] Scan de plage de ports (1-1024)
+[ ] Multi-threading pour vitesse
+[ ] Timeout configurable
+[ ] Affichage des services détectés
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 3 : Raw Socket ICMP Ping
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Implémenter ping avec raw sockets
+
+Auto-évaluation :
+[ ] Construction manuelle du paquet ICMP
+[ ] Calcul du checksum
+[ ] Mesure du RTT (Round Trip Time)
+[ ] Fonctionne avec privilèges admin
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 4 : Reverse Shell TCP
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Créer un reverse shell basique
+
+Auto-évaluation :
+[ ] Connexion à un listener distant
+[ ] Redirection stdin/stdout/stderr vers socket
+[ ] Exécution de commandes shell
+[ ] Reconnexion automatique si perte
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 5 : HTTP C2 avec Beacon
+─────────────────────────────────────────────────────────────────────────────
+Objectif : C2 via HTTP avec beacons périodiques
+
+Auto-évaluation :
+[ ] Beacons HTTP GET/POST
+[ ] Jitter pour éviter patterns réguliers
+[ ] User-Agent légitime
+[ ] Parsing de commandes depuis réponse HTTP
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 6 : DNS Tunneling (Exfiltration)
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Exfiltrer des données via requêtes DNS
+
+Auto-évaluation :
+[ ] Encoding de données en subdomains
+[ ] Envoi de requêtes DNS A ou TXT
+[ ] Fragmentation si données volumineuses
+[ ] Serveur DNS qui décode les données
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 7 : SSL/TLS Socket (HTTPS)
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Communication chiffrée avec OpenSSL
+
+Auto-évaluation :
+[ ] Initialisation SSL/TLS
+[ ] Connexion HTTPS
+[ ] Vérification de certificat
+[ ] Requête HTTPS fonctionnelle
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 8 : SOCKS Proxy
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Implémenter un proxy SOCKS4/5 basique
+
+Auto-évaluation :
+[ ] Handshake SOCKS fonctionnel
+[ ] Tunneling TCP
+[ ] Support authentification
+[ ] Compatible avec navigateurs/outils
+
+═══════════════════════════════════════════════════════════════════════════

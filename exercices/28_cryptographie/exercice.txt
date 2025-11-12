@@ -1,0 +1,144 @@
+═══════════════════════════════════════════════════════════════════════════
+            MODULE 28 : CRYPTOGRAPHIE - EXERCICES
+═══════════════════════════════════════════════════════════════════════════
+
+⚠️  AVERTISSEMENT : Utiliser des bibliothèques cryptographiques éprouvées
+                    Ne JAMAIS créer son propre algorithme de chiffrement
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 1 : XOR File Encryptor
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Chiffrer/déchiffrer des fichiers avec XOR
+
+Auto-évaluation :
+[ ] Lecture et écriture de fichiers binaires
+[ ] Chiffrement XOR avec clé
+[ ] Déchiffrement fonctionnel
+[ ] Gestion de fichiers volumineux (buffer)
+[ ] Préservation de l'intégrité des données
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 2 : AES-256 avec OpenSSL
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Implémenter AES-256-CBC avec OpenSSL
+
+Auto-évaluation :
+[ ] Initialisation d'OpenSSL
+[ ] Génération de clé et IV aléatoires
+[ ] Chiffrement AES-256-CBC
+[ ] Déchiffrement correct
+[ ] Padding PKCS#7 géré
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 3 : SHA-256 Hashing
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Calculer des hash SHA-256 de fichiers
+
+Auto-évaluation :
+[ ] Utilisation d'OpenSSL pour SHA-256
+[ ] Hash de fichiers volumineux (streaming)
+[ ] Affichage en hexadécimal
+[ ] Vérification d'intégrité fonctionnelle
+[ ] Performance acceptable
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 4 : String Obfuscation Macro
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Créer une macro pour obfusquer des strings à la compilation
+
+Auto-évaluation :
+[ ] Macro C pour XOR compile-time
+[ ] Strings non visibles avec 'strings'
+[ ] Déobfuscation runtime fonctionnelle
+[ ] Code généré automatiquement
+[ ] Utilisable facilement
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 5 : RSA Key Generation et Encryption
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Générer des paires de clés RSA et chiffrer des données
+
+Auto-évaluation :
+[ ] Génération de paire RSA (2048 bits minimum)
+[ ] Export des clés en PEM
+[ ] Chiffrement avec clé publique
+[ ] Déchiffrement avec clé privée
+[ ] Gestion des erreurs OpenSSL
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 6 : HMAC pour Authentification
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Implémenter HMAC-SHA256 pour vérifier l'intégrité
+
+Auto-évaluation :
+[ ] Génération de HMAC avec clé secrète
+[ ] Vérification de l'authenticité
+[ ] Détection de tampering
+[ ] Code constant-time pour comparaison
+[ ] Utilisable pour authentifier messages
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 7 : Payload Encryptor (Shellcode)
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Chiffrer un shellcode pour évasion AV
+
+Auto-évaluation :
+[ ] Chiffrement AES du shellcode
+[ ] Génération de stub de déchiffrement
+[ ] Déchiffrement runtime en mémoire
+[ ] Le shellcode s'exécute correctement
+[ ] Évasion d'antivirus basique (test avec clam)
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 8 : Ransomware Simulator (ÉDUCATIF UNIQUEMENT)
+─────────────────────────────────────────────────────────────────────────────
+Objectif : Simuler un ransomware dans un sandbox isolé
+
+⚠️  DANGER : À exécuter UNIQUEMENT dans VM isolée, répertoire test!
+
+Auto-évaluation :
+[ ] Génération de clé RSA unique
+[ ] Chiffrement AES de fichiers test
+[ ] Clé AES chiffrée avec RSA public
+[ ] Sauvegarde de la clé privée (pour récupération!)
+[ ] Note de "rançon" générée
+[ ] Déchiffrement fonctionnel avec clé privée
+
+⚠️  NE JAMAIS exécuter sur système réel!
+⚠️  Usage STRICTEMENT éducatif pour comprendre le fonctionnement
+
+═══════════════════════════════════════════════════════════════════════════
+
+NOTES IMPORTANTES
+─────────────────────────────────────────────────────────────────────────────
+
+Bibliothèques recommandées :
+- OpenSSL : Standard industriel, complet
+- libsodium : API simple, sécurisé par défaut
+- mbedTLS : Léger, pour embedded
+
+Erreurs cryptographiques courantes :
+- Clés hardcodées (visible dans le binaire)
+- Réutilisation d'IV/nonce
+- Mode ECB (patterns visibles)
+- Pas d'authentification (vulnerable à tampering)
+- RNG faible (rand() au lieu de CSPRNG)
+
+Pour production :
+- Utiliser AES-256-GCM (chiffrement + authentification)
+- Clés dérivées avec PBKDF2 ou Argon2
+- IV/nonce aléatoires cryptographiquement
+- Rotation de clés régulière
+- HSM pour clés sensibles
+
+═══════════════════════════════════════════════════════════════════════════
+RAPPEL : Usage éducatif - Cryptographie robuste = bibliothèques éprouvées
+═══════════════════════════════════════════════════════════════════════════

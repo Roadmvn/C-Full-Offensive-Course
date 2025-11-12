@@ -1,0 +1,120 @@
+═══════════════════════════════════════════════════════════════════════════
+                MODULE 26 : API HOOKING - EXERCICES
+═══════════════════════════════════════════════════════════════════════════
+
+⚠️  AVERTISSEMENT : Usage éducatif uniquement - Environnements de test isolés
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 1 : IAT Hook sur CreateFileA
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif : Hooker CreateFileA pour logger tous les fichiers ouverts
+
+Auto-évaluation :
+[ ] L'IAT est correctement parsée
+[ ] CreateFileA est hookée avec succès
+[ ] Tous les appels à CreateFileA sont loggés
+[ ] Le hook peut être désinstallé
+[ ] La fonction originale fonctionne encore
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 2 : Inline Hook avec Trampoline
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif : Implémenter un inline hook complet avec trampoline fonctionnelle
+
+Auto-évaluation :
+[ ] Le hook écrit un JMP au début de la fonction
+[ ] Les bytes originaux sont sauvegardés
+[ ] Une trampoline est créée pour appeler l'original
+[ ] Le hook peut modifier les paramètres
+[ ] Le unhook restaure la fonction originale
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 3 : Hook de fonctions NTDLL
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif : Hooker NtCreateFile dans ntdll.dll (niveau plus bas que kernel32)
+
+Auto-évaluation :
+[ ] ntdll.dll est chargé et parsé
+[ ] NtCreateFile est localisée
+[ ] Le hook est installé au niveau NTDLL
+[ ] Les syscalls sont interceptés
+[ ] Performance acceptable
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 4 : API Unhooking pour Bypass EDR
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif : Détecter et supprimer les hooks EDR sur les fonctions système
+
+Auto-évaluation :
+[ ] Détection de hooks (comparaison avec DLL sur disque)
+[ ] Lecture de ntdll.dll depuis System32
+[ ] Restauration des bytes originaux
+[ ] Vérification du unhook
+[ ] Les fonctions marchent après unhook
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 5 : Hook Chain (plusieurs hooks)
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif : Gérer plusieurs hooks sur la même fonction (hook chain)
+
+Auto-évaluation :
+[ ] Multiples hooks peuvent être installés
+[ ] Ordre d'exécution préservé
+[ ] Chaque hook peut appeler le suivant
+[ ] Désinstallation individuelle possible
+[ ] Pas de corruption de la chaîne
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 6 : VTable Hooking (C++)
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif : Hooker des méthodes virtuelles C++ via la VTable
+
+Auto-évaluation :
+[ ] La VTable est localisée
+[ ] Les pointeurs de méthode sont modifiés
+[ ] Les méthodes hookées fonctionnent
+[ ] L'objet reste stable
+[ ] Restauration possible
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 7 : Hardware Breakpoint Hooking
+─────────────────════════────════────────────────────────────────────────────
+
+Objectif : Utiliser les registres de debug (DR0-DR7) pour hooker sans modifier le code
+
+Auto-évaluation :
+[ ] Les registres DR0-DR3 sont utilisés
+[ ] Exception handler installé
+[ ] Breakpoints hardware détectent les appels
+[ ] Plus furtif que inline hook
+[ ] Limite de 4 hooks respectée
+
+═══════════════════════════════════════════════════════════════════════════
+
+EXERCICE 8 : Framework de Hooking Complet
+─────────────────────────────────────────────────────────────────────────────
+
+Objectif : Créer un framework réutilisable supportant IAT, Inline et Unhooking
+
+Auto-évaluation :
+[ ] API simple pour installer/désinstaller hooks
+[ ] Support IAT et Inline hooks
+[ ] Gestion automatique des trampolines
+[ ] Thread-safe
+[ ] Logging et debugging intégrés
+[ ] Code modulaire et réutilisable
+
+═══════════════════════════════════════════════════════════════════════════

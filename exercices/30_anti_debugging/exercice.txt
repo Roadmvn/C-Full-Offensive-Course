@@ -1,0 +1,318 @@
+═══════════════════════════════════════════════════════════════════════
+MODULE 30 : ANTI-DEBUGGING - EXERCICES PRATIQUES
+═══════════════════════════════════════════════════════════════════════
+
+AVERTISSEMENT LÉGAL :
+Ces exercices sont à but ÉDUCATIF uniquement. Toute utilisation malveillante
+est STRICTEMENT INTERDITE. Vous êtes SEUL RESPONSABLE de l'usage que vous
+faites de ces techniques.
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 1 : Multi-Timing Anti-Debug
+═══════════════════════════════════════════════════════════════════════
+
+Objectif :
+Implémentez un système de détection par timing utilisant plusieurs méthodes
+différentes de mesure du temps.
+
+Spécifications :
+1. Utilisez RDTSC (instruction CPU)
+2. Utilisez QueryPerformanceCounter (Windows) ou clock_gettime (Linux)
+3. Utilisez GetTickCount (Windows) ou time() (Linux)
+4. Comparez les résultats des différentes méthodes
+5. Détectez les incohérences entre les méthodes (manipulation du temps)
+
+Fonctionnalités :
+- Mesure le temps d'exécution de segments de code critiques
+- Compare les deltas entre différentes méthodes
+- Détecte les manipulations de temps par le débogueur
+- Implémente des seuils adaptatifs
+
+Auto-évaluation :
+[ ] Au moins 3 méthodes de timing implémentées
+[ ] Détection des incohérences entre méthodes
+[ ] Seuils adaptatifs fonctionnels
+[ ] Tests sous débogueur effectués
+
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 2 : PEB Walking Avancé (Windows)
+═══════════════════════════════════════════════════════════════════════
+
+Objectif :
+Créez un système complet de vérification du PEB pour détecter multiples
+indicateurs de débogage.
+
+Champs du PEB à vérifier :
+1. BeingDebugged (offset 0x02)
+2. NtGlobalFlag (offset 0x68/0xBC)
+3. ProcessHeap->Flags
+4. ProcessHeap->ForceFlags
+
+Spécifications :
+- Accédez au PEB via FS:[0x30] (32-bit) ou GS:[0x60] (64-bit)
+- Vérifiez tous les champs suspects
+- Calculez un score de confiance (0-100%)
+- Documentez chaque vérification
+
+Bonus :
+- Vérifiez également le TEB (Thread Environment Block)
+- Détectez les modifications du PEB par le débogueur
+
+Auto-évaluation :
+[ ] Accès correct au PEB selon l'architecture
+[ ] Vérification de BeingDebugged
+[ ] Vérification de NtGlobalFlag
+[ ] Vérification des flags du heap
+[ ] Score de confiance calculé
+
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 3 : Exception-Based Anti-Debug
+═══════════════════════════════════════════════════════════════════════
+
+Objectif :
+Implémentez des techniques anti-debug basées sur les exceptions et le
+comportement différent sous débogueur.
+
+Techniques à implémenter :
+1. INT3 / EXCEPTION_BREAKPOINT detection
+2. Single-step exception (EXCEPTION_SINGLE_STEP)
+3. Guard page exception
+4. Invalid handle exception
+5. CloseHandle sur handle invalide
+
+Spécifications :
+- Utilisez __try / __except (Windows) ou signal handlers (Linux)
+- Détectez les différences de comportement sous débogueur
+- Combinez plusieurs techniques
+- Évitez les faux positifs
+
+Auto-évaluation :
+[ ] Au moins 3 techniques exception-based implémentées
+[ ] Gestion correcte des exceptions
+[ ] Détection fiable sous débogueur
+[ ] Minimisation des faux positifs
+
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 4 : Parent Process Analysis
+═══════════════════════════════════════════════════════════════════════
+
+Objectif :
+Créez un système pour analyser le processus parent et détecter s'il
+s'agit d'un débogueur connu.
+
+Spécifications :
+1. Récupérez le PID du processus parent
+2. Obtenez le nom du processus parent
+3. Comparez avec une liste de débogueurs connus :
+   - x64dbg.exe, ollydbg.exe, windbg.exe (Windows)
+   - gdb, lldb, radare2 (Linux)
+4. Détectez les lanceurs d'IDE (devenv.exe, idea64.exe, etc.)
+
+Fonctionnalités :
+- Liste de débogueurs configurables
+- Détection case-insensitive
+- Support wildcards (*.exe)
+- Logging des détections
+
+Auto-évaluation :
+[ ] Récupération correcte du processus parent
+[ ] Liste de débogueurs complète (au moins 10)
+[ ] Détection fonctionnelle
+[ ] Support multi-plateforme (Windows et Linux)
+
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 5 : Code Integrity Checks
+═══════════════════════════════════════════════════════════════════════
+
+Objectif :
+Implémentez un système de vérification d'intégrité du code pour détecter
+les breakpoints software (INT3 / 0xCC).
+
+Spécifications :
+1. Calculez un checksum de sections de code critiques
+2. Vérifiez périodiquement l'intégrité
+3. Détectez les modifications (breakpoints 0xCC)
+4. Utilisez plusieurs algorithmes de checksum (CRC32, SHA256)
+
+Fonctionnalités :
+- Macro pour marquer les sections à protéger
+- Vérification au runtime
+- Détection de patches
+- Réaction configurable à la détection
+
+Exemple d'utilisation :
+```c
+PROTECTED_FUNCTION_BEGIN
+void critical_function(void) {
+    // Code critique
+}
+PROTECTED_FUNCTION_END
+
+CHECK_CODE_INTEGRITY(critical_function);
+```
+
+Auto-évaluation :
+[ ] Calcul de checksum fonctionnel
+[ ] Détection des modifications de code
+[ ] Système de macros implémenté
+[ ] Tests avec breakpoints réels
+
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 6 : Thread Detection (Windows)
+═══════════════════════════════════════════════════════════════════════
+
+Objectif :
+Détectez les threads créés par le débogueur en analysant les threads
+du processus.
+
+Spécifications :
+1. Énumérez tous les threads du processus
+2. Identifiez les threads suspects (créés par le débogueur)
+3. Vérifiez les start addresses des threads
+4. Détectez les threads sans stack valide
+
+Utilisez :
+- CreateToolhelp32Snapshot / Thread32First / Thread32Next
+- NtQueryInformationThread
+- GetThreadContext
+
+Auto-évaluation :
+[ ] Énumération de tous les threads
+[ ] Identification des threads suspects
+[ ] Vérification des start addresses
+[ ] Détection fiable des threads du débogueur
+
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 7 : Anti-Attach Protection
+═══════════════════════════════════════════════════════════════════════
+
+Objectif :
+Créez un système pour empêcher l'attachement d'un débogueur pendant
+l'exécution du programme.
+
+Techniques Windows :
+1. Utiliser NtSetInformationThread avec ThreadHideFromDebugger
+2. Créer un thread qui vérifie continuellement IsDebuggerPresent
+3. Utiliser un driver en mode noyau (avancé)
+
+Techniques Linux :
+1. Utiliser prctl(PR_SET_DUMPABLE, 0)
+2. ptrace(PTRACE_TRACEME) au démarrage
+3. Thread watchdog qui surveille TracerPid
+
+Spécifications :
+- Thread de surveillance en arrière-plan
+- Vérifications à intervalles aléatoires
+- Réaction immédiate à la détection
+- Impossibilité de suspendre le thread watchdog
+
+Auto-évaluation :
+[ ] Thread watchdog implémenté
+[ ] Intervalles de vérification aléatoires
+[ ] Protection contre l'attachement fonctionnelle
+[ ] Résilience face aux tentatives de suspension
+
+
+═══════════════════════════════════════════════════════════════════════
+EXERCICE 8 : Système Anti-Debug Complet et Obfusqué
+═══════════════════════════════════════════════════════════════════════
+
+Objectif :
+Combinez toutes les techniques précédentes dans un système complet,
+obfusqué et difficile à analyser.
+
+Fonctionnalités requises :
+1. Au moins 10 techniques anti-debug différentes
+2. Obfuscation du code anti-debug (module 29)
+3. Vérifications distribuées dans le code
+4. Système de scoring et décision intelligente
+5. Réactions variées selon le niveau de détection
+
+Architecture :
+```
+Anti-Debug System
+├── Detection Layer (10+ techniques)
+├── Obfuscation Layer (code protection)
+├── Scoring System (0-100%)
+├── Decision Engine (react based on score)
+└── Action Layer (various responses)
+```
+
+Réactions possibles :
+- Score < 30% : Exécution normale
+- Score 30-60% : Altération subtile du comportement
+- Score 60-80% : Warnings et ralentissements
+- Score > 80% : Arrêt du programme
+
+Spécifications :
+1. Configuration par fichier ou macros
+2. Logging détaillé (optionnel)
+3. Mode stealth (pas de messages évidents)
+4. Portabilité Windows/Linux
+5. Documentation complète
+
+Auto-évaluation :
+[ ] Au moins 10 techniques anti-debug intégrées
+[ ] Code anti-debug obfusqué
+[ ] Système de scoring fonctionnel
+[ ] Réactions variées implémentées
+[ ] Portabilité multi-plateforme
+[ ] Tests sous différents débogueurs
+[ ] Documentation complète fournie
+[ ] Mode stealth opérationnel
+
+
+═══════════════════════════════════════════════════════════════════════
+NOTES IMPORTANTES
+═══════════════════════════════════════════════════════════════════════
+
+1. TEST SOUS DÉBOGUEUR :
+   Windows :
+   - x64dbg : Débogueur user-mode populaire
+   - WinDbg : Débogueur Microsoft
+   - OllyDbg : Débogueur classique (32-bit)
+
+   Linux :
+   - gdb : GNU Debugger
+   - lldb : LLVM Debugger
+   - strace : System call tracer
+
+2. CONTOURNEMENT :
+   Pour tester vos techniques, apprenez aussi à les contourner :
+   - Plugins anti-anti-debug (ScyllaHide, etc.)
+   - Patching manuel des checks
+   - Hooking des API de détection
+
+3. FAUX POSITIFS :
+   Attention aux faux positifs :
+   - Logiciels de monitoring légitime
+   - Anti-virus avec hooks
+   - Outils de développement
+
+4. PERFORMANCE :
+   - Ne vérifiez pas trop fréquemment (impact performance)
+   - Utilisez des threads dédiés si nécessaire
+   - Optimisez les vérifications coûteuses
+
+5. LÉGALITÉ :
+   - N'utilisez ces techniques que dans vos propres applications
+   - Respectez les lois sur la reverse engineering
+   - Usage éthique uniquement
+
+6. COMPILATION :
+   Windows :
+   - gcc -o anti_debug main.c -lntdll
+   - cl /Zi main.c (MSVC)
+
+   Linux :
+   - gcc -o anti_debug main.c
+
+═══════════════════════════════════════════════════════════════════════
+Consultez solution.txt pour les solutions détaillées.
+═══════════════════════════════════════════════════════════════════════

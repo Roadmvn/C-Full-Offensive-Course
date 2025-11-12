@@ -1,0 +1,762 @@
+═══════════════════════════════════════════════════════════════════════
+MODULE 29 : OBFUSCATION DE CODE - SOLUTIONS DÉTAILLÉES
+═══════════════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 1 : String Encryption Multi-Clés
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+#define SEGMENT_SIZE 4
+unsigned char keys[] = {0x42, 0x13, 0xAA, 0x7F, 0x33, 0x91, 0xCC, 0x55};
+#define NUM_KEYS (sizeof(keys) / sizeof(keys[0]))
+
+void multi_key_encrypt(char* str, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        int key_index = (i / SEGMENT_SIZE) % NUM_KEYS;
+        str[i] ^= keys[key_index];
+    }
+}
+
+void multi_key_decrypt(char* str, size_t len) {
+    // XOR est symétrique, même fonction
+    multi_key_encrypt(str, len);
+}
+
+// Version avec rotation de clés
+void rotating_key_encrypt(char* str, size_t len) {
+    unsigned char rotated_key = keys[0];
+    for (size_t i = 0; i < len; i++) {
+        str[i] ^= rotated_key;
+        // Rotation de la clé : décalage circulaire
+        rotated_key = (rotated_key << 1) | (rotated_key >> 7);
+    }
+}
+
+// Multi-XOR avec plusieurs passes
+void multi_xor_encrypt(char* str, size_t len) {
+    // Première passe : XOR avec clé standard
+    for (size_t i = 0; i < len; i++) {
+        str[i] ^= keys[i % NUM_KEYS];
+    }
+
+    // Deuxième passe : XOR avec position
+    for (size_t i = 0; i < len; i++) {
+        str[i] ^= (unsigned char)i;
+    }
+
+    // Troisième passe : XOR avec caractère précédent
+    for (size_t i = 1; i < len; i++) {
+        str[i] ^= str[i-1];
+    }
+}
+
+void multi_xor_decrypt(char* str, size_t len) {
+    // Déchiffrement dans l'ordre inverse
+    for (size_t i = len - 1; i > 0; i--) {
+        str[i] ^= str[i-1];
+    }
+
+    for (size_t i = 0; i < len; i++) {
+        str[i] ^= (unsigned char)i;
+    }
+
+    for (size_t i = 0; i < len; i++) {
+        str[i] ^= keys[i % NUM_KEYS];
+    }
+}
+
+int main(void) {
+    char message[] = "This is a secret message!";
+    size_t len = strlen(message);
+
+    printf("Original: %s\n", message);
+
+    multi_key_encrypt(message, len);
+    printf("Chiffré : ");
+    for (size_t i = 0; i < len; i++)
+        printf("\\x%02x", (unsigned char)message[i]);
+    printf("\n");
+
+    multi_key_decrypt(message, len);
+    printf("Déchiffré: %s\n", message);
+
+    return 0;
+}
+```
+
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 2 : Control Flow Flattening Avancé
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+int calculate_hash_obfuscated(const char* str) {
+    int hash = 0;
+    int i = 0;
+    int state = 17;  // État initial non-séquentiel
+    int temp1, temp2, temp3;
+
+    while (1) {
+        switch (state) {
+            case 17:  // Initialisation
+                hash = 0;
+                i = 0;
+                state = 99;
+                break;
+
+            case 99:  // Vérification de fin
+                if (str[i] == '\\0') {
+                    state = 42;
+                } else {
+                    state = 7;
+                }
+                break;
+
+            case 7:  // Calcul hash principal
+                hash = hash * 31 + str[i];
+                i++;
+                state = 135;
+                break;
+
+            case 135:  // Transition aléatoire
+                state = 99;
+                break;
+
+            case 42:  // Premier XOR
+                hash ^= (hash >> 16);
+                state = 256;
+                break;
+
+            case 256:  // Multiplication
+                hash *= 0x85ebca6b;
+                state = 3;
+                break;
+
+            case 3:  // Deuxième XOR
+                hash ^= (hash >> 13);
+                state = 500;
+                break;
+
+            case 500:  // Retour
+                return hash;
+
+            default:  // État invalide, retour au début
+                state = 17;
+                break;
+        }
+    }
+
+    return hash;
+}
+
+// Version avec états complètement randomisés
+int calculate_hash_extreme(const char* str) {
+    enum { S_INIT = 0x1A3, S_LOOP_CHECK = 0x4F2, S_COMPUTE = 0x7E9,
+           S_INCREMENT = 0x2D5, S_XOR1 = 0x6B8, S_MUL = 0x9C4,
+           S_XOR2 = 0x3F1, S_RETURN = 0x8D7 };
+
+    int hash = 0;
+    int i = 0;
+    unsigned int state = S_INIT;
+    volatile int junk = 0;  // Pour empêcher l'optimisation
+
+    while (1) {
+        junk += state;  // Junk code
+
+        switch (state) {
+            case S_INIT:
+                hash = 0;
+                i = 0;
+                state = S_LOOP_CHECK;
+                break;
+
+            case S_LOOP_CHECK:
+                junk *= 2;
+                if (str[i] == '\\0') {
+                    state = S_XOR1;
+                } else {
+                    state = S_COMPUTE;
+                }
+                break;
+
+            case S_COMPUTE:
+                hash = hash * 31;
+                state = S_INCREMENT;
+                break;
+
+            case S_INCREMENT:
+                hash += str[i];
+                i++;
+                junk ^= i;
+                state = S_LOOP_CHECK;
+                break;
+
+            case S_XOR1:
+                hash ^= (hash >> 16);
+                state = S_MUL;
+                break;
+
+            case S_MUL:
+                hash *= 0x85ebca6b;
+                junk += hash;
+                state = S_XOR2;
+                break;
+
+            case S_XOR2:
+                hash ^= (hash >> 13);
+                state = S_RETURN;
+                break;
+
+            case S_RETURN:
+                return hash;
+
+            default:
+                state = S_INIT;
+        }
+    }
+}
+
+int main(void) {
+    const char* test = "Hello World";
+
+    int h1 = calculate_hash_obfuscated(test);
+    int h2 = calculate_hash_extreme(test);
+
+    printf("Hash obfusqué 1: 0x%08x\n", h1);
+    printf("Hash obfusqué 2: 0x%08x\n", h2);
+    printf("Identiques: %s\n", h1 == h2 ? "OUI" : "NON");
+
+    return 0;
+}
+```
+
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 3 : Opaque Predicates Mathématiques
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <stdio.h>
+
+// 1. Toujours vrai : (2x+1)² est toujours impair
+int opaque_always_true_1(int x) {
+    int val = 2 * x + 1;
+    int square = val * val;
+    return (square % 2) == 1;  // Toujours vrai
+}
+
+// 2. Toujours faux : 2n + 1 n'est jamais pair
+int opaque_always_false_1(int n) {
+    return ((2 * n + 1) % 2) == 0;  // Toujours faux
+}
+
+// 3. Toujours vrai : n³ - n est divisible par 6
+int opaque_always_true_2(int n) {
+    long long cube = (long long)n * n * n;
+    long long val = cube - n;
+    return (val % 6) == 0;  // Toujours vrai
+}
+
+// 4. Toujours faux : n² + n + 1 n'est jamais divisible par 2
+int opaque_always_false_2(int n) {
+    int val = n * n + n + 1;
+    return (val % 2) == 0;  // Toujours faux
+}
+
+// 5. Toujours vrai : (n² - 1) est divisible par 8 si n est impair
+int opaque_always_true_3(int n) {
+    if ((n % 2) == 0) return 1;  // Pour les pairs, retourner vrai aussi
+    int val = n * n - 1;
+    return (val % 8) == 0;  // Toujours vrai pour n impair
+}
+
+// Fonction utilisant ces prédicats
+int secure_calculation(int a, int b) {
+    int result = 0;
+
+    // Utilisation du prédicat 1 (toujours vrai)
+    if (opaque_always_true_1(a)) {
+        result = a + b;  // Code réel
+    } else {
+        result = a * 1000;  // Code mort
+    }
+
+    // Utilisation du prédicat 2 (toujours faux)
+    if (opaque_always_false_1(b)) {
+        result = 0;  // Code mort
+    } else {
+        result *= 2;  // Code réel
+    }
+
+    // Utilisation du prédicat 3 (toujours vrai)
+    if (opaque_always_true_2(a + b)) {
+        result += 10;  // Code réel
+    } else {
+        result = -999;  // Code mort
+    }
+
+    // Utilisation du prédicat 4 (toujours faux)
+    if (opaque_always_false_2(result)) {
+        return 0;  // Code mort
+    }
+
+    // Utilisation du prédicat 5 (toujours vrai)
+    if (opaque_always_true_3(a)) {
+        return result;  // Code réel
+    } else {
+        return -1;  // Code mort
+    }
+}
+
+int main(void) {
+    // Test des prédicats
+    printf("Tests des prédicats opaques:\n\n");
+
+    for (int x = -5; x <= 5; x++) {
+        printf("x=%2d: ", x);
+        printf("P1=%d ", opaque_always_true_1(x));
+        printf("P2=%d ", opaque_always_false_1(x));
+        printf("P3=%d ", opaque_always_true_2(x));
+        printf("P4=%d ", opaque_always_false_2(x));
+        printf("P5=%d\n", opaque_always_true_3(x));
+    }
+
+    printf("\nTest de la fonction obfusquée:\n");
+    int result = secure_calculation(5, 3);
+    printf("Result: %d (attendu: %d)\n", result, ((5 + 3) * 2) + 10);
+
+    return 0;
+}
+```
+
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 4 : Dead Code Injection Automatique
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+// 10 macros de dead code différentes
+#define DEAD_1 do { volatile int _d = rand(); _d = _d * _d; } while(0)
+#define DEAD_2 do { volatile int _d = rand(); for(int _i=0;_i<10;_i++) _d+=_i; } while(0)
+#define DEAD_3 do { volatile char _b[32]; for(int _i=0;_i<32;_i++) _b[_i]=(char)_i; } while(0)
+#define DEAD_4 do { volatile int _x=rand(), _y=rand(); _x=_x^_y; _y=_x^_y; } while(0)
+#define DEAD_5 do { volatile long _l = (long)time(NULL); _l = _l * 31 + 17; } while(0)
+#define DEAD_6 do { volatile unsigned _u = (unsigned)rand(); _u = (_u << 3) | (_u >> 29); } while(0)
+#define DEAD_7 do { volatile int _a[8]; for(int _i=0;_i<8;_i++) _a[_i]=rand()%100; } while(0)
+#define DEAD_8 do { volatile double _d = (double)rand()/RAND_MAX; _d = _d * _d; } while(0)
+#define DEAD_9 do { volatile int _m = rand(); _m = (_m * 0x5bd1e995) ^ (_m >> 24); } while(0)
+#define DEAD_10 do { volatile char _s[16]; snprintf(_s, 16, "%d", rand()); } while(0)
+
+// Macro d'injection selon le niveau
+#define INJECT_DEAD_CODE(level) \
+    do { \
+        if ((level) >= 1) { DEAD_1; } \
+        if ((level) >= 2) { DEAD_2; DEAD_3; } \
+        if ((level) >= 3) { DEAD_4; DEAD_5; DEAD_6; } \
+        if ((level) >= 4) { DEAD_7; DEAD_8; } \
+        if ((level) >= 5) { DEAD_9; DEAD_10; } \
+    } while(0)
+
+// Test de la macro
+int my_function(int x) {
+    INJECT_DEAD_CODE(3);
+    int result = x * 2;
+    INJECT_DEAD_CODE(2);
+    result += 10;
+    INJECT_DEAD_CODE(4);
+    return result;
+}
+
+int main(void) {
+    srand((unsigned)time(NULL));
+
+    printf("Test de l'injection de dead code:\n");
+    for (int i = 1; i <= 5; i++) {
+        printf("Niveau %d: %d\n", i, my_function(i * 5));
+    }
+
+    return 0;
+}
+```
+
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 5 : Junk Code Generator
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+// 15 types de junk code différents
+
+#define JUNK_ARITH_1 do { volatile int _j = rand() * 17 + 42; } while(0)
+#define JUNK_ARITH_2 do { volatile int _j = (rand() << 3) - (rand() >> 2); } while(0)
+#define JUNK_ARITH_3 do { volatile long _j = ((long)rand() * rand()) % 9973; } while(0)
+
+#define JUNK_BITWISE_1 do { volatile unsigned _j = rand(); _j ^= (_j << 13); _j ^= (_j >> 17); } while(0)
+#define JUNK_BITWISE_2 do { volatile unsigned _j = rand(); _j = ~_j & 0xAAAA5555; } while(0)
+#define JUNK_BITWISE_3 do { volatile int _j = rand(); _j = (_j & 0xFF00) | (~_j & 0x00FF); } while(0)
+
+#define JUNK_LOOP_1 do { volatile int _s=0; for(int _i=0;_i<16;_i++) _s+=_i*_i; } while(0)
+#define JUNK_LOOP_2 do { volatile int _p=1; for(int _i=1;_i<8;_i++) _p*=_i; } while(0)
+#define JUNK_LOOP_3 do { volatile char _b[64]; for(int _i=0;_i<64;_i++) _b[_i]=(char)(rand()%256); } while(0)
+
+#define JUNK_ARRAY_1 do { volatile int _a[16]; memset((void*)_a, rand()%256, sizeof(_a)); } while(0)
+#define JUNK_ARRAY_2 do { volatile char _s[32]; for(int _i=0;_i<31;_i++) _s[_i]='A'+(rand()%26); _s[31]=0; } while(0)
+
+#define JUNK_TIME_1 do { volatile time_t _t = time(NULL); _t = (_t * 31) ^ (_t >> 8); } while(0)
+#define JUNK_TIME_2 do { volatile unsigned _t = (unsigned)time(NULL); _t = _t * 0x5bd1e995; } while(0)
+
+#define JUNK_MIXED_1 do { volatile int _x=rand(), _y=rand(); _x=_x*_y; _y=_x^_y; } while(0)
+#define JUNK_MIXED_2 do { volatile double _d=(double)rand()/RAND_MAX; _d=_d*_d*_d; } while(0)
+
+// Table de sélection de junk code
+#define SELECT_JUNK(n) \
+    do { \
+        switch((n) % 15) { \
+            case 0: JUNK_ARITH_1; break; \
+            case 1: JUNK_ARITH_2; break; \
+            case 2: JUNK_ARITH_3; break; \
+            case 3: JUNK_BITWISE_1; break; \
+            case 4: JUNK_BITWISE_2; break; \
+            case 5: JUNK_BITWISE_3; break; \
+            case 6: JUNK_LOOP_1; break; \
+            case 7: JUNK_LOOP_2; break; \
+            case 8: JUNK_LOOP_3; break; \
+            case 9: JUNK_ARRAY_1; break; \
+            case 10: JUNK_ARRAY_2; break; \
+            case 11: JUNK_TIME_1; break; \
+            case 12: JUNK_TIME_2; break; \
+            case 13: JUNK_MIXED_1; break; \
+            case 14: JUNK_MIXED_2; break; \
+        } \
+    } while(0)
+
+// Macro JUNK qui génère du junk code aléatoire
+#define JUNK(complexity) \
+    do { \
+        for (int _junk_i = 0; _junk_i < (complexity); _junk_i++) { \
+            SELECT_JUNK(rand()); \
+        } \
+    } while(0)
+
+int main(void) {
+    srand((unsigned)time(NULL));
+
+    printf("Test du générateur de junk code:\n");
+
+    JUNK(3);
+    printf("Junk code de complexité 3 exécuté\n");
+
+    JUNK(5);
+    printf("Junk code de complexité 5 exécuté\n");
+
+    JUNK(10);
+    printf("Junk code de complexité 10 exécuté\n");
+
+    return 0;
+}
+```
+
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 6 : Obfuscation de Constantes
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <stdio.h>
+#include <time.h>
+
+// Méthode 1 : Opérations arithmétiques
+#define OBF_ARITH(val) (((val) * 17 + 42) - 42) / 17
+
+// Méthode 2 : Opérations bitwise
+#define OBF_BITS(val) ((((val) << 4) | ((val) >> 4)) & 0xFF) ^ ((val) & 0xFF)
+
+// Méthode 3 : Combinaisons complexes
+#define OBF_COMPLEX(val) ((((val) ^ 0x55) + ((val) & 0xAA)) ^ 0x55)
+
+// Méthode 4 : Utilisation de time() contrôlée
+#define OBF_TIME(val) ((val) + (((unsigned)time(NULL) * 0) & 0))
+
+// Méthode 5 : Expressions mathématiques
+#define OBF_MATH(val) ((((val) * 3 + 7) / 3) - 2)
+
+// Générateur automatique pour des valeurs spécifiques
+#define OBFUSCATE_5000() (((0x13 << 8) | 0x88) - 0x388)
+#define OBFUSCATE_3() ((17 * 3 - 48) / 2)
+#define OBFUSCATE_100() ((((7 * 7) - 1) * 2) + 2)
+#define OBFUSCATE_256() ((1 << 8) + ((1 << 3) - (1 << 3)))
+#define OBFUSCATE_1024() ((((1 << 5) * (1 << 5)) / (1 << 0)))
+
+int main(void) {
+    // Constantes obfusquées
+    int timeout = OBFUSCATE_5000();
+    int max_retries = OBFUSCATE_3();
+    int buffer_size = OBFUSCATE_256();
+
+    printf("Timeout: %d (attendu: 5000)\n", timeout);
+    printf("Max retries: %d (attendu: 3)\n", max_retries);
+    printf("Buffer size: %d (attendu: 256)\n", buffer_size);
+
+    // Test des méthodes
+    printf("\nTests des méthodes:\n");
+    printf("OBF_ARITH(42) = %d\n", OBF_ARITH(42));
+    printf("OBF_COMPLEX(42) = %d\n", OBF_COMPLEX(42));
+    printf("OBF_TIME(42) = %d\n", OBF_TIME(42));
+
+    return 0;
+}
+```
+
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 7 : Obfuscateur de Noms de Variables
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <stdio.h>
+
+// Table de correspondance (à garder en documentation)
+/*
+OBFUSCATION MAP:
+calculate_total -> l1lO0
+price -> O0l1l
+quantity -> l0O1l
+total -> ll0O0
+*/
+
+// Définition des macros de substitution
+#define calculate_total l1lO0
+#define price O0l1l
+#define quantity l0O1l
+#define total ll0O0
+
+int l1lO0(int O0l1l, int l0O1l) {
+    int ll0O0 = O0l1l * l0O1l;
+    return ll0O0;
+}
+
+// Générateur de noms (simulé avec des macros)
+#define VAR_1 l1l
+#define VAR_2 O0O
+#define VAR_3 _l1
+#define VAR_4 ll0
+#define VAR_5 OO1
+#define VAR_6 I1I
+#define VAR_7 l0l
+#define VAR_8 _O0
+
+// Exemple d'utilisation
+int main(void) {
+    int VAR_1 = 10;  // x
+    int VAR_2 = 20;  // y
+
+    int VAR_3 = calculate_total(VAR_1, VAR_2);
+
+    printf("Result: %d\n", VAR_3);
+
+    return 0;
+}
+```
+
+
+═══════════════════════════════════════════════════════════════════════
+SOLUTION 8 : Système d'Obfuscation Complet
+═══════════════════════════════════════════════════════════════════════
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+// ═══════════════════════════════════════════════════════════════════
+// CONFIGURATION GLOBALE
+// ═══════════════════════════════════════════════════════════════════
+
+#define OBFUSCATION_LEVEL 4
+
+// ═══════════════════════════════════════════════════════════════════
+// SYSTÈME DE STRING OBFUSCATION
+// ═══════════════════════════════════════════════════════════════════
+
+#define XOR_KEY 0x42
+
+#define OBFUSCATED_STRING(name, str) \
+    char name[] = str; \
+    for (size_t _i = 0; _i < sizeof(name) - 1; _i++) name[_i] ^= XOR_KEY;
+
+// ═══════════════════════════════════════════════════════════════════
+// SYSTÈME DE CONSTANTES OBFUSCATED
+// ═══════════════════════════════════════════════════════════════════
+
+#define OBFUSCATED_CONST(name, val) \
+    const int name = (((val) * 17 + 42) - 42) / 17;
+
+// ═══════════════════════════════════════════════════════════════════
+// SYSTÈME D'INJECTION DE COMPLEXITÉ
+// ═══════════════════════════════════════════════════════════════════
+
+#define INJECT_COMPLEXITY(level) \
+    do { \
+        volatile int _complexity = 0; \
+        for (int _i = 0; _i < (level); _i++) { \
+            _complexity += rand() % 100; \
+            _complexity ^= (_complexity << 3); \
+            if ((level) >= 3) { \
+                volatile char _buf[32]; \
+                for (int _j = 0; _j < 32; _j++) _buf[_j] = (char)_j; \
+            } \
+        } \
+    } while(0)
+
+// ═══════════════════════════════════════════════════════════════════
+// MACROS POUR FONCTIONS OBFUSCATED
+// ═══════════════════════════════════════════════════════════════════
+
+#define OBFUSCATED_FUNCTION_BEGIN(name, rettype, params) \
+    rettype name params { \
+        int _obf_state = 0; \
+        rettype _obf_result; \
+        volatile int _obf_junk = rand(); \
+        while (1) { \
+            switch (_obf_state) { \
+                case 0: {
+
+#define OBFUSCATED_FUNCTION_END \
+                    _obf_state = 999; \
+                } break; \
+                case 999: \
+                    return _obf_result; \
+                default: \
+                    _obf_state = 0; \
+            } \
+        } \
+    }
+
+// ═══════════════════════════════════════════════════════════════════
+// EXEMPLE D'UTILISATION
+// ═══════════════════════════════════════════════════════════════════
+
+OBFUSCATED_FUNCTION_BEGIN(calculate_score, int, (int a, int b))
+    OBFUSCATED_STRING(msg, "Calculating score");
+    OBFUSCATED_CONST(multiplier, 10);
+
+    // Déchiffrement du message
+    for (size_t i = 0; i < sizeof(msg) - 1; i++) msg[i] ^= XOR_KEY;
+
+    _obf_result = a + b;
+
+    INJECT_COMPLEXITY(OBFUSCATION_LEVEL);
+
+    _obf_result *= multiplier;
+
+    if (OBFUSCATION_LEVEL >= 3) {
+        volatile int extra = rand();
+        if ((extra * extra) >= 0) {  // Opaque predicate
+            // Code réel
+        } else {
+            _obf_result = 0;  // Dead code
+        }
+    }
+
+OBFUSCATED_FUNCTION_END
+
+// ═══════════════════════════════════════════════════════════════════
+// SYSTÈME DE RAPPORT
+// ═══════════════════════════════════════════════════════════════════
+
+void print_obfuscation_report(void) {
+    printf("\n═══════════════════════════════════════════════════════════════\n");
+    printf("RAPPORT D'OBFUSCATION\n");
+    printf("═══════════════════════════════════════════════════════════════\n\n");
+
+    printf("Niveau d'obfuscation: %d/5\n", OBFUSCATION_LEVEL);
+    printf("\nTechniques actives:\n");
+
+    if (OBFUSCATION_LEVEL >= 1) {
+        printf("  [X] Chiffrement de strings (XOR)\n");
+    }
+    if (OBFUSCATION_LEVEL >= 2) {
+        printf("  [X] Obfuscation de constantes\n");
+        printf("  [X] Injection de junk code basique\n");
+    }
+    if (OBFUSCATION_LEVEL >= 3) {
+        printf("  [X] Control flow flattening\n");
+        printf("  [X] Prédicats opaques\n");
+    }
+    if (OBFUSCATION_LEVEL >= 4) {
+        printf("  [X] Dead code insertion\n");
+        printf("  [X] Junk code avancé\n");
+    }
+    if (OBFUSCATION_LEVEL >= 5) {
+        printf("  [X] Obfuscation maximale\n");
+        printf("  [X] Toutes les techniques combinées\n");
+    }
+
+    printf("\nImpact estimé sur les performances: ");
+    int perf_impact = OBFUSCATION_LEVEL * 10;
+    printf("%d%%\n", perf_impact);
+
+    printf("\nDifficulté d'analyse (1-10): %d\n", OBFUSCATION_LEVEL * 2);
+
+    printf("\n═══════════════════════════════════════════════════════════════\n");
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MAIN
+// ═══════════════════════════════════════════════════════════════════
+
+int main(void) {
+    srand((unsigned)time(NULL));
+
+    printf("╔═══════════════════════════════════════════════════════════════╗\n");
+    printf("║     SYSTÈME D'OBFUSCATION COMPLET - NIVEAU %d/5              ║\n", OBFUSCATION_LEVEL);
+    printf("╚═══════════════════════════════════════════════════════════════╝\n");
+
+    int result = calculate_score(15, 7);
+    printf("\nRésultat du calcul obfusqué: %d\n", result);
+    printf("Attendu: (15 + 7) * 10 = %d\n", (15 + 7) * 10);
+
+    print_obfuscation_report();
+
+    return 0;
+}
+```
+
+═══════════════════════════════════════════════════════════════════════
+NOTES SUR LES SOLUTIONS
+═══════════════════════════════════════════════════════════════════════
+
+1. COMPILATION :
+   Compilez toujours avec -O0 pour voir l'obfuscation :
+   gcc -O0 -Wall -o solution solution.c
+
+2. ANALYSE :
+   - Utilisez objdump -d pour voir le code assembleur
+   - Utilisez strings pour vérifier le chiffrement
+   - Comparez avec et sans obfuscation
+
+3. PERSONNALISATION :
+   Ces solutions sont des bases. Personnalisez-les selon vos besoins.
+
+4. SÉCURITÉ :
+   L'obfuscation n'est PAS une protection absolue. Utilisez-la en
+   complément d'autres mesures de sécurité.
+
+═══════════════════════════════════════════════════════════════════════

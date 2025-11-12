@@ -1,0 +1,189 @@
+═══════════════════════════════════════════════════════════════════
+EXERCICES - Module 38 : ROP Chains
+═══════════════════════════════════════════════════════════════════
+
+⚠️  CTF ET VM ISOLÉE UNIQUEMENT - JAMAIS SUR SYSTÈMES RÉELS
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 1 : ROPgadget Finder
+═══════════════════════════════════════════════════════════════════
+
+Créer un outil cherchant des gadgets dans un binaire.
+
+Fonction :
+    void trouver_gadgets(const char *binaire, const char *pattern);
+
+Patterns à chercher :
+- pop rdi ; ret
+- pop rsi ; ret
+- syscall ; ret
+- mov rax, [rdi] ; ret
+
+Critères :
+[ ] Désassemble le binaire
+[ ] Trouve gadgets utiles
+[ ] Affiche adresses et instructions
+[ ] Export vers fichier
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 2 : ret2libc Exploit
+═══════════════════════════════════════════════════════════════════
+
+Exploiter un buffer overflow avec ret2libc.
+
+Programme vulnérable :
+    void vuln() { char buf[64]; gets(buf); }
+
+Objectif : Appeler system("/bin/sh")
+
+Critères :
+[ ] Calculer offset jusqu'à saved RIP
+[ ] Trouver adresse de system() dans libc
+[ ] Trouver chaîne "/bin/sh"
+[ ] Construire payload
+[ ] Obtenir shell
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 3 : ROP Chain Builder (pwntools)
+═══════════════════════════════════════════════════════════════════
+
+Utiliser pwntools pour construire une ROP chain.
+
+Script Python :
+    from pwn import *
+    # Construire chaîne execve("/bin/sh")
+
+Critères :
+[ ] Utiliser ROP() de pwntools
+[ ] Appeler execve avec arguments corrects
+[ ] Tester sur binaire vulnérable
+[ ] Shell obtenu
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 4 : ASLR Bypass via Info Leak
+═══════════════════════════════════════════════════════════════════
+
+Contourner ASLR en fuiant une adresse.
+
+Scénario : printf(buf) où buf contrôlé
+
+Étapes :
+1. Fuir une adresse de libc
+2. Calculer base de libc
+3. Calculer adresses absolues
+4. ROP chain
+
+Critères :
+[ ] Leak d'adresse réussi
+[ ] Calcul correct de base
+[ ] ROP chain fonctionnel malgré ASLR
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 5 : Stack Pivoting
+═══════════════════════════════════════════════════════════════════
+
+Pivoter la stack vers une zone contrôlée.
+
+Gadgets requis :
+- xchg rsp, rax ; ret
+- mov rsp, rbp ; ret
+
+Scénario : Buffer trop petit pour ROP chain complète
+
+Critères :
+[ ] Identifier gadget de pivoting
+[ ] Préparer ROP chain dans zone contrôlée
+[ ] Pivoter RSP vers cette zone
+[ ] Exécution réussie
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 6 : Multi-Stage ROP
+═══════════════════════════════════════════════════════════════════
+
+ROP chain en plusieurs étapes.
+
+Étapes :
+1. Stage 1 : read() pour lire stage 2
+2. Stage 2 : ROP chain complète
+
+Critères :
+[ ] Première ROP appelle read()
+[ ] Deuxième ROP appelle execve()
+[ ] Coordination des stages
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 7 : SROP (Sigreturn-Oriented Programming)
+═══════════════════════════════════════════════════════════════════
+
+Utiliser sigreturn pour contrôler tous les registres.
+
+Gadget : syscall ; ret
+
+Payload :
+- Préparer sigreturn frame
+- Appeler sigreturn (rax=15)
+
+Critères :
+[ ] Comprendre sigreturn
+[ ] Construire frame correcte
+[ ] Contrôle complet des registres
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 8 : JOP (Jump-Oriented Programming)
+═══════════════════════════════════════════════════════════════════
+
+Utiliser des gadgets se terminant par jmp/call au lieu de ret.
+
+Gadgets JOP :
+- jmp rax
+- call [rax]
+
+Critères :
+[ ] Trouver gadgets JOP
+[ ] Chaîner via jmp au lieu de ret
+[ ] Contourner protections anti-ROP
+
+═══════════════════════════════════════════════════════════════════
+CHALLENGES RECOMMANDÉS
+═══════════════════════════════════════════════════════════════════
+
+ROPEmporium :
+  ret2win, split, callme, write4, badchars, fluff, pivot, ret2csu
+
+pwnable.kr :
+  bof, passcode, random, input
+
+Exploit Education :
+  Phoenix (Stack/Format/Heap)
+
+HackTheBox :
+  Challenges pwn variés
+
+═══════════════════════════════════════════════════════════════════
+OUTILS REQUIS
+═══════════════════════════════════════════════════════════════════
+
+Installation :
+  pip install pwntools
+  pip install ROPgadget
+  pip install ropper
+
+GDB plugins :
+  pwndbg, GEF, ou peda
+
+═══════════════════════════════════════════════════════════════════
+LÉGALITÉ RAPPEL
+═══════════════════════════════════════════════════════════════════
+
+AUTORISÉ :
+✓ Challenges CTF
+✓ VM personnelles
+✓ Pentest contractuel
+✓ Recherche académique
+
+INTERDIT :
+✗ Exploitation de systèmes sans autorisation
+✗ Développement d'exploits malveillants
+✗ Tests sur infrastructure production
+
+═══════════════════════════════════════════════════════════════════

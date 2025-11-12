@@ -1,0 +1,69 @@
+# ═══════════════════════════════════════════════════════════════════
+# .gitignore pour projet Learning C - Red Teaming
+# ═══════════════════════════════════════════════════════════════════
+
+# Fichiers compilés et exécutables
+*.o
+*.out
+*.exe
+program
+a.out
+
+# Fichiers de debug
+*.dSYM/
+*.su
+*.idb
+*.pdb
+core
+vgcore.*
+
+# Archives et bibliothèques
+*.a
+*.so
+*.dylib
+*.dll
+*.lib
+
+# Fichiers temporaires
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Dossiers de build
+build/
+bin/
+obj/
+
+# IDE et éditeurs
+.vscode/
+.idea/
+*.sublime-*
+.project
+.cproject
+.settings/
+
+# Fichiers de notes personnelles (optionnel - décommenter si besoin)
+# notes.txt
+# mes_notes/
+
+# Valgrind outputs
+*.log
+valgrind-out.txt
+
+# GDB history
+.gdb_history
+
+# Core dumps
+core.*
+
+# Fichiers créés pendant les exercices d'exploitation
+shellcode
+exploit
+payload*
+test_exploit
+
+# Fichiers de test temporaires
+test_*
+tmp_*

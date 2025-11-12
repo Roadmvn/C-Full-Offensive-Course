@@ -1,0 +1,40 @@
+═══════════════════════════════════════════════════════════════════════
+MODULE 31 : ANTI-VM ET ANTI-SANDBOX - SOLUTIONS
+═══════════════════════════════════════════════════════════════════════
+
+Les solutions complètes sont disponibles dans main.c.
+
+Concepts clés :
+
+1. CPUID Hypervisor Bit :
+   - CPUID.0x1.ECX[31] = 1 si hypervisor présent
+   - Fiable sur la plupart des VM modernes
+
+2. Artefacts système :
+   - Clés registre : HKLM\SOFTWARE\VMware, Oracle\VirtualBox
+   - Fichiers : /proc/scsi/scsi, /sys/class/dmi/
+   - Services : VMTools, VBoxService
+
+3. Sleep Acceleration :
+   - Sandboxes accélèrent le temps pour analyse rapide
+   - Comparer temps attendu vs réel
+
+4. Indicateurs sandbox :
+   - Noms de machine : SANDBOX, CUCKOO, MALWARE
+   - RAM faible (< 2GB)
+   - Peu de processus utilisateur
+   - Pas d'historique système
+
+5. User Interaction :
+   - Mouvements souris
+   - Activité clavier
+   - Changements de fenêtre
+
+Combinaison recommandée :
+- CPUID check
+- Artefacts système
+- Sleep timing
+- Hardware profiling
+- User interaction
+
+Score > 60% = VM/Sandbox probable

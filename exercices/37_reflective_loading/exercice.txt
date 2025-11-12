@@ -1,0 +1,153 @@
+═══════════════════════════════════════════════════════════════════
+EXERCICES - Module 37 : Reflective Loading
+═══════════════════════════════════════════════════════════════════
+
+⚠️  AVERTISSEMENT : Technique sensible - VM isolée obligatoire
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 1 : PE Parser complet
+═══════════════════════════════════════════════════════════════════
+
+Créer un parser PE complet affichant toutes les informations.
+
+Fonctions :
+    void parser_pe(const char *fichier);
+    void afficher_headers(BYTE *pe);
+    void afficher_sections(BYTE *pe);
+    void afficher_imports(BYTE *pe);
+    void afficher_exports(BYTE *pe);
+
+Critères :
+[ ] Parse DOS/NT headers
+[ ] Liste sections avec permissions
+[ ] Énumère imports/exports
+[ ] Détecte protections (ASLR, DEP, CFG)
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 2 : Manual Import Resolution
+═══════════════════════════════════════════════════════════════════
+
+Résoudre manuellement les imports d'une DLL.
+
+Fonctions :
+    BOOL resoudre_imports(BYTE *baseAddress);
+    FARPROC obtenir_adresse_fonction(const char *dll, const char *fonction);
+
+Critères :
+[ ] Parse Import Directory Table
+[ ] LoadLibrary pour chaque DLL
+[ ] GetProcAddress pour chaque fonction
+[ ] Écriture dans IAT
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 3 : Relocation Engine
+═══════════════════════════════════════════════════════════════════
+
+Implémenter l'engine de relocation.
+
+Fonctions :
+    BOOL appliquer_relocations(BYTE *base, DWORD_PTR delta);
+
+Critères :
+[ ] Parse Relocation Table
+[ ] Applique delta à toutes les entrées
+[ ] Support IMAGE_REL_BASED_DIR64 et HIGHLOW
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 4 : Reflective DLL Loader (simple)
+═══════════════════════════════════════════════════════════════════
+
+Loader simplifié de DLL depuis mémoire.
+
+Fonctions :
+    HMODULE charger_dll_memoire(BYTE *dllBuffer, size_t taille);
+
+Étapes :
+1. Allouer mémoire (VirtualAlloc)
+2. Copier headers et sections
+3. Résoudre imports
+4. Appliquer relocations
+5. Exécuter DllMain
+
+Critères :
+[ ] Chargement réussi depuis buffer
+[ ] DllMain exécuté
+[ ] Exports accessibles
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 5 : Position Independent Code (PIC) Generator
+═══════════════════════════════════════════════════════════════════
+
+Créer un générateur de shellcode PIC.
+
+Fonction :
+    unsigned char* generer_pic_shellcode(const char *code);
+
+Critères :
+[ ] Code sans adresses absolues
+[ ] RIP-relative addressing (x64)
+[ ] Testable à différentes adresses
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 6 : Reflective Injector
+═══════════════════════════════════════════════════════════════════
+
+⚠️  VM ISOLÉE UNIQUEMENT
+
+Injecter une DLL réflexive dans un processus distant.
+
+Fonctions :
+    BOOL injecter_dll_reflective(DWORD pid, BYTE *dllBuffer, size_t taille);
+
+Critères :
+[ ] Allocation dans processus cible
+[ ] Copie DLL + loader
+[ ] CreateRemoteThread
+[ ] Nettoyage après injection
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 7 : TLS Callbacks Handler
+═══════════════════════════════════════════════════════════════════
+
+Créer une DLL avec TLS callbacks.
+
+Structure :
+    void NTAPI TlsCallback(PVOID DllHandle, DWORD Reason, PVOID Reserved);
+
+Critères :
+[ ] TLS callback exécuté avant DllMain
+[ ] Support DLL_PROCESS_ATTACH, THREAD_ATTACH
+[ ] Vérification ordre d'exécution
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 8 : Anti-Detection Techniques
+═══════════════════════════════════════════════════════════════════
+
+Implémenter des techniques anti-détection pour reflective loading.
+
+Techniques :
+- Masquer IAT hooks
+- Obfuscation de strings
+- Suppression PE headers après chargement
+- Module stomping
+
+Critères :
+[ ] Détection difficile par Process Hacker
+[ ] IAT masqué
+[ ] Headers effacés
+
+═══════════════════════════════════════════════════════════════════
+NOTES
+═══════════════════════════════════════════════════════════════════
+
+DÉTECTION :
+- Sysmon Event ID 7 (Image Load)
+- PE-sieve, Moneta
+- EDR (CrowdStrike, SentinelOne)
+
+LÉGALITÉ :
+- Autorisation écrite obligatoire
+- VM isolée uniquement
+- Jamais sur systèmes production
+
+═══════════════════════════════════════════════════════════════════

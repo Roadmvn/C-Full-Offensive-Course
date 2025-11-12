@@ -1,0 +1,261 @@
+═══════════════════════════════════════════════════════════════════
+EXERCICES - Module 34 : Token Manipulation
+═══════════════════════════════════════════════════════════════════
+
+⚠️  AVERTISSEMENT LÉGAL ⚠️
+
+Ces exercices sont destinés UNIQUEMENT à un apprentissage éthique dans
+un environnement de test isolé avec autorisation. L'utilisation de ces
+techniques sur des systèmes sans autorisation est ILLÉGALE.
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 1 : Énumération des privilèges d'un token
+═══════════════════════════════════════════════════════════════════
+
+Objectif :
+Créer une fonction qui énumère et affiche TOUS les privilèges d'un token
+donné, en indiquant pour chaque privilège :
+- Son nom (ex: SeDebugPrivilege)
+- S'il est activé ou désactivé
+- Ses attributs (enabled, enabled by default, removed, etc.)
+
+Fonction à implémenter :
+    void enumerer_privileges_token(HANDLE hToken);
+
+API à utiliser :
+- GetTokenInformation avec TokenPrivileges
+- LookupPrivilegeName pour convertir LUID en nom
+
+Critères de réussite :
+[ ] Énumération de tous les privilèges du token
+[ ] Affichage du nom de chaque privilège
+[ ] Indication de l'état (activé/désactivé)
+[ ] Affichage des attributs détaillés
+[ ] Gestion correcte des erreurs
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 2 : Activation de privilèges multiples
+═══════════════════════════════════════════════════════════════════
+
+Objectif :
+Créer une fonction qui active plusieurs privilèges en une seule opération.
+La fonction doit accepter un tableau de noms de privilèges et les activer
+tous simultanément.
+
+Fonction à implémenter :
+    BOOL activer_privileges_multiples(HANDLE hToken, const char *privileges[], int count);
+
+Privilèges à tester :
+- SeDebugPrivilege
+- SeSecurityPrivilege
+- SeBackupPrivilege
+- SeRestorePrivilege
+- SeTakeOwnershipPrivilege
+
+Critères de réussite :
+[ ] Activation de plusieurs privilèges en une seule opération
+[ ] Vérification de l'attribution de chaque privilège
+[ ] Gestion des privilèges non assignés
+[ ] Rapport détaillé (succès/échec par privilège)
+[ ] Rollback en cas d'échec partiel
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 3 : Comparaison de tokens
+═══════════════════════════════════════════════════════════════════
+
+Objectif :
+Créer une fonction qui compare deux tokens et affiche leurs différences :
+- Utilisateur
+- Groupes
+- Privilèges
+- Niveau d'intégrité
+- Type de token
+
+Fonction à implémenter :
+    void comparer_tokens(HANDLE hToken1, HANDLE hToken2);
+
+Critères de réussite :
+[ ] Comparaison de l'utilisateur (SID)
+[ ] Comparaison des groupes
+[ ] Comparaison des privilèges
+[ ] Comparaison du niveau d'intégrité
+[ ] Affichage formaté des différences
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 4 : Clonage de token avec modification
+═══════════════════════════════════════════════════════════════════
+
+Objectif :
+Créer une fonction qui clone un token et modifie son niveau d'intégrité.
+Utile pour créer des processus avec des niveaux d'intégrité spécifiques.
+
+Fonction à implémenter :
+    HANDLE cloner_token_avec_integrite(HANDLE hSourceToken, DWORD nouveauNiveauIntegrite);
+
+Niveaux à tester :
+- SECURITY_MANDATORY_LOW_RID (Low Integrity)
+- SECURITY_MANDATORY_MEDIUM_RID (Medium Integrity)
+- SECURITY_MANDATORY_HIGH_RID (High Integrity)
+
+Critères de réussite :
+[ ] Duplication correcte du token source
+[ ] Modification du niveau d'intégrité
+[ ] Vérification du nouveau niveau
+[ ] Token utilisable pour CreateProcessAsUser
+[ ] Gestion des erreurs de permission
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 5 : Énumération des tokens de tous les processus
+═══════════════════════════════════════════════════════════════════
+
+Objectif :
+Créer un programme qui énumère tous les processus en cours d'exécution
+et affiche les informations de token de chacun :
+- PID et nom du processus
+- Utilisateur du token
+- Niveau d'élévation (UAC)
+- Niveau d'intégrité
+
+Fonction à implémenter :
+    void enumerer_tokens_processus();
+
+Critères de réussite :
+[ ] Énumération de tous les processus accessibles
+[ ] Extraction du token de chaque processus
+[ ] Affichage des informations de token
+[ ] Gestion des processus protégés (accès refusé)
+[ ] Tri par niveau d'intégrité ou utilisateur
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 6 : Token Impersonation avec création de processus
+═══════════════════════════════════════════════════════════════════
+
+Objectif :
+Créer une fonction qui :
+1. Duplique le token d'un processus cible
+2. Crée un nouveau processus (cmd.exe) en utilisant ce token
+3. Le nouveau processus hérite des privilèges du token source
+
+Fonction à implémenter :
+    BOOL creer_processus_avec_token(DWORD pidSource, const char *commandLine);
+
+API à utiliser :
+- DuplicateTokenEx
+- CreateProcessAsUser
+
+Critères de réussite :
+[ ] Duplication correcte du token source (Primary Token)
+[ ] Création réussie du processus avec le token
+[ ] Processus créé hérite des privilèges corrects
+[ ] Gestion du bureau et de la session
+[ ] Nettoyage des handles
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 7 : Détection de token manipulation
+═══════════════════════════════════════════════════════════════════
+
+Objectif :
+Créer un outil de monitoring qui détecte les tentatives de manipulation
+de tokens sur le système. L'outil doit détecter :
+- Duplication de tokens privilégiés
+- Activation de SeDebugPrivilege
+- Impersonification suspecte
+
+Approche :
+Utiliser les Event Tracing for Windows (ETW) ou les Security Auditing APIs.
+
+Fonction à implémenter :
+    void monitorer_token_manipulation(DWORD dureeSecondes);
+
+Critères de réussite :
+[ ] Détection de duplication de tokens
+[ ] Détection d'activation de privilèges sensibles
+[ ] Logging des événements suspects
+[ ] Identification du processus source
+[ ] Alertes en temps réel
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE 8 : Parent PID Spoofing avec token
+═══════════════════════════════════════════════════════════════════
+
+Objectif :
+Créer une fonction qui combine :
+1. Parent PID Spoofing (PPID spoofing)
+2. Token stealing du parent forgé
+3. Création d'un processus qui semble légitime
+
+Cette technique est utilisée par des malwares pour se camoufler.
+
+Fonction à implémenter :
+    BOOL creer_processus_spoofe(DWORD ppidCible, const char *commandLine);
+
+Étapes :
+1. Ouvrir le processus parent cible
+2. Voler son token
+3. Utiliser UpdateProcThreadAttribute pour PPID spoofing
+4. Créer le processus avec le token volé
+
+Critères de réussite :
+[ ] PPID correctement spoofé
+[ ] Token du parent correctement volé
+[ ] Processus créé apparaît comme enfant du parent cible
+[ ] Token hérité du parent cible
+[ ] Détection difficile par les outils de monitoring
+
+═══════════════════════════════════════════════════════════════════
+EXERCICE BONUS : Token Vault
+═══════════════════════════════════════════════════════════════════
+
+Objectif :
+Créer un "coffre-fort" de tokens qui :
+- Collecte et stocke les tokens de processus privilégiés
+- Permet de réutiliser ces tokens ultérieurement
+- Chiffre les tokens stockés
+- Implémente un mécanisme d'expiration
+
+Fonctions à implémenter :
+    BOOL vault_stocker_token(const char *nom, HANDLE hToken);
+    HANDLE vault_recuperer_token(const char *nom);
+    void vault_lister_tokens();
+    void vault_nettoyer_expires();
+
+Critères de réussite :
+[ ] Stockage sécurisé de tokens multiples
+[ ] Chiffrement des tokens au repos
+[ ] Système de nommage et récupération
+[ ] Expiration automatique après délai
+[ ] Protection contre les fuites de mémoire
+
+═══════════════════════════════════════════════════════════════════
+NOTES IMPORTANTES
+═══════════════════════════════════════════════════════════════════
+
+1. ENVIRONNEMENT DE TEST :
+   - Machine virtuelle Windows isolée recommandée
+   - Pas de connexion réseau durant les tests
+   - Snapshots avant/après chaque test
+   - Droits administrateur requis
+
+2. DÉTECTION ET PRÉVENTION :
+   - Ces techniques sont détectées par les EDR modernes
+   - Windows Defender peut bloquer certaines opérations
+   - Sysmon peut logger toutes les manipulations de tokens
+   - Les antivirus heuristiques détectent ces comportements
+
+3. LÉGALITÉ :
+   - Autorisation écrite OBLIGATOIRE
+   - Environnement isolé UNIQUEMENT
+   - Documentation de tous les tests
+   - Respect des lois locales
+
+4. APPRENTISSAGE :
+   - Comprendre pour mieux défendre
+   - Ces techniques sont utilisées par les attaquants
+   - Essentiel pour la sécurité défensive
+   - Blue team doit connaître red team
+
+═══════════════════════════════════════════════════════════════════
+FIN DES EXERCICES
+═══════════════════════════════════════════════════════════════════
+
+Solutions détaillées disponibles dans solution.txt

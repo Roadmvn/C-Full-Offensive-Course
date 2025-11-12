@@ -1,0 +1,80 @@
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
+
+EXERCICES - MODULE 24 : PROCESS INJECTION
+
+[ ] 1. PROCESS HOLLOWING (RunPE)
+Implémenter process hollowing complet :
+- Créer processus en mode CREATE_SUSPENDED
+- Unmap image originale avec NtUnmapViewOfSection
+- Allouer mémoire à l'image base address
+- Écrire PE headers + sections
+- Fix relocations et imports
+- SetThreadContext et ResumeThread
+
+Référence : hasherezade/process_hollowing, Malware Unicorn
+
+[ ] 2. EARLY BIRD INJECTION
+Technique d'injection avant ProcessStart :
+- CreateProcess avec CREATE_SUSPENDED
+- VirtualAllocEx + WriteProcessMemory
+- QueueUserAPC sur thread principal
+- ResumeThread pour démarrer avec payload
+
+Référence : CyberArk Early Bird technique
+
+[ ] 3. ATOMBOMBING
+Injection via Atom Tables :
+- GlobalAddAtom pour stocker shellcode
+- NtQueueApcThread avec GlobalGetAtomName
+- Bypass session isolation
+
+Référence : AtomBombing paper (enSilo)
+
+[ ] 4. DOPPELGANGING
+Technique NTFS transaction :
+- CreateFileTransacted
+- NtCreateSection sur file transacted
+- RollbackTransaction
+- NtCreateProcessEx sur section
+
+Référence : Process Doppelganging (BlackHat)
+
+[ ] 5. MODULE STOMPING
+Overwrite module légitime :
+- Trouver module non-critique déjà chargé
+- VirtualProtect PAGE_EXECUTE_READWRITE
+- Overwrite avec shellcode
+- Execute depuis module address
+
+Référence : Module stomping techniques
+
+[ ] 6. PROCESS GHOSTING
+Windows 10+ technique :
+- DeleteFile + SetFileInformationByHandle
+- NtCreateSection sur deleted file
+- NtCreateProcessEx
+- File fantôme sur disk
+
+Référence : Process Ghosting (Elastic Security)
+
+[ ] 7. REMOTE DLL INJECTION VIA SETWINDOWSHOOKEX
+Alternative à CreateRemoteThread :
+- FindWindow pour trouver fenêtre cible
+- SetWindowsHookEx avec DLL
+- Trigger hook via SendMessage
+
+Référence : SetWindowsHookEx injection
+
+[ ] 8. FIBER EXECUTION
+Injection via Fibers :
+- ConvertThreadToFiber
+- CreateFiber avec shellcode
+- SwitchToFiber
+
+Référence : Fiber-based execution
+
+NOTES :
+- CreateRemoteThread très détectée (Sysmon Event ID 8)
+- Préférer QueueUserAPC ou techniques avancées
+- Combiner avec syscalls directs pour bypass EDR

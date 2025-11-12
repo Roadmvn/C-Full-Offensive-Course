@@ -1,0 +1,156 @@
+═══════════════════════════════════════════════════════════════════
+SOLUTIONS - Module 37 : Reflective Loading
+═══════════════════════════════════════════════════════════════════
+
+SOLUTION 1 : PE Parser
+═══════════════════════════════════════════════════════════════════
+
+void parser_pe(const char *fichier) {
+    HANDLE hFile = CreateFile(fichier, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+    DWORD size = GetFileSize(hFile, NULL);
+    BYTE *buffer = malloc(size);
+    ReadFile(hFile, buffer, size, &size, NULL);
+    CloseHandle(hFile);
+
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)buffer;
+    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)(buffer + dos->e_lfanew);
+
+    printf("Machine: 0x%X\n", nt->FileHeader.Machine);
+    printf("Sections: %d\n", nt->FileHeader.NumberOfSections);
+    printf("EntryPoint: 0x%X\n", nt->OptionalHeader.AddressOfEntryPoint);
+
+    free(buffer);
+}
+
+═══════════════════════════════════════════════════════════════════
+SOLUTION 2 : Import Resolution
+═══════════════════════════════════════════════════════════════════
+
+BOOL resoudre_imports(BYTE *base) {
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
+    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)(base + dos->e_lfanew);
+
+    DWORD importRVA = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+    PIMAGE_IMPORT_DESCRIPTOR importDesc = (PIMAGE_IMPORT_DESCRIPTOR)(base + importRVA);
+
+    while (importDesc->Name) {
+        char *dllName = (char*)(base + importDesc->Name);
+        HMODULE hDll = LoadLibraryA(dllName);
+
+        PIMAGE_THUNK_DATA thunk = (PIMAGE_THUNK_DATA)(base + importDesc->FirstThunk);
+        PIMAGE_THUNK_DATA origThunk = (PIMAGE_THUNK_DATA)(base + importDesc->OriginalFirstThunk);
+
+        while (thunk->u1.AddressOfData) {
+            if (!(origThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG)) {
+                PIMAGE_IMPORT_BY_NAME import = (PIMAGE_IMPORT_BY_NAME)(base + origThunk->u1.AddressOfData);
+                FARPROC func = GetProcAddress(hDll, (char*)import->Name);
+                thunk->u1.Function = (ULONGLONG)func;
+            }
+            thunk++;
+            origThunk++;
+        }
+        importDesc++;
+    }
+    return TRUE;
+}
+
+═══════════════════════════════════════════════════════════════════
+SOLUTION 3 : Relocation
+═══════════════════════════════════════════════════════════════════
+
+BOOL appliquer_relocations(BYTE *base, DWORD_PTR delta) {
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
+    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)(base + dos->e_lfanew);
+
+    DWORD relocRVA = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress;
+    PIMAGE_BASE_RELOCATION reloc = (PIMAGE_BASE_RELOCATION)(base + relocRVA);
+
+    while (reloc->VirtualAddress) {
+        WORD *relocData = (WORD*)(reloc + 1);
+        int count = (reloc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
+
+        for (int i = 0; i < count; i++) {
+            int type = relocData[i] >> 12;
+            int offset = relocData[i] & 0xFFF;
+
+            if (type == IMAGE_REL_BASED_DIR64) {
+                ULONGLONG *addr = (ULONGLONG*)(base + reloc->VirtualAddress + offset);
+                *addr += delta;
+            }
+        }
+
+        reloc = (PIMAGE_BASE_RELOCATION)((BYTE*)reloc + reloc->SizeOfBlock);
+    }
+    return TRUE;
+}
+
+═══════════════════════════════════════════════════════════════════
+SOLUTION 4 : Reflective Loader (simplifié)
+═══════════════════════════════════════════════════════════════════
+
+HMODULE charger_dll_memoire(BYTE *dllBuffer, size_t taille) {
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)dllBuffer;
+    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)(dllBuffer + dos->e_lfanew);
+
+    BYTE *base = VirtualAlloc(NULL, nt->OptionalHeader.SizeOfImage,
+                             MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+
+    memcpy(base, dllBuffer, nt->OptionalHeader.SizeOfHeaders);
+
+    PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(nt);
+    for (int i = 0; i < nt->FileHeader.NumberOfSections; i++) {
+        memcpy(base + section[i].VirtualAddress,
+               dllBuffer + section[i].PointerToRawData,
+               section[i].SizeOfRawData);
+    }
+
+    resoudre_imports(base);
+
+    DWORD_PTR delta = (DWORD_PTR)base - nt->OptionalHeader.ImageBase;
+    if (delta) appliquer_relocations(base, delta);
+
+    DWORD old;
+    VirtualProtect(base, nt->OptionalHeader.SizeOfImage, PAGE_EXECUTE_READ, &old);
+
+    typedef BOOL (WINAPI *DllMain_t)(HINSTANCE, DWORD, LPVOID);
+    DllMain_t DllMain = (DllMain_t)(base + nt->OptionalHeader.AddressOfEntryPoint);
+    DllMain((HINSTANCE)base, DLL_PROCESS_ATTACH, NULL);
+
+    return (HMODULE)base;
+}
+
+═══════════════════════════════════════════════════════════════════
+AUTRES SOLUTIONS (concepts)
+═══════════════════════════════════════════════════════════════════
+
+SOLUTION 5 : PIC Generator
+- Utiliser RIP-relative addressing
+- Éviter adresses absolues
+- Tester avec memcpy à différentes adresses
+
+SOLUTION 6 : Reflective Injector
+- OpenProcess(PROCESS_ALL_ACCESS, pid)
+- VirtualAllocEx
+- WriteProcessMemory (DLL + loader)
+- CreateRemoteThread
+
+SOLUTION 7 : TLS Callbacks
+- __declspec(allocate(".CRT$XLB"))
+- PIMAGE_TLS_CALLBACK array
+- Exécuté avant DllMain
+
+SOLUTION 8 : Anti-Detection
+- Masquer IAT avec obfuscation
+- Supprimer MZ/PE signature après load
+- Module stomping sur module légitime
+
+═══════════════════════════════════════════════════════════════════
+RESSOURCES
+═══════════════════════════════════════════════════════════════════
+
+- Reflective DLL Injection (Stephen Fewer)
+- PE Format Spec (Microsoft)
+- Windows Internals
+- Metasploit ReflectiveDLLInjection module
+
+═══════════════════════════════════════════════════════════════════
