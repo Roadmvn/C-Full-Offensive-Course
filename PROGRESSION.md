@@ -25,10 +25,10 @@ Apprentissage des fondamentaux du langage C avec exemples neutres et pédagogiqu
 - **09 - Functions** (2h) : Déclaration, paramètres, return, scope
 
 ### Compétences acquises
-✓ Syntaxe C de base
-✓ Structures de contrôle
-✓ Manipulation de données
-✓ Organisation du code en fonctions
+- Syntaxe C de base
+- Structures de contrôle
+- Manipulation de données
+- Organisation du code en fonctions
 
 ---
 
@@ -54,10 +54,10 @@ Concepts avancés du C avec une **section "Application Red Team"** dans chaque R
   - *Red team : Droppers, PE parsing, payloads*
 
 ### Compétences acquises
-✓ Gestion mémoire avancée
-✓ Structures de données
-✓ Manipulation de fichiers
-✓ Compréhension des usages en sécurité
+- Gestion mémoire avancée
+- Structures de données
+- Manipulation de fichiers
+- Compréhension des usages en sécurité
 
 ---
 
@@ -75,10 +75,10 @@ Code **intentionnellement vulnérable** avec avertissements légaux stricts.
 - **20 - Reverse Shell** (4h) : Socket TCP, dup2(), shell over network
 
 ### Compétences acquises
-✓ Comprendre les vulnérabilités binaires
-✓ Exploiter des buffer overflows
-✓ Créer et injecter du shellcode
-✓ Développer des reverse shells
+- Comprendre les vulnérabilités binaires
+- Exploiter des buffer overflows
+- Créer et injecter du shellcode
+- Développer des reverse shells
 
 ---
 
@@ -121,12 +121,12 @@ Techniques **professionnelles** utilisées par Cobalt Strike, Metasploit et APT 
 - **45 - C2 Development** (6-8h) : Architecture C2, multi-protocol, tasking
 
 ### Compétences acquises
-✓ Injection de code avancée
-✓ Bypass EDR/AV
-✓ Techniques de persistence
-✓ Privilege escalation
-✓ Développement C2 complet
-✓ Toutes les compétences pour **OSWA**
+- Injection de code avancée
+- Bypass EDR/AV
+- Techniques de persistence
+- Privilege escalation
+- Développement C2 complet
+- Toutes les compétences pour **OSWA**
 
 ---
 
@@ -145,16 +145,19 @@ Techniques **professionnelles** utilisées par Cobalt Strike, Metasploit et APT 
 - [ ] **Module 45 complété** : Tu es prêt pour OSWA et Red Team jobs
 
 ### Conseils
-✅ Fais les modules dans l'ordre strict
-✅ Compile et teste TOUS les exemples
-✅ Fais au minimum 6/8 exercices par module
-✅ Relis les modules précédents si bloqué
-✅ Prends des notes dans un carnet
-✅ Pratique sur des VMs isolées (modules 15+)
 
-❌ Ne saute AUCUN module
-❌ Ne copie pas sans comprendre
-❌ Ne teste PAS les techniques sur des systèmes réels sans autorisation
+**À faire :**
+- Fais les modules dans l'ordre strict
+- Compile et teste TOUS les exemples
+- Fais au minimum 6/8 exercices par module
+- Relis les modules précédents si bloqué
+- Prends des notes dans un carnet
+- Pratique sur des VMs isolées (modules 15+)
+
+**À éviter :**
+- Ne saute AUCUN module
+- Ne copie pas sans comprendre
+- Ne teste PAS les techniques sur des systèmes réels sans autorisation
 
 ---
 
@@ -176,6 +179,6 @@ Tu seras capable de :
 
 ---
 
-**Bonne chance dans ton apprentissage ! 🔥**
+**Bonne chance dans ton apprentissage !**
 
 *"Chaque expert a été un débutant. La clé est la persistance."*
