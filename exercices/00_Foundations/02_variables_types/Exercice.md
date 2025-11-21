@@ -1,0 +1,48 @@
+
+### EXERCICE 1 : Stocker ton profil
+Crée des variables pour ton age (int), taille (float), initiale (char).
+Objectif : Déclarer et initialiser des variables
+[ ] Exercice terminé
+
+
+### EXERCICE 2 : Calculer une somme
+Déclare deux int (a=10, b=20) et affiche leur somme.
+Objectif : Utiliser des opérations arithmétiques
+[ ] Exercice terminé
+
+
+### EXERCICE 3 : Division entière vs float
+Calcule 5/2 avec des int, puis avec des float.
+Objectif : Comprendre la différence entre division entière et réelle
+[ ] Exercice terminé
+
+
+### EXERCICE 4 : Code ASCII
+Affiche la valeur ASCII de 'A' en utilisant %d.
+Objectif : Comprendre que char est un nombre
+[ ] Exercice terminé
+
+
+### EXERCICE 5 : Taille des types
+Affiche sizeof(int), sizeof(char), sizeof(double).
+Objectif : Connaître la taille des types en mémoire
+[ ] Exercice terminé
+
+
+### EXERCICE 6 : Calcul IMC
+Calcule ton IMC avec poids (float) et taille (float).
+Objectif : Combiner variables et opérations
+[ ] Exercice terminé
+
+
+### EXERCICE 7 : Unsigned vs signed
+Compare int vs unsigned int pour stocker -1.
+Objectif : Comprendre les types signés/non signés
+[ ] Exercice terminé
+
+
+### EXERCICE 8 : Overflow
+Ajoute 1 à 2147483647 (max int). Qu'observe-tu?
+Objectif : Découvrir le dépassement de capacité
+[ ] Exercice terminé
+

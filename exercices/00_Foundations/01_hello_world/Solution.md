@@ -1,0 +1,436 @@
+EXERCICE 1 : Afficher ton nom
+
+```c
+#include <stdio.h>
+int main() {
+```
+    printf("Jean Dupont\n");
+    return 0;
+}
+
+EXERCICE 2 : Afficher plusieurs lignes
+
+```c
+#include <stdio.h>
+int main() {
+```
+    printf("Ligne 1 : Bonjour\n");
+    printf("Ligne 2 : Comment vas-tu?\n");
+    printf("Ligne 3 : Au revoir\n");
+    return 0;
+}
+
+EXERCICE 3 : Afficher sans \n
+
+```c
+#include <stdio.h>
+int main() {
+```
+    printf("Hello ");  // Pas de \n
+    printf("World\n");  // Affiche sur la même ligne
+    return 0;
+}
+
+EXERCICE 4 : Caractères spéciaux
+
+```c
+#include <stdio.h>
+int main() {
+```
+    printf("Il a dit \"Bonjour\"\n");
+    return 0;
+}
+Explication : \" permet d'afficher un guillemet dans une chaîne.
+
+EXERCICE 5 : Tabulations
+
+```c
+#include <stdio.h>
+int main() {
+```
+    printf("Nom\tAge\tVille\n");
+    printf("Alice\t25\tParis\n");
+    printf("Bob\t30\tLyon\n");
+    return 0;
+}
+
+EXERCICE 6 : Chemin de fichier
+
+```c
+#include <stdio.h>
+int main() {
+```
+    printf("C:\\Users\\Documents\\fichier.txt\n");
+    return 0;
+}
+Explication : \\ permet d'afficher un seul backslash.
+
+EXERCICE 7 : Message multi-lignes
+
+```c
+#include <stdio.h>
+int main() {
+```
+    printf("Le soleil brille,\n");
+    printf("Les oiseaux chantent,\n");
+    printf("La nature s'éveille,\n");
+    printf("Un nouveau jour commence.\n");
+    return 0;
+}
+
+EXERCICE 8 : Carte de visite
+
+```c
+#include <stdio.h>
+int main() {
+```
+    printf("=== CARTE DE VISITE ===\n");
+    printf("Nom: Jean Dupont\n");
+    printf("Email: jean.dupont@email.com\n");
+    printf("Téléphone: 06 12 34 56 78\n");
+    printf("=======================\n");
+    return 0;
+}
+
+═══════════════════════════════════════════════════════════════
+SOLUTION DÉFI 2 : Expérimenter avec \n
+═══════════════════════════════════════════════════════════════
+
+a) Sans \n :
+   printf("Hello");
+   printf("World");
+
+   Résultat : HelloWorld (collé sur la même ligne)
+
+b) Avec \n :
+   printf("Hello\n");
+   printf("World\n");
+
+   Résultat :
+   Hello
+   World
+
+c) Plusieurs \n :
+   printf("Hello\n\n\n");
+   printf("World");
+
+   Résultat :
+   Hello
+
+
+   World
+
+
+### EXPLICATION :
+- \n crée une nouvelle ligne
+- Plusieurs \n créent des lignes vides
+- Sans \n, le texte continue sur la même ligne
+
+═══════════════════════════════════════════════════════════════
+SOLUTION DÉFI 3 : Créer un dessin ASCII
+═══════════════════════════════════════════════════════════════
+
+
+```c
+#include <stdio.h>
+```
+
+
+```c
+int main() {
+```
+    printf("    *\n");
+    printf("   ***\n");
+    printf("  *****\n");
+    printf(" *******\n");
+    printf("*********\n");
+    printf("    |\n");
+    printf("    |\n");
+    return 0;
+}
+
+Autre exemple (maison) :
+
+    printf("    /\\\n");
+    printf("   /  \\\n");
+    printf("  /____\\\n");
+    printf("  |    |\n");
+    printf("  | [] |\n");
+    printf("  |____|\n");
+
+
+### ASTUCE :
+- Utilise des espaces pour positionner
+- Chaque ligne est un printf() séparé
+- Attention aux caractères spéciaux : \\ pour afficher \
+
+═══════════════════════════════════════════════════════════════
+SOLUTION DÉFI 4 : Tester les caractères spéciaux
+═══════════════════════════════════════════════════════════════
+
+a) Tabulations avec \t :
+
+printf("Nom\tAge\tVille\n");
+printf("Tudy\t23\tParis\n");
+printf("Alice\t30\tLyon\n");
+
+Résultat :
+Nom     Age     Ville
+Tudy    23      Paris
+Alice   30      Lyon
+
+b) Guillemets avec \" :
+
+printf("Il a dit \"Bonjour\"\n");
+printf("Le fichier s'appelle \"test.txt\"\n");
+
+Résultat :
+Il a dit "Bonjour"
+Le fichier s'appelle "test.txt"
+
+c) Backslash avec \\ :
+
+printf("Chemin : C:\\Users\\Tudy\\\n");
+printf("Expression : \\n est une nouvelle ligne\n");
+
+Résultat :
+Chemin : C:\Users\Tudy\
+Expression : \n est une nouvelle ligne
+
+MÉMO DES CARACTÈRES SPÉCIAUX :
+\n  → Nouvelle ligne (newline)
+\t  → Tabulation
+\"  → Guillemet "
+\\  → Backslash \
+\r  → Retour chariot
+\0  → Caractère nul (important pour les strings !)
+
+═══════════════════════════════════════════════════════════════
+SOLUTION DÉFI 5 : Tester le code de retour
+═══════════════════════════════════════════════════════════════
+
+Modifie main.c :
+
+
+```c
+#include <stdio.h>
+```
+
+
+```c
+int main() {
+```
+    printf("Programme avec erreur\n");
+    return 1;  // Code d'erreur
+}
+
+Compile et exécute :
+
+```bash
+$ make
+$ ./program
+```
+Programme avec erreur
+
+Vérifie le code de retour :
+
+```bash
+$ echo $?
+```
+1
+
+Maintenant change en "return 0;" :
+
+
+```bash
+$ make
+$ ./program
+```
+Programme avec erreur
+
+```bash
+$ echo $?
+```
+0
+
+
+### EXPLICATION :
+- "return 0;" → Succès (pas d'erreur)
+- "return 1;" (ou autre) → Erreur
+- "$?" affiche le code de retour du dernier programme
+- Les scripts shell utilisent ce code pour détecter les erreurs
+
+═══════════════════════════════════════════════════════════════
+SOLUTION DÉFI 6 : Provoquer des erreurs
+═══════════════════════════════════════════════════════════════
+
+a) Sans #include <stdio.h> :
+
+
+### ERREUR :
+main.c:3:5: warning: implicit declaration of function 'printf'
+
+
+### EXPLICATION :
+Le compilateur ne connaît pas printf() sans stdio.h
+
+---
+
+b) Oubli du point-virgule :
+
+printf("Test")
+printf("Test2");
+
+
+### ERREUR :
+main.c:5:5: error: expected ';' before 'printf'
+
+
+### EXPLICATION :
+Chaque instruction DOIT se terminer par ;
+
+---
+
+c) Oubli de l'accolade fermante :
+
+
+```c
+int main() {
+```
+    printf("Test\n");
+    return 0;
+
+```c
+// } manquant
+```
+
+
+### ERREUR :
+main.c:7: error: expected declaration or statement at end of input
+
+
+### EXPLICATION :
+Chaque { doit avoir son } correspondant
+
+---
+
+d) Majuscule dans printf :
+
+Printf("Test\n");  // P majuscule
+
+
+### ERREUR :
+main.c:4:5: error: implicit declaration of function 'Printf'
+
+
+### EXPLICATION :
+C est sensible à la casse : Printf ≠ printf
+
+LEÇON IMPORTANTE :
+Lis TOUJOURS les messages d'erreur du compilateur !
+Ils indiquent la ligne et le type d'erreur.
+
+═══════════════════════════════════════════════════════════════
+SOLUTION DÉFI 7 : Compiler manuellement
+═══════════════════════════════════════════════════════════════
+
+Commande de compilation manuelle :
+
+
+```bash
+$ gcc main.c -o mon_programme
+$ ./mon_programme
+```
+
+Avec warnings (recommandé) :
+
+
+```bash
+$ gcc -Wall -Wextra main.c -o mon_programme
+$ ./mon_programme
+```
+
+Explication des flags :
+-Wall    : Affiche tous les warnings standards
+-Wextra  : Warnings additionnels
+-g       : Inclut les symboles de debug (pour gdb)
+-o       : Spécifie le nom du fichier de sortie
+
+Si tu omets "-o nom" :
+
+```bash
+$ gcc main.c
+$ ./a.out    # Nom par défaut
+```
+
+═══════════════════════════════════════════════════════════════
+SOLUTION DÉFI 8 : Programme multi-lignes
+═══════════════════════════════════════════════════════════════
+
+
+```c
+#include <stdio.h>
+```
+
+
+```c
+int main() {
+```
+    printf("═══════════════════════════════════════\n");
+    printf("          MENU PRINCIPAL\n");
+    printf("═══════════════════════════════════════\n");
+    printf("  1. Option 1\n");
+    printf("  2. Option 2\n");
+    printf("  3. Option 3\n");
+    printf("  4. Quitter\n");
+    printf("═══════════════════════════════════════\n");
+
+    return 0;
+}
+
+
+### ASTUCE :
+Tu peux aussi utiliser UN SEUL printf() avec plusieurs \n :
+
+printf("═══════════════════════════════════════\n"
+       "          MENU PRINCIPAL\n"
+       "═══════════════════════════════════════\n"
+       "  1. Option 1\n"
+       "  2. Option 2\n"
+       "  3. Option 3\n"
+       "  4. Quitter\n"
+       "═══════════════════════════════════════\n");
+
+Les strings entre " " collées sont automatiquement concaténées !
+
+═══════════════════════════════════════════════════════════════
+📚 CONCEPTS CLÉS À RETENIR
+═══════════════════════════════════════════════════════════════
+
+1. #include <stdio.h> est OBLIGATOIRE pour printf()
+
+2. main() est le point d'entrée du programme
+
+3. printf() affiche du texte
+
+4. \n = nouvelle ligne, \t = tab, \" = guillemet, \\ = backslash
+
+5. return 0 = succès, autre valeur = erreur
+
+6. Chaque instruction se termine par ;
+
+7. C est sensible à la casse (printf ≠ Printf)
+
+8. Lis les erreurs du compilateur !
+
+═══════════════════════════════════════════════════════════════
+🎯 PRÊT POUR LA SUITE ?
+═══════════════════════════════════════════════════════════════
+
+Si tu as compris tout ça, tu es prêt pour l'exercice 02 !
+
+cd ../02_variables_types/
+cat README.md
+
+═══════════════════════════════════════════════════════════════
+

