@@ -1,0 +1,91 @@
+⚠️ AVERTISSEMENT STRICT
+Techniques de malware development. Usage éducatif uniquement.
+
+
+### EXERCICES - MODULE 29 : CODE OBFUSCATION
+
+[ ] 1. STRING OBFUSCATION MACRO AVANCÉE
+Créer macro C++ constexpr pour strings :
+- Compile-time XOR avec key dérivée de __LINE__
+- Support strings multiples dans même fonction
+- Compatible char* et wchar_t*
+- Vérifier avec 'strings binary' (rien visible)
+- Déchiffrement automatique runtime
+
+Référence : ADVobfuscator, obfuscate.h libraries
+
+[ ] 2. CONTROL FLOW FLATTENING COMPLET
+Transformer fonction en state machine :
+- Parser code séquentiel A; B; C; D;
+- Générer state machine avec switch/case
+- États randomisés (pas séquentiels 0,1,2,3)
+- Dispatcher opaque avec calculs complexes
+- CFG (Control Flow Graph) aplati complètement
+
+Référence : Obfuscator-LLVM -mllvm -fla pass
+
+[ ] 3. OPAQUE PREDICATES VARIÉES
+Implémenter 10+ opaque predicates :
+- Mathématiques : (x²≥0), (x(x+1) pair)
+- Pointeurs : (&x == &x)
+- Time-based : (time() > 0)
+- System : (getpid() > 0)
+- Combiner avec dead code branches
+
+Référence : Tigress opaque predicates
+
+[ ] 4. JUNK CODE GENERATOR
+Générer junk instructions aléatoires :
+- NOP variations (xchg eax,eax, mov eax,eax)
+- Push/pop pairs inutiles
+- Calculs arithmétiques sans side effects
+- Calls à fonctions fake
+- Insertion entre vraies instructions (50% ratio)
+
+Référence : Polymorphic engine techniques
+
+[ ] 5. INSTRUCTION VIRTUALIZATION
+Créer VM custom pour code :
+- Définir bytecode custom (ADD, SUB, MOV, JMP, etc.)
+- Compileur: code C -> bytecode
+- Interpréteur VM runtime
+- Code original jamais en clair (virtualisé)
+
+Référence : VMProtect, Code Virtualizer, Themida
+
+[ ] 6. API HASHING (IMPORT OBFUSCATION)
+Résoudre APIs dynamiquement via hash :
+- Hash function names (DJB2, CRC32)
+- Parse PEB -> LDR -> modules -> exports
+- Match hash pour trouver function address
+- Éviter imports statiques (IAT vide)
+
+Référence : Metasploit block_api, Cobalt Strike
+
+[ ] 7. CALL INDIRECTION (INDIRECT CALLS)
+Remplacer calls directs par indirects :
+- Stocker function pointers dans array
+- Index calculé via formule opaque
+- call via pointer au lieu de call direct
+- Complique analyse statique CFG
+
+Référence : Control flow obfuscation techniques
+
+[ ] 8. METAMORPHIC CODE GENERATOR
+Générer variants fonctionnellement équivalents :
+- Même logique, code assembleur différent
+- Instruction substitution (add -> sub -x)
+- Register allocation variation
+- Code reordering (préserve sémantique)
+- Output N variants uniques
+
+Référence : Metamorphic engines (Zmist, Metaphor)
+
+
+### NOTES :
+- Obfuscation ralentit exécution (acceptable malware, problème soft légit)
+- Combiner techniques multiples pour efficacité maximale
+- Tester avec IDA Pro, Ghidra pour voir résultat
+- Analyse dynamique (sandbox) bypass obfuscation statique
+- Obfuscation != encryption (réversible avec temps/efforts)
+

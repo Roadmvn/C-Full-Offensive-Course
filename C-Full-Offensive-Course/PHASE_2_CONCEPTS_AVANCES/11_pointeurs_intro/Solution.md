@@ -1,0 +1,262 @@
+SOLUTION EXERCICE 1 : Premier pointeur
+```c
+
+```c
+#include <stdio.h>
+```
+
+
+```c
+int main() {
+    int age = 18;
+    int *ptr_age = &age;
+```
+
+    printf("Adresse de age: %p\n", (void*)ptr_age);
+    printf("Valeur via pointeur: %d\n", *ptr_age);
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 2 : Modifier via pointeur
+```c
+
+```c
+#include <stdio.h>
+```
+
+
+```c
+int main() {
+```
+    float prix = 19.99;
+    float *ptr_prix = &prix;
+
+    printf("Prix initial: %.2f\n", prix);
+    *ptr_prix = 24.99;
+    printf("Prix modifié: %.2f\n", prix);
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 3 : Fonction doubler
+```c
+
+```c
+#include <stdio.h>
+```
+
+
+```c
+void doubler(int *valeur) {
+```
+    *valeur = *valeur * 2;
+}
+
+
+```c
+int main() {
+    int num1 = 5;
+    int num2 = 10;
+    int num3 = 100;
+```
+
+    printf("Avant: %d, %d, %d\n", num1, num2, num3);
+
+    doubler(&num1);
+    doubler(&num2);
+    doubler(&num3);
+
+    printf("Après: %d, %d, %d\n", num1, num2, num3);
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 4 : Pointeur NULL
+```c
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+```
+
+
+```c
+int main() {
+    int *ptr;  // Non initialisé (dangereux)
+```
+    ptr = NULL;  // Maintenant sécurisé
+
+    if (ptr == NULL) {
+        printf("Le pointeur est NULL, sécurisé\n");
+    } else {
+        printf("Valeur: %d\n", *ptr);
+    }
+
+
+```c
+    // Initialisation correcte
+    int valeur = 42;
+```
+    ptr = &valeur;
+
+    if (ptr != NULL) {
+        printf("Maintenant le pointeur est valide: %d\n", *ptr);
+    }
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 5 : Comparer des adresses
+```c
+
+```c
+#include <stdio.h>
+```
+
+
+```c
+int main() {
+    int a = 10;
+    int b = 20;
+```
+
+    printf("Adresse de a: %p\n", (void*)&a);
+    printf("Adresse de b: %p\n", (void*)&b);
+
+    if (&a < &b) {
+        printf("a est plus bas en mémoire que b\n");
+    } else {
+        printf("b est plus bas en mémoire que a\n");
+    }
+
+
+```c
+    // Différence en bytes
+```
+    long diff = (char*)&b - (char*)&a;
+    printf("Différence: %ld bytes\n", diff);
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 6 : Pointeurs de différents types
+```c
+
+```c
+#include <stdio.h>
+```
+
+
+```c
+int main() {
+    char c = 'A';
+    int i = 42;
+```
+    float f = 3.14;
+    double d = 2.71828;
+
+    char *ptr_c = &c;
+    int *ptr_i = &i;
+    float *ptr_f = &f;
+    double *ptr_d = &d;
+
+    printf("Taille de char*: %zu bytes\n", sizeof(ptr_c));
+    printf("Taille de int*: %zu bytes\n", sizeof(ptr_i));
+    printf("Taille de float*: %zu bytes\n", sizeof(ptr_f));
+    printf("Taille de double*: %zu bytes\n", sizeof(ptr_d));
+
+    printf("\nTous les pointeurs ont la même taille!\n");
+    printf("(Dépend de l'architecture: 4 bytes sur 32-bit, 8 bytes sur 64-bit)\n");
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 7 : Fonction min et max
+```c
+
+```c
+#include <stdio.h>
+```
+
+
+```c
+void afficher_min_max(int *a, int *b) {
+```
+    if (*a < *b) {
+        printf("Min: %d, Max: %d\n", *a, *b);
+    } else {
+        printf("Min: %d, Max: %d\n", *b, *a);
+    }
+}
+
+
+```c
+int main() {
+    int x = 25;
+    int y = 15;
+```
+
+    printf("Comparaison de %d et %d:\n", x, y);
+    afficher_min_max(&x, &y);
+
+    x = 100;
+    y = 200;
+    printf("\nComparaison de %d et %d:\n", x, y);
+    afficher_min_max(&x, &y);
+
+    return 0;
+}
+```
+
+SOLUTION EXERCICE 8 : Pointeur sur tableau
+```c
+
+```c
+#include <stdio.h>
+```
+
+
+```c
+int main() {
+    int tab[3] = {10, 20, 30};
+    int *ptr = tab;  // tab est déjà un pointeur vers le premier élément
+```
+
+
+```c
+    // Méthode 1: avec l'indexation de tableau
+```
+    printf("Méthode 1 (indexation):\n");
+    printf("tab[0] = %d\n", tab[0]);
+    printf("tab[1] = %d\n", tab[1]);
+    printf("tab[2] = %d\n", tab[2]);
+
+
+```c
+    // Méthode 2: avec déréférencement de pointeur
+```
+    printf("\nMéthode 2 (pointeur):\n");
+    printf("*ptr = %d\n", *ptr);          // Élément 0
+    printf("*(ptr+1) = %d\n", *(ptr+1));  // Élément 1
+    printf("*(ptr+2) = %d\n", *(ptr+2));  // Élément 2
+
+
+```c
+    // Méthode 3: avec boucle
+```
+    printf("\nMéthode 3 (boucle):\n");
+    for (int i = 0; i < 3; i++) {
+        printf("Élément %d: %d (adresse: %p)\n", i, *(ptr + i), (void*)(ptr + i));
+    }
+
+    return 0;
+}
+```
+

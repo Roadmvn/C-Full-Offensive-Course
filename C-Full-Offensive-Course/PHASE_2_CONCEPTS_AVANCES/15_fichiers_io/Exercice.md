@@ -1,0 +1,55 @@
+
+### EXERCICE 1 : Créer et écrire
+Crée un fichier "message.txt" et écris 3 lignes dedans.
+Ferme le fichier proprement.
+Objectif : fopen() en mode "w" et fprintf()
+[ ] Exercice terminé
+
+
+### EXERCICE 2 : Lire un fichier
+Lis le fichier créé en exercice 1 ligne par ligne.
+Affiche chaque ligne dans le terminal.
+Objectif : fopen() en mode "r" et fgets()
+[ ] Exercice terminé
+
+
+### EXERCICE 3 : Append
+Ajoute 2 lignes supplémentaires au fichier existant.
+Utilise le mode "a" (append).
+Objectif : Comprendre la différence entre "w" et "a"
+[ ] Exercice terminé
+
+
+### EXERCICE 4 : Compter les lignes
+Écris une fonction qui compte le nombre de lignes dans un fichier.
+Teste avec ton fichier message.txt.
+Objectif : Parcourir un fichier complet
+[ ] Exercice terminé
+
+
+### EXERCICE 5 : Copier un fichier
+Écris un programme qui copie le contenu d'un fichier vers un autre.
+Objectif : Lecture et écriture simultanée
+[ ] Exercice terminé
+
+
+### EXERCICE 6 : Fichier binaire
+Crée un tableau de 5 int, écris-le dans un fichier binaire.
+Relis-le et affiche les valeurs.
+Objectif : fwrite() et fread()
+[ ] Exercice terminé
+
+
+### EXERCICE 7 : Structure en fichier
+Crée une structure Personne (nom, age).
+Écris 3 personnes dans un fichier binaire, relis-les.
+Objectif : Sauvegarder des structures
+[ ] Exercice terminé
+
+
+### EXERCICE 8 : Vérifier existence
+Écris une fonction qui vérifie si un fichier existe.
+Retourne 1 si existe, 0 sinon.
+Objectif : Gestion d'erreurs avec fopen()
+[ ] Exercice terminé
+
