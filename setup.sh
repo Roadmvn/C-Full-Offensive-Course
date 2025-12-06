@@ -1,192 +1,195 @@
 #!/bin/bash
 
-# ═══════════════════════════════════════════════════════════════════
-# Script d'installation - Learning C pour Red Teaming
-# ═══════════════════════════════════════════════════════════════════
-#
-# Ce script installe les outils nécessaires pour compiler et debugger
-# les programmes C de ce projet.
-#
-# Usage : ./setup.sh
-#
-# ═══════════════════════════════════════════════════════════════════
+# =========================================================
+# Script d'installation automatique multi-plateforme
+# C Full Offensive Course
+# =========================================================
 
-echo "═══════════════════════════════════════════════════════════════════"
-echo "  Installation des outils pour Learning C - Red Teaming"
-echo "═══════════════════════════════════════════════════════════════════"
-echo ""
+set -e  # Arrêt en cas d'erreur
+
+# Couleurs pour les messages
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Fonction pour afficher les messages
+print_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[✓]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[!]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[✗]${NC} $1"
+}
 
 # Détection de l'OS
-OS="$(uname -s)"
-
-case "$OS" in
-    Linux*)
-        echo "[*] Système détecté : Linux"
-        echo "[*] Installation de gcc, make, gdb, valgrind..."
-
-        # Détection de la distribution
-        if [ -f /etc/debian_version ]; then
-            # Debian/Ubuntu
-            echo "[*] Distribution : Debian/Ubuntu"
-            sudo apt-get update
-            sudo apt-get install -y build-essential gdb valgrind
-        elif [ -f /etc/redhat-release ]; then
-            # RedHat/CentOS/Fedora
-            echo "[*] Distribution : RedHat/CentOS/Fedora"
-            sudo yum groupinstall -y "Development Tools"
-            sudo yum install -y gdb valgrind
-        elif [ -f /etc/arch-release ]; then
-            # Arch Linux
-            echo "[*] Distribution : Arch Linux"
-            sudo pacman -S --noconfirm base-devel gdb valgrind
-        else
-            echo "[!] Distribution non reconnue"
-            echo "[!] Installe manuellement : gcc, make, gdb, valgrind"
-            exit 1
-        fi
-        ;;
-
-    Darwin*)
-        echo "[*] Système détecté : macOS"
-        echo "[*] Installation de gcc, make, gdb via Homebrew..."
-
-        # Vérifier si Homebrew est installé
-        if ! command -v brew &> /dev/null; then
-            echo "[!] Homebrew n'est pas installé"
-            echo "[*] Installation de Homebrew..."
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        fi
-
-        # Installer les outils
-        brew install gcc make gdb
-
-        echo "[!] Note : Sur macOS, gdb nécessite des droits spéciaux"
-        echo "[!] Consulte : https://sourceware.org/gdb/wiki/PermissionsDarwin"
-        ;;
-
-    CYGWIN*|MINGW*|MSYS*)
-        echo "[*] Système détecté : Windows"
-        echo "[!] Sur Windows, installe MinGW ou WSL (Windows Subsystem for Linux)"
-        echo "[!] Recommandation : Utilise WSL pour une meilleure compatibilité"
-        echo ""
-        echo "Installation WSL :"
-        echo "  1. Ouvre PowerShell en administrateur"
-        echo "  2. Exécute : wsl --install"
-        echo "  3. Redémarre ton PC"
-        echo "  4. Lance Ubuntu depuis le menu Démarrer"
-        echo "  5. Re-exécute ce script dans WSL"
-        exit 1
-        ;;
-
-    *)
-        echo "[!] Système d'exploitation non reconnu : $OS"
-        exit 1
-        ;;
-esac
-
-echo ""
-echo "═══════════════════════════════════════════════════════════════════"
-echo "  Vérification des installations"
-echo "═══════════════════════════════════════════════════════════════════"
-echo ""
-
-# Vérifier gcc
-if command -v gcc &> /dev/null; then
-    echo "[✓] gcc est installé"
-    gcc --version | head -n 1
-else
-    echo "[✗] gcc n'est pas installé"
-    exit 1
-fi
-
-# Vérifier make
-if command -v make &> /dev/null; then
-    echo "[✓] make est installé"
-    make --version | head -n 1
-else
-    echo "[✗] make n'est pas installé"
-    exit 1
-fi
-
-# Vérifier gdb
-if command -v gdb &> /dev/null; then
-    echo "[✓] gdb est installé"
-    gdb --version | head -n 1
-else
-    echo "[✗] gdb n'est pas installé (optionnel mais recommandé)"
-fi
-
-# Vérifier valgrind (Linux seulement)
-if [ "$OS" == "Linux" ]; then
-    if command -v valgrind &> /dev/null; then
-        echo "[✓] valgrind est installé"
-        valgrind --version
+detect_os() {
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        OS="linux"
+        print_info "Système détecté : Linux"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        OS="macos"
+        print_info "Système détecté : macOS"
+    elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "win32" ]]; then
+        OS="windows"
+        print_info "Système détecté : Windows"
     else
-        echo "[✗] valgrind n'est pas installé (optionnel mais recommandé)"
+        print_error "OS non supporté : $OSTYPE"
+        exit 1
     fi
-fi
+}
 
-echo ""
-echo "═══════════════════════════════════════════════════════════════════"
-echo "  Test de compilation"
-echo "═══════════════════════════════════════════════════════════════════"
-echo ""
+# Installation pour Linux
+install_linux() {
+    print_info "Installation des outils pour Linux..."
 
-# Créer un fichier de test
-TEST_FILE="/tmp/test_learning_c.c"
-cat > "$TEST_FILE" << 'EOF'
+    # Mise à jour des paquets
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get update
+        sudo apt-get install -y gcc g++ make gdb binutils valgrind nasm git curl
+        print_success "Outils installés via apt-get"
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y gcc g++ make gdb binutils valgrind nasm git curl
+        print_success "Outils installés via dnf"
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -Sy --noconfirm gcc make gdb binutils valgrind nasm git curl
+        print_success "Outils installés via pacman"
+    else
+        print_error "Gestionnaire de paquets non supporté"
+        exit 1
+    fi
+
+    # Installation optionnelle de pwntools
+    if command -v python3 &> /dev/null; then
+        print_info "Installation de pwntools (optionnel)..."
+        python3 -m pip install --user pwntools 2>/dev/null || print_warning "Échec de l'installation de pwntools"
+    fi
+}
+
+# Installation pour macOS
+install_macos() {
+    print_info "Installation des outils pour macOS..."
+
+    # Vérification de Homebrew
+    if ! command -v brew &> /dev/null; then
+        print_warning "Homebrew non trouvé. Installation..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+
+    # Installation des outils de développement
+    xcode-select --install 2>/dev/null || print_info "Xcode Command Line Tools déjà installés"
+
+    # Installation via Homebrew
+    brew install gcc make llvm nasm binutils git
+    print_success "Outils installés via Homebrew"
+
+    # Installation optionnelle de pwntools
+    if command -v python3 &> /dev/null; then
+        print_info "Installation de pwntools (optionnel)..."
+        python3 -m pip install --user pwntools 2>/dev/null || print_warning "Échec de l'installation de pwntools"
+    fi
+}
+
+# Installation pour Windows (via MSYS2/MinGW)
+install_windows() {
+    print_info "Installation des outils pour Windows..."
+
+    if command -v pacman &> /dev/null; then
+        # MSYS2 détecté
+        pacman -Sy --noconfirm mingw-w64-x86_64-gcc mingw-w64-x86_64-gdb mingw-w64-x86_64-make git
+        print_success "Outils installés via MSYS2"
+    else
+        print_warning "MSYS2 non détecté."
+        print_info "Pour Windows, installez manuellement :"
+        print_info "  1. MSYS2 : https://www.msys2.org/"
+        print_info "  2. Visual Studio Build Tools : https://visualstudio.microsoft.com/downloads/"
+        print_info "  3. x64dbg : https://x64dbg.com/"
+        exit 1
+    fi
+}
+
+# Vérification des installations
+check_installations() {
+    print_info "Vérification des installations..."
+
+    TOOLS=("gcc" "make" "git")
+
+    if [[ "$OS" == "macos" ]]; then
+        TOOLS+=("lldb")
+    else
+        TOOLS+=("gdb")
+    fi
+
+    for tool in "${TOOLS[@]}"; do
+        if command -v "$tool" &> /dev/null; then
+            VERSION=$($tool --version 2>/dev/null | head -n1)
+            print_success "$tool : $VERSION"
+        else
+            print_warning "$tool : non trouvé"
+        fi
+    done
+}
+
+# Test de compilation
+test_compilation() {
+    print_info "Test de compilation..."
+
+    TEST_FILE=$(mktemp).c
+    cat > "$TEST_FILE" << 'EOF'
 #include <stdio.h>
 
 int main() {
-    printf("Hello from Learning C!\n");
+    printf("Setup réussi ! Prêt pour le C offensif.\n");
     return 0;
 }
 EOF
 
-# Compiler
-echo "[*] Compilation d'un programme de test..."
-if gcc -o /tmp/test_learning_c "$TEST_FILE" 2>&1; then
-    echo "[✓] Compilation réussie"
-
-    # Exécuter
-    echo "[*] Exécution du programme de test..."
-    if /tmp/test_learning_c; then
-        echo "[✓] Exécution réussie"
+    if gcc "$TEST_FILE" -o /tmp/test_setup 2>/dev/null; then
+        /tmp/test_setup
+        print_success "Compilation fonctionnelle !"
+        rm -f "$TEST_FILE" /tmp/test_setup
     else
-        echo "[✗] Erreur lors de l'exécution"
+        print_error "Erreur de compilation"
+        rm -f "$TEST_FILE"
+        exit 1
     fi
+}
 
-    # Nettoyer
-    rm -f /tmp/test_learning_c "$TEST_FILE"
-else
-    echo "[✗] Erreur de compilation"
-    rm -f "$TEST_FILE"
-    exit 1
-fi
-
-echo ""
-echo "═══════════════════════════════════════════════════════════════════"
-echo "  Configuration des permissions"
-echo "═══════════════════════════════════════════════════════════════════"
+# Banner
+echo "═════════════════════════════════════════════════════"
+echo "  C Full Offensive Course - Setup Script"
+echo "═════════════════════════════════════════════════════"
 echo ""
 
-# Désactiver ASLR pour les exercices d'exploitation (Linux seulement)
-if [ "$OS" == "Linux" ]; then
-    echo "[*] Pour les exercices d'exploitation, ASLR peut être désactivé"
-    echo "[*] Commande : echo 0 | sudo tee /proc/sys/kernel/randomize_va_space"
-    echo "[!] À faire manuellement avant les exercices 16-20"
-fi
+# Exécution
+detect_os
+
+case "$OS" in
+    linux)
+        install_linux
+        ;;
+    macos)
+        install_macos
+        ;;
+    windows)
+        install_windows
+        ;;
+esac
+
+check_installations
+test_compilation
 
 echo ""
-echo "═══════════════════════════════════════════════════════════════════"
-echo "  Installation terminée !"
-echo "═══════════════════════════════════════════════════════════════════"
+print_success "Installation terminée avec succès !"
 echo ""
-echo "Tu es prêt à commencer !"
-echo ""
-echo "Prochaine étape :"
-echo "  cd exercices/01_hello_world/"
-echo "  cat README.md"
-echo ""
-echo "Bon apprentissage ! 🔥"
-echo ""
+print_info "Prochaine étape : cd PHASE_1_FONDAMENTAUX/01_hello_world"
+echo "═════════════════════════════════════════════════════"
