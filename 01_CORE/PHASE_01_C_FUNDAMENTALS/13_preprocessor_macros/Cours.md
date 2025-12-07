@@ -465,4 +465,4 @@ Voir `exercice.txt` pour :
 
 ---
 
-**Prochaine étape :** Module 17 - Compilation et Linking (étapes de compilation, gcc flags, static/dynamic linking, PE/ELF, symbols, strip).
+**Prochaine étape :** Module 14 - File I/O (lecture/écriture fichiers, fopen/fclose, buffer, manipulation binaire).

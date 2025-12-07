@@ -2,12 +2,11 @@
 
 ## Objectifs des exercices
 
-Ces exercices vous permettront de pratiquer les concepts vus dans le cours.
-Commencez par l'exercice 1 (très facile) et progressez vers les plus difficiles.
+Ces exercices vous permettront de pratiquer les concepts UEFI vus dans le cours.
 
 ---
 
-## Exercice 1 : Découverte (Très facile)
+## Exercice 1 : Lire les variables UEFI (Très facile)
 
 **Objectif** : Se familiariser avec le concept de base
 

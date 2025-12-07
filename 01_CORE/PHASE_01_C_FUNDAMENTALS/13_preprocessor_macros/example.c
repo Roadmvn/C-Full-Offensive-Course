@@ -1,5 +1,5 @@
 /*
- * Module 16 : Préprocesseur et Macros
+ * Module 13 : Préprocesseur et Macros
  * Exemples pratiques d'utilisation du préprocesseur
  */
 
@@ -202,7 +202,7 @@ void demo_dangerous_macros(void) {
 }
 
 int main(void) {
-    printf("=== MODULE 16: PRÉPROCESSEUR ET MACROS ===\n");
+    printf("=== MODULE 13: PRÉPROCESSEUR ET MACROS ===\n");
     printf("Compilé le %s à %s\n", __DATE__, __TIME__);
     
     demo_basic_macros();

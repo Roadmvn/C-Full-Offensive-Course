@@ -1,4 +1,4 @@
-# MODULE 16 : PRÉPROCESSEUR ET MACROS - EXERCICES
+# Module 13 : Préprocesseur et Macros - Exercices
 
 ## Exercice 1 : Macros de base
 [ ] Créer une macro CUBE(x) qui calcule le cube d'un nombre

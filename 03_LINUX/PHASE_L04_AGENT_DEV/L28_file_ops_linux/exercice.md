@@ -1,82 +1,105 @@
-# Exercices - File Ops Linux
+# Exercice : File Operations Linux - Exfiltrateur de Credentials
 
-## Objectifs des exercices
+## Objectif
 
-Ces exercices vous permettront de pratiquer les concepts vus dans le cours.
-Commencez par l'exercice 1 (très facile) et progressez vers les plus difficiles.
+Creer un programme qui :
+1. Recherche des fichiers de credentials sur le systeme
+2. Lit leur contenu
+3. Les compresse dans une archive
+4. Les chiffre avec XOR
+5. Affiche le resultat en base64
 
----
+## Specifications
 
-## Exercice 1 : Découverte (Très facile)
+### Fonctionnalites requises
 
-**Objectif** : Se familiariser avec le concept de base
+1. **Recherche de fichiers**
+   - Scanner `/home` et `/root` (si permissions)
+   - Chercher : `id_rsa`, `id_dsa`, `id_ecdsa`, `.aws/credentials`, `.docker/config.json`
+   - Limiter aux fichiers < 1MB
 
-**Instructions** :
-1. Compilez et exécutez le fichier `example.c`
-2. Observez la sortie du programme
-3. Modifiez un paramètre simple et recompilez
+2. **Lecture**
+   - Lire le contenu de chaque fichier trouve
+   - Gerer les erreurs de permissions
 
-**Résultat attendu** :
+3. **Archivage**
+   - Creer une structure en memoire pour stocker tous les fichiers
+   - Format simple : [taille_nom][nom][taille_contenu][contenu]
+
+4. **Chiffrement**
+   - XOR avec une cle : "MySecretKey2024"
+   - Encoder en base64
+
+5. **Sortie**
+   - Afficher la liste des fichiers trouves
+   - Afficher le blob base64 final
+
+## Structure suggeree
+
+```c
+// Structure pour un fichier
+typedef struct {
+    char path[256];
+    unsigned char *content;
+    size_t size;
+} FileEntry;
+
+// Liste de fichiers
+FileEntry *files = NULL;
+int file_count = 0;
+
+// Fonctions a implementer
+void search_files(const char *base_path);
+void read_file(const char *path);
+void create_archive(unsigned char **output, size_t *output_size);
+void xor_encrypt(unsigned char *data, size_t size, const char *key);
+char* base64_encode(const unsigned char *data, size_t size);
 ```
-[Décrire ce que l'étudiant doit observer]
-```
 
-**Indice** : [Un indice pour aider si besoin]
+## Tests
 
----
+1. **Test basique**
+   ```bash
+   # Creer fichiers de test
+   mkdir -p /tmp/test/.ssh
+   echo "FAKE_PRIVATE_KEY" > /tmp/test/.ssh/id_rsa
 
-## Exercice 2 : Modification (Facile)
+   # Executer
+   ./exfil /tmp/test
+   ```
 
-**Objectif** : Adapter le code existant
+2. **Test reel (avec precautions)**
+   ```bash
+   # Scanner home directory
+   ./exfil /home/$USER
+   ```
 
-**Instructions** :
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
+## Criteres de reussite
 
-**Résultat attendu** :
-```
-[Décrire le résultat]
-```
+- [ ] Trouve au moins les fichiers SSH si presents
+- [ ] Lit correctement le contenu
+- [ ] Archive tous les fichiers ensemble
+- [ ] Chiffre avec XOR
+- [ ] Encode en base64
+- [ ] Gere les erreurs de permissions proprement
+- [ ] Code bien commente
 
----
+## Bonus
 
-## Exercice 3 : Création (Moyen)
+- Restaurer les timestamps apres lecture (stealth)
+- Ajouter compression zlib avant chiffrement
+- Implementer une limite de taille totale
+- Ajouter un filtre par extension
+- Sauvegarder le blob dans un fichier cache
 
-**Objectif** : Créer une nouvelle fonctionnalité
+## Conseils
 
-**Instructions** :
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
+1. Utiliser `stat()` pour verifier taille avant lecture
+2. Allouer dynamiquement la memoire pour flexibilite
+3. Liberer la memoire correctement (pas de leaks)
+4. Tester avec `valgrind` pour verifier les fuites memoire
+5. Utiliser `strerror(errno)` pour messages d'erreur explicites
 
-**Critères de réussite** :
-- [ ] Critère 1
-- [ ] Critère 2
-- [ ] Critère 3
+## Solution
 
----
-
-## Exercice 4 : Challenge (Difficile)
-
-**Objectif** : Combiner plusieurs concepts
-
-**Contexte** :
-[Description du scénario]
-
-**Instructions** :
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
-
-**Bonus** :
-- [Défi supplémentaire pour les plus avancés]
-
----
-
-## Auto-évaluation
-
-Avant de passer au module suivant, vérifiez que vous pouvez :
-- [ ] Expliquer le concept principal de ce module
-- [ ] Écrire du code utilisant ces techniques sans regarder l'exemple
-- [ ] Identifier des cas d'usage en contexte offensif
+Voir `solution.c` pour une implementation complete.

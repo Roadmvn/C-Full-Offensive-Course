@@ -1,82 +1,43 @@
-# Exercices - Memory Linux
+# MODULE L08 : MEMORY LINUX - EXERCICES
 
-## Objectifs des exercices
+## Exercice 1 : mmap() basique
+[ ] Allouer 8KB avec mmap() en RW
+[ ] Écrire une chaîne dedans
+[ ] Afficher l'adresse retournée
+[ ] Libérer avec munmap()
 
-Ces exercices vous permettront de pratiquer les concepts vus dans le cours.
-Commencez par l'exercice 1 (très facile) et progressez vers les plus difficiles.
+## Exercice 2 : Mémoire exécutable
+[ ] Créer zone RWX avec mmap()
+[ ] Copier shellcode (0xc3 = ret)
+[ ] Exécuter le shellcode
+[ ] Observer dans /proc/self/maps
 
----
+## Exercice 3 : mprotect() W^X bypass
+[ ] Allouer zone RW (pas X)
+[ ] Écrire shellcode dedans
+[ ] Changer permissions en RX avec mprotect()
+[ ] Exécuter
 
-## Exercice 1 : Découverte (Très facile)
+## Exercice 4 : Parser /proc/self/maps
+[ ] Ouvrir /proc/self/maps
+[ ] Parser chaque ligne (sscanf)
+[ ] Extraire: start, end, perms, pathname
+[ ] Afficher tableau formaté
 
-**Objectif** : Se familiariser avec le concept de base
+## Exercice 5 : Détecter pages RWX
+[ ] Lire /proc/self/maps
+[ ] Chercher lignes contenant "rwxp"
+[ ] Afficher alerte si trouvé
+[ ] Tester avec mmap RWX
 
-**Instructions** :
-1. Compilez et exécutez le fichier `example.c`
-2. Observez la sortie du programme
-3. Modifiez un paramètre simple et recompilez
+## Exercice 6 : Trouver libc base
+[ ] Parser /proc/self/maps
+[ ] Chercher ligne contenant "libc" et "r-xp"
+[ ] Extraire adresse de début
+[ ] Afficher base libc
 
-**Résultat attendu** :
-```
-[Décrire ce que l'étudiant doit observer]
-```
-
-**Indice** : [Un indice pour aider si besoin]
-
----
-
-## Exercice 2 : Modification (Facile)
-
-**Objectif** : Adapter le code existant
-
-**Instructions** :
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
-
-**Résultat attendu** :
-```
-[Décrire le résultat]
-```
-
----
-
-## Exercice 3 : Création (Moyen)
-
-**Objectif** : Créer une nouvelle fonctionnalité
-
-**Instructions** :
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
-
-**Critères de réussite** :
-- [ ] Critère 1
-- [ ] Critère 2
-- [ ] Critère 3
-
----
-
-## Exercice 4 : Challenge (Difficile)
-
-**Objectif** : Combiner plusieurs concepts
-
-**Contexte** :
-[Description du scénario]
-
-**Instructions** :
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
-
-**Bonus** :
-- [Défi supplémentaire pour les plus avancés]
-
----
-
-## Auto-évaluation
-
-Avant de passer au module suivant, vérifiez que vous pouvez :
-- [ ] Expliquer le concept principal de ce module
-- [ ] Écrire du code utilisant ces techniques sans regarder l'exemple
-- [ ] Identifier des cas d'usage en contexte offensif
+## Exercice 7 : /proc/pid/mem
+[ ] Créer processus cible qui dort
+[ ] Ouvrir /proc/<PID>/mem
+[ ] Lire 4 bytes à une adresse connue
+[ ] Comparer avec valeur attendue

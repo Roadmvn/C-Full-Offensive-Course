@@ -1,82 +1,124 @@
-# Exercices - Session Management
+# Exercices : Session Management
 
-## Objectifs des exercices
+## Avertissement
 
-Ces exercices vous permettront de pratiquer les concepts vus dans le cours.
-Commencez par l'exercice 1 (très facile) et progressez vers les plus difficiles.
+Code educatif uniquement. Usage illegal = poursuites penales.
 
 ---
 
-## Exercice 1 : Découverte (Très facile)
+## Exercice 1 : Generation Session ID (Facile)
 
-**Objectif** : Se familiariser avec le concept de base
+**Objectif** : Implementer generation UUID pour Session ID
+
+**Difficulte** : ★☆☆☆☆
 
 **Instructions** :
-1. Compilez et exécutez le fichier `example.c`
-2. Observez la sortie du programme
-3. Modifiez un paramètre simple et recompilez
+1. Utiliser l'API RPC `UuidCreate()` pour generer UUID
+2. Convertir UUID en string avec `UuidToStringA()`
+3. Afficher le Session ID genere
+4. Tester unicite (generer 100 IDs, verifier pas de duplicates)
 
-**Résultat attendu** :
-```
-[Décrire ce que l'étudiant doit observer]
-```
-
-**Indice** : [Un indice pour aider si besoin]
+**Criteres de validation** :
+- [ ] UUID genere correctement
+- [ ] Format valide (36 caracteres avec tirets)
+- [ ] Pas de duplicates sur 100+ generations
 
 ---
 
-## Exercice 2 : Modification (Facile)
+## Exercice 2 : Heartbeat Simple (Moyen)
 
-**Objectif** : Adapter le code existant
+**Objectif** : Implementer heartbeat loop basique
+
+**Difficulte** : ★★☆☆☆
 
 **Instructions** :
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
+1. Creer structure `SessionMetadata` avec Session ID, hostname, timestamp
+2. Implementer fonction `SendHeartbeat()` qui envoie POST HTTP
+3. Loop infinie : envoyer heartbeat toutes les 60s
+4. Ajouter jitter +/- 30%
+5. Logger chaque heartbeat (timestamp, status)
 
-**Résultat attendu** :
-```
-[Décrire le résultat]
-```
+**Criteres de validation** :
+- [ ] Heartbeat envoye regulierement
+- [ ] Jitter applique correctement (timing varie)
+- [ ] Logs clairs et informatifs
 
 ---
 
-## Exercice 3 : Création (Moyen)
+## Exercice 3 : Reconnexion avec Backoff (Moyen)
 
-**Objectif** : Créer une nouvelle fonctionnalité
+**Objectif** : Gerer perte connexion C2
+
+**Difficulte** : ★★★☆☆
 
 **Instructions** :
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
+1. Detecter echec heartbeat (timeout, erreur HTTP)
+2. Implementer backoff exponentiel : 1s, 2s, 4s, 8s, ... max 60s
+3. Retry jusqu'a succes ou max 10 tentatives
+4. Preserver Session ID entre reconnexions
+5. Logger chaque tentative
 
-**Critères de réussite** :
-- [ ] Critère 1
-- [ ] Critère 2
-- [ ] Critère 3
+**Criteres de reussite** :
+- [ ] Backoff exponentiel correct
+- [ ] Reconnexion reussie apres C2 revient online
+- [ ] Session ID preserve
+- [ ] Logs detailles
+
+**Test** : Arreter C2 server, observer retries, redemarrer server, valider reconnexion.
 
 ---
 
-## Exercice 4 : Challenge (Difficile)
+## Exercice 4 : Persistence Registry (Difficile)
 
-**Objectif** : Combiner plusieurs concepts
+**Objectif** : Sauvegarder session dans Registry
 
-**Contexte** :
-[Description du scénario]
+**Difficulte** : ★★★★☆
 
 **Instructions** :
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
+1. Implementer `SaveSessionToRegistry()` : cle discrete dans `HKCU\Software\...`
+2. Sauvegarder Session ID, last_seen timestamp
+3. Implementer `LoadSessionFromRegistry()` au demarrage
+4. Si session existe, charger et continuer ; sinon creer nouvelle
+5. Tester : lancer agent, kill, relancer -> doit recharger session
 
-**Bonus** :
-- [Défi supplémentaire pour les plus avancés]
+**Criteres de validation** :
+- [ ] Session sauvegardee correctement dans Registry
+- [ ] Session rechargee apres redemarrage agent
+- [ ] Noms Registry discrets (pas "SessionID", utiliser noms legitimes)
 
 ---
 
-## Auto-évaluation
+## Exercice 5 : Session Complete avec Resilience (Challenge)
 
-Avant de passer au module suivant, vérifiez que vous pouvez :
-- [ ] Expliquer le concept principal de ce module
-- [ ] Écrire du code utilisant ces techniques sans regarder l'exemple
-- [ ] Identifier des cas d'usage en contexte offensif
+**Objectif** : Combiner tous les concepts
+
+**Difficulte** : ★★★★★
+
+**Instructions** :
+1. Initial check-in avec metadata complete
+2. Heartbeat loop avec jitter
+3. Detection echec + reconnexion backoff
+4. Persistence Registry
+5. Working hours only (9-5, Mon-Fri)
+6. Cleanup propre sur exit
+
+**Criteres finaux** :
+- [ ] Agent fonctionne end-to-end
+- [ ] Survit reboot (persistence)
+- [ ] Reconnexion automatique si C2 down
+- [ ] Working hours respecte
+- [ ] Pas de crash, gestion erreurs robuste
+
+---
+
+## Auto-evaluation
+
+- [ ] Comprendre Session IDs et leur generation
+- [ ] Implementer heartbeat fonctionnel
+- [ ] Gerer reconnexion avec backoff
+- [ ] Persister etat dans Registry
+- [ ] Identifier risques OPSEC
+
+---
+
+**RAPPEL** : Lab isole uniquement. Usage malveillant = ILLEGAL.

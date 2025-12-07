@@ -459,4 +459,4 @@ Voir `exercice.txt` pour :
 
 ---
 
-**Prochaine étape :** Module 16 - Préprocesseur et Macros (#define, #ifdef, obfuscation).
+**Fin de la Phase 01 - C Fundamentals !** Vous maîtrisez maintenant les bases du C. Prochaine phase : Phase 02 - Memory Management.
