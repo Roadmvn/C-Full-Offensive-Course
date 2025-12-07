@@ -1,577 +1,664 @@
-# 03 - Printf et Scanf
-
-## 🎯 Ce que tu vas apprendre
-
-- Comment printf() fonctionne en interne
-- Les format specifiers et leur fonctionnement
-- Comment lire des données avec scanf()
-- Les dangers de scanf() (buffer overflow)
-- Les alternatives sécurisées (fgets)
-- Format string vulnerabilities
-
-## 📚 Théorie
-
-### Concept 1 : Comment fonctionne printf() ?
-
-**C'est quoi ?**
-`printf()` (print formatted) est une fonction qui affiche du texte formaté dans le terminal (stdout).
-
-**Pourquoi ça existe ?**
-Pour communiquer avec l'utilisateur et afficher des informations pendant l'exécution du programme.
-
-**Comment ça marche ?**
-
-Quand tu écris :
-```c
-printf("Age: %d\n", 25);
-```
-
-Voici ce qui se passe :
-
-```
-1. PARSING de la format string
-   printf parcourt "Age: %d\n" caractère par caractère
-
-2. IDENTIFICATION des specifiers
-   'A', 'g', 'e', ':', ' ' → Affiche tel quel
-   '%d' → Specifier détecté : attend un int
-   '\n' → Caractère spécial : retour à la ligne
-
-3. RÉCUPÉRATION des arguments
-   Regarde le 2ème paramètre : 25 (int)
-
-4. CONVERSION et AFFICHAGE
-   Convertit 25 en chaîne "25"
-   Affiche : "Age: 25\n"
-```
-
-**Schéma du processus** :
-```
-printf("Port: %d", 4444);
-         ↓
-┌────────────────────────────┐
-│ 1. Parse format string     │
-│    "Port: %d"              │
-├────────────────────────────┤
-│ 2. Trouve %d               │
-│    → Attend un int         │
-├────────────────────────────┤
-│ 3. Récupère argument       │
-│    → 4444                  │
-├────────────────────────────┤
-│ 4. Convertit int→string    │
-│    4444 → "4444"           │
-├────────────────────────────┤
-│ 5. Affiche                 │
-│    "Port: 4444"            │
-└────────────────────────────┘
-```
-
-### Concept 2 : Les format specifiers
-
-**C'est quoi ?**
-Un format specifier est un code qui commence par `%` et indique à printf() quel type de donnée afficher et comment.
-
-**Pourquoi ça existe ?**
-Parce qu'en mémoire, tout est des bytes. Printf() doit savoir comment interpréter ces bytes : nombre ? caractère ? adresse ?
-
-**Comment ça marche ?**
-
-#### Specifiers de base
-
-| Specifier | Type | Description | Exemple |
-|-----------|------|-------------|---------|
-| `%d` ou `%i` | int | Entier signé (décimal) | `printf("%d", 42);` → `42` |
-| `%u` | unsigned int | Entier non signé | `printf("%u", 4294967295);` → `4294967295` |
-| `%x` | int | Hexadécimal (minuscules) | `printf("%x", 255);` → `ff` |
-| `%X` | int | Hexadécimal (majuscules) | `printf("%X", 255);` → `FF` |
-| `%o` | int | Octal | `printf("%o", 8);` → `10` |
-| `%f` | float/double | Décimal flottant | `printf("%f", 3.14);` → `3.140000` |
-| `%c` | char | Caractère unique | `printf("%c", 65);` → `A` |
-| `%s` | char* | Chaîne de caractères | `printf("%s", "hello");` → `hello` |
-| `%p` | void* | Adresse mémoire (pointeur) | `printf("%p", &var);` → `0x7fff...` |
-| `%%` | - | Caractère % littéral | `printf("100%%");` → `100%` |
-
-**Exemple avec le même nombre affiché différemment** :
-```c
-int num = 65;
-printf("Décimal: %d\n", num);    // 65
-printf("Hexa:    %x\n", num);    // 41
-printf("Octal:   %o\n", num);    // 101
-printf("Char:    %c\n", num);    // A
-```
-
-Output :
-```
-Décimal: 65
-Hexa:    41
-Octal:   101
-Char:    A
-```
-
-**Pourquoi le même nombre donne des résultats différents ?**
-
-En mémoire : `65` = `0x41` = `01000001` (binaire)
-
-```
-%d → Interprète comme entier décimal    → 65
-%x → Interprète comme hexa              → 41
-%o → Interprète comme octal             → 101
-%c → Interprète comme code ASCII        → 'A'
-```
-
-### Concept 3 : Les modificateurs de format
-
-**C'est quoi ?**
-Des options qu'on ajoute entre `%` et la lettre du specifier pour contrôler l'affichage (largeur, padding, précision).
-
-#### Largeur minimale
-
-```c
-printf("%5d", 42);      // "   42" (5 caractères, rempli avec espaces)
-printf("%-5d", 42);     // "42   " (aligné à gauche)
-printf("%05d", 42);     // "00042" (rempli avec des zéros)
-```
-
-**Schéma** :
-```
-%5d avec valeur 42 :
-┌───┬───┬───┬───┬───┐
-│   │   │   │ 4 │ 2 │  Largeur 5, aligné à droite
-└───┴───┴───┴───┴───┘
-
-%-5d avec valeur 42 :
-┌───┬───┬───┬───┬───┐
-│ 4 │ 2 │   │   │   │  Largeur 5, aligné à gauche
-└───┴───┴───┴───┴───┘
-
-%05d avec valeur 42 :
-┌───┬───┬───┬───┬───┐
-│ 0 │ 0 │ 0 │ 4 │ 2 │  Largeur 5, padding avec 0
-└───┴───┴───┴───┴───┘
-```
-
-#### Précision pour les flottants
-
-```c
-printf("%.2f", 3.14159);   // "3.14" (2 décimales)
-printf("%.4f", 3.14159);   // "3.1416" (4 décimales, arrondi)
-printf("%10.2f", 3.14);    // "      3.14" (largeur 10, 2 décimales)
-```
-
-**Exemple concret** :
-```c
-float price = 19.99f;
-printf("Prix: %6.2f EUR\n", price);  // "Prix:  19.99 EUR"
-//             ↑   ↑
-//          largeur 6
-//              précision 2
-```
-
-### Concept 4 : Comment fonctionne scanf() ?
-
-**C'est quoi ?**
-`scanf()` (scan formatted) est une fonction qui lit des données formatées depuis le clavier (stdin) et les stocke dans des variables.
-
-**Pourquoi ça existe ?**
-Pour permettre à l'utilisateur d'interagir avec le programme en entrant des données.
-
-**Comment ça marche ?**
-
-```c
-int age;
-scanf("%d", &age);
-```
-
-Processus :
-```
-1. ATTENTE d'input utilisateur
-   Programme bloqué, attend la saisie
-
-2. LECTURE de stdin
-   Utilisateur tape "25" puis Enter
-
-3. PARSING selon format string
-   "%d" → Attend un nombre décimal
-
-4. CONVERSION
-   Chaîne "25" → Entier 25
-
-5. STOCKAGE à l'adresse fournie
-   Écrit 25 à l'adresse de age (&age)
-```
-
-**Attention CRITIQUE : Le & est OBLIGATOIRE**
-
-```c
-int x;
-scanf("%d", &x);   // CORRECT : passe l'adresse de x
-scanf("%d", x);    // ERREUR : passe la valeur de x (non initialisée)
-```
-
-**Pourquoi & ?**
-
-Scanf() a besoin de savoir OÙ écrire la valeur. Sans &, tu lui donnes la valeur au lieu de l'adresse.
-
-```
-Avec & (CORRECT) :
-┌──────────────┐
-│ Variable: x  │
-│ Adresse: 0x1000 │
-│ Valeur: ?    │
-└──────────────┘
-scanf("%d", &x);  → Donne 0x1000 à scanf
-                  → scanf écrit à 0x1000
-                  → x = 25
-
-Sans & (ERREUR) :
-scanf("%d", x);   → Donne la valeur de x (garbage)
-                  → scanf essaie d'écrire à une adresse random
-                  → CRASH (Segmentation fault)
-```
-
-### Concept 5 : Exemples d'utilisation de scanf()
-
-#### Lire un entier
-
-```c
-int age;
-printf("Ton age: ");
-scanf("%d", &age);
-printf("Tu as %d ans\n", age);
-```
-
-#### Lire plusieurs valeurs
-
-```c
-int x, y;
-printf("Entre deux nombres: ");
-scanf("%d %d", &x, &y);  // Input: "10 20"
-printf("x=%d, y=%d\n", x, y);
-```
-
-#### Lire un caractère
-
-```c
-char grade;
-printf("Ta note: ");
-scanf(" %c", &grade);  // Note l'espace avant %c pour ignorer whitespace
-printf("Note: %c\n", grade);
-```
-
-#### Lire un float
-
-```c
-float price;
-printf("Prix: ");
-scanf("%f", &price);
-printf("Prix: %.2f EUR\n", price);
-```
-
-### Concept 6 : Les dangers de scanf()
-
-**C'est quoi le problème ?**
-
-`scanf()` ne vérifie PAS la taille du buffer. Si l'utilisateur entre plus de données que prévu, **buffer overflow** garanti.
-
-**Exemple VULNÉRABLE** :
-
-```c
-char name[10];  // Buffer de 10 bytes
-scanf("%s", name);  // PAS de limite !
-
-// Utilisateur entre "ThisIsAVeryLongName"
-// → Écrit 19 bytes dans un buffer de 10
-// → OVERFLOW : écrase la mémoire adjacente
-```
-
-**Schéma de l'overflow** :
-```
-Buffer name[10] en mémoire :
-┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
-│   │   │   │   │   │   │   │   │   │   │  10 bytes alloués
-└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
-                                          ↓ Autres variables
-
-Input : "ThisIsAVeryLongName" (19 bytes)
-┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
-│ T │ h │ i │ s │ I │ s │ A │ V │ e │ r │ y │ L │ o │ n │ g │ N │ a │ m │ e │
-└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
-                                          ↑ DÉBORDEMENT ↑
-                                    Écrase d'autres variables !
-```
-
-**Conséquences** :
-- Crash du programme (segfault)
-- Corruption de données
-- Exploitation possible (injection de code)
-
-### Concept 7 : Sécuriser les lectures avec fgets()
-
-**C'est quoi ?**
-`fgets()` lit une ligne complète en limitant la taille, évitant ainsi les overflows.
-
-**Syntaxe** :
-```c
-fgets(buffer, taille_max, stdin);
-```
-
-**Exemple SÉCURISÉ** :
-
-```c
-char name[50];
-printf("Ton nom: ");
-fgets(name, sizeof(name), stdin);  // Limite à 50 bytes
-printf("Bonjour %s", name);
-```
-
-**Pourquoi c'est mieux ?**
-
-```
-scanf("%s", name) :
-❌ Pas de limite → overflow possible
-❌ S'arrête aux espaces
-❌ Dangereux
-
-fgets(name, 50, stdin) :
-✓ Limite stricte de 50 bytes
-✓ Lit toute la ligne (avec espaces)
-✓ Sécurisé
-```
-
-**Petit problème de fgets() : le \n**
-
-fgets() garde le `\n` final. Pour l'enlever :
-
-```c
-char input[50];
-fgets(input, sizeof(input), stdin);
-
-// Enlever le \n
-input[strcspn(input, "\n")] = '\0';
-```
-
-**Comment ça marche ?**
-
-```
-Input utilisateur: "Alice\n"
-
-Avant nettoyage :
-┌───┬───┬───┬───┬───┬───┬───┐
-│ A │ l │ i │ c │ e │\n │\0 │
-└───┴───┴───┴───┴───┴───┴───┘
-
-strcspn(input, "\n") → retourne 5 (position de \n)
-input[5] = '\0';
-
-Après nettoyage :
-┌───┬───┬───┬───┬───┬───┬───┐
-│ A │ l │ i │ c │ e │\0 │\0 │
-└───┴───┴───┴───┴───┴───┴───┘
-```
-
-### Concept 8 : Différence scanf() vs fgets()
-
-| Critère | scanf("%s", ...) | fgets() |
-|---------|------------------|---------|
-| Limite de taille | ❌ Non | ✓ Oui |
-| Lit les espaces | ❌ Non (s'arrête) | ✓ Oui |
-| Sécurité | ❌ Dangereux | ✓ Sûr |
-| Garde le \n | ❌ Non | ✓ Oui (à nettoyer) |
-| Usage | Éviter | Recommandé |
-
-## 🔍 Visualisation : printf() avec plusieurs arguments
-
-```c
-printf("User: %s, Age: %d, Balance: %.2f EUR\n", "Alice", 25, 1234.56);
-```
-
-**Processus interne** :
-```
-1. Parse format string:
-   "User: " → Affiche tel quel
-   "%s"     → Lit arg 1 : "Alice"
-   ", Age: "→ Affiche tel quel
-   "%d"     → Lit arg 2 : 25
-   ", Balance: " → Affiche tel quel
-   "%.2f"   → Lit arg 3 : 1234.56
-   " EUR\n" → Affiche tel quel
-
-2. Résultat:
-   "User: Alice, Age: 25, Balance: 1234.56 EUR\n"
-```
-
-**En mémoire (stack)** :
-```
-Stack lors de l'appel printf() :
-┌─────────────────────┐
-│ 1234.56 (double)    │ ← arg 3
-├─────────────────────┤
-│ 25 (int)            │ ← arg 2
-├─────────────────────┤
-│ "Alice" (char*)     │ ← arg 1
-├─────────────────────┤
-│ "User: %s..." (char*) │ ← format string
-└─────────────────────┘
-printf() lit les arguments dans l'ordre
-```
-
-## 🎯 Application Red Team
-
-### 1. Format String Vulnerability
-
-**Le problème** :
-
-```c
-// CODE VULNÉRABLE
-char user_input[100];
-gets(user_input);            // Dangereux : buffer overflow
-printf(user_input);          // TRÈS DANGEREUX : format string attack
-```
-
-**Pourquoi c'est dangereux ?**
-
-Si l'utilisateur entre `"%p %p %p %p"`, printf() va lire la stack et afficher des adresses mémoire.
-
-```c
-// CODE VULNÉRABLE
-printf(user_input);  // user_input = "%p %p %p %p"
-
-// Output : 0x7fff0001 0x7fff0020 0x12345678 0xdeadbeef
-// → LEAK de la stack !
-// → Peut révéler des adresses ASLR, return addresses, etc.
-```
-
-**CODE SÉCURISÉ** :
-
-```c
-printf("%s", user_input);  // Toujours utiliser %s pour afficher input
-```
-
-### 2. Buffer Overflow via scanf()
-
-**Exploit classique** :
-
-```c
-// Vulnérable
-char password[8];
-scanf("%s", password);  // Pas de limite
-
-// Attaquant entre : "AAAAAAAAAAAAAAAA\x78\x56\x34\x12"
-// → Overflow password
-// → Écrase la return address sur la stack
-// → Contrôle du flux d'exécution
-```
-
-**Schéma de l'attaque** :
-```
-Stack avant scanf() :
-┌──────────────────┐
-│ Return address   │ ← 0x00400567
-├──────────────────┤
-│ password[8]      │ ← Buffer vulnérable
-└──────────────────┘
-
-Input malveillant : "AAAAAAAAAAAAAAAA\x78\x56\x34\x12"
-
-Stack après scanf() :
-┌──────────────────┐
-│ 0x12345678       │ ← Return address écrasée !
-├──────────────────┤
-│ AAAAAAAAAAAAAAAA │ ← Buffer overflow
-└──────────────────┘
-
-Quand la fonction retourne → saute à 0x12345678
-→ Contrôle du flux d'exécution
-```
-
-### 3. Leak d'adresses mémoire
-
-**Exploitation de format string** :
-
-```c
-// Vulnérable
-void vuln() {
-    char buf[100];
-    fgets(buf, 100, stdin);
-    printf(buf);  // Pas de %s !
-}
-
-// Attaque :
-// Input: "%p %p %p %p %p %p"
-// Output: 0x7fff0001 0x7fff0020 0x555555554000 ...
-//                                 ↑ Adresse du code (leak ASLR)
-```
-
-### 4. Defensive Coding - Pattern sécurisé
-
-**Pattern recommandé pour lire un input** :
-
-```c
-#define MAX_INPUT 256
-
-char input[MAX_INPUT];
-
-// Méthode 1 : fgets() sécurisé
-if (fgets(input, sizeof(input), stdin) != NULL) {
-    input[strcspn(input, "\n")] = '\0';  // Enlève \n
-    printf("Input: %s\n", input);         // Affichage sécurisé
-} else {
-    fprintf(stderr, "Erreur de lecture\n");
-}
-
-// Méthode 2 : scanf() avec limite (moins recommandé)
-scanf("%255s", input);  // Limite à 255 chars (+ \0)
-```
-
-### 5. Format string pour fuzzing
-
-En Red Team, on peut exploiter les format strings pour :
-
-```c
-// Leak de la stack
-"%p %p %p %p %p %p"
-
-// Lire à une adresse arbitraire
-"%s" (si un pointeur est sur la stack)
-
-// Écrire en mémoire (avancé)
-"%n" (écrit le nombre de bytes écrits jusqu'ici)
-```
-
-### 6. Obfuscation de strings
-
-Pour éviter la détection :
-
-```c
-// Au lieu de :
-printf("Connecting to C2 server...");
-
-// Encoder la string :
-unsigned char msg[] = {0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, ...};
-for (int i = 0; i < sizeof(msg); i++) {
-    msg[i] ^= 0xAA;  // Décode avec XOR
-}
-printf("%s", msg);
-```
-
-## 📝 Points clés à retenir
-
-- `printf()` parse la format string et affiche selon les specifiers
-- Les specifiers : `%d` (int), `%s` (string), `%p` (pointeur), `%x` (hexa)
-- `scanf()` lit depuis stdin et stocke dans des variables
-- Le `&` est OBLIGATOIRE avec scanf() (sauf pour les strings)
-- `scanf("%s", ...)` est DANGEREUX : buffer overflow possible
-- Utiliser `fgets()` à la place de `scanf()` pour les strings
-- Ne JAMAIS faire `printf(user_input)` : format string vulnerability
-- Toujours faire `printf("%s", user_input)`
-- Les format string vulns peuvent leak la mémoire et contrôler le flux
-
-## ➡️ Prochaine étape
-
-Maintenant que tu sais afficher et lire des données, tu vas apprendre à les manipuler avec les [opérateurs](../04_operateurs/)
+# Module 03 : Opérateurs - Manipulation des données
+
+## Objectifs
+
+À la fin de ce module, tu seras capable de :
+- Utiliser tous les opérateurs arithmétiques et logiques en C
+- Maîtriser les opérateurs bitwise (XOR, AND, OR, shifts)
+- Implémenter un chiffrement XOR simple
+- Manipuler des flags et des masques binaires
+- Comprendre les opérateurs utilisés dans le code offensif
 
 ---
 
-**Exercices** : Voir [exercice.txt](exercice.txt)
-**Code exemple** : Voir [example.c](example.c)
+## Partie 0 : Pourquoi les opérateurs sont CRUCIAUX en offensive
+
+### XOR Encryption - La base de l'obfuscation
+
+```c
+// Chiffrer une string pour éviter la détection
+unsigned char key = 0x41;
+char msg[] = "secret";
+
+for (int i = 0; msg[i]; i++) {
+    msg[i] ^= key;  // XOR avec la clé
+}
+// msg est maintenant chiffré, invisible avec 'strings'
+```
+
+### Flag Manipulation - API Windows
+
+```c
+// Allocation de mémoire exécutable pour shellcode
+LPVOID addr = VirtualAlloc(
+    NULL,
+    4096,
+    MEM_COMMIT | MEM_RESERVE,  // Combinaison de flags avec OR
+    PAGE_EXECUTE_READWRITE
+);
+```
+
+### Bit Masking - Extraction de données
+
+```c
+// Extraire les bytes d'une adresse
+uint32_t addr = 0x12345678;
+uint8_t byte0 = addr & 0xFF;         // = 0x78
+uint8_t byte1 = (addr >> 8) & 0xFF;  // = 0x56
+```
+
+**Sans maîtriser les opérateurs, tu ne pourras pas :**
+- Écrire du code d'obfuscation
+- Manipuler les flags des API système
+- Parser des structures binaires
+- Comprendre le code assembleur
+
+---
+
+## Partie 1 : Opérateurs arithmétiques
+
+### Les opérateurs de base
+
+| Opérateur | Nom | Exemple | Résultat |
+|-----------|-----|---------|----------|
+| `+` | Addition | `5 + 3` | `8` |
+| `-` | Soustraction | `5 - 3` | `2` |
+| `*` | Multiplication | `5 * 3` | `15` |
+| `/` | Division | `7 / 3` | `2` (division entière) |
+| `%` | Modulo | `7 % 3` | `1` (reste) |
+
+### Attention à la division entière !
+
+```c
+int a = 7, b = 3;
+int result = a / b;      // = 2, pas 2.33 !
+// La partie décimale est tronquée
+
+// Pour avoir un résultat décimal :
+float result_f = (float)a / b;  // = 2.333...
+```
+
+### L'opérateur modulo (%) - Applications offensives
+
+Le modulo retourne le **reste** de la division.
+
+```c
+7 % 3 = 1   // car 7 = 3*2 + 1
+8 % 4 = 0   // car 8 = 4*2 + 0 (division exacte)
+```
+
+**APPLICATION OFFENSIVE : Rotation de clés**
+
+```c
+// Chiffrement avec plusieurs clés en rotation
+unsigned char keys[] = {0x41, 0x42, 0x43, 0x44};
+int key_len = 4;
+
+for (int i = 0; i < data_len; i++) {
+    data[i] ^= keys[i % key_len];  // Cycle à travers les clés
+}
+// i % 4 donne : 0, 1, 2, 3, 0, 1, 2, 3, 0, ...
+```
+
+### Incrémentation et décrémentation
+
+```c
+int x = 5;
+
+// Pré-incrémentation : incrémente PUIS retourne
+int a = ++x;  // x devient 6, a = 6
+
+// Post-incrémentation : retourne PUIS incrémente
+int b = x++;  // b = 6, PUIS x devient 7
+
+// Même logique pour -- (décrémentation)
+```
+
+**Où tu verras ça ?**
+```c
+// Parcours de buffer (très courant)
+while (*ptr++) { }  // Avance ptr après chaque itération
+
+// Compteurs
+for (int i = 0; i < len; i++) { }
+```
+
+---
+
+## Partie 2 : Opérateurs de comparaison
+
+| Opérateur | Signification | Exemple | Résultat |
+|-----------|---------------|---------|----------|
+| `==` | Égal à | `5 == 5` | `1` (vrai) |
+| `!=` | Différent de | `5 != 3` | `1` (vrai) |
+| `<` | Inférieur | `3 < 5` | `1` (vrai) |
+| `>` | Supérieur | `3 > 5` | `0` (faux) |
+| `<=` | Inférieur ou égal | `5 <= 5` | `1` (vrai) |
+| `>=` | Supérieur ou égal | `3 >= 5` | `0` (faux) |
+
+### ATTENTION : `=` vs `==`
+
+```c
+// ERREUR CLASSIQUE
+if (x = 5) { }   // ASSIGNE 5 à x, puis teste si x != 0 (toujours vrai !)
+
+// CORRECT
+if (x == 5) { }  // COMPARE x avec 5
+```
+
+**Astuce défensive : Mettre la constante à gauche**
+```c
+if (5 == x) { }  // Si tu tapes = au lieu de ==, erreur de compilation !
+```
+
+### Résultat des comparaisons
+
+En C, une comparaison retourne :
+- `1` si vrai
+- `0` si faux
+
+```c
+int result = (5 > 3);  // result = 1
+int result2 = (2 > 9); // result2 = 0
+```
+
+---
+
+## Partie 3 : Opérateurs logiques
+
+| Opérateur | Nom | Signification |
+|-----------|-----|---------------|
+| `&&` | AND logique | Vrai si LES DEUX sont vrais |
+| `\|\|` | OR logique | Vrai si AU MOINS UN est vrai |
+| `!` | NOT logique | Inverse la valeur |
+
+### Table de vérité
+
+```
+AND (&&)           OR (||)            NOT (!)
+A   B   A&&B       A   B   A||B       A    !A
+0   0    0         0   0    0         0     1
+0   1    0         0   1    1         1     0
+1   0    0         1   0    1
+1   1    1         1   1    1
+```
+
+### Exemples pratiques
+
+```c
+int age = 25;
+int has_id = 1;
+
+// AND : les deux conditions doivent être vraies
+if (age >= 18 && has_id) {
+    printf("Accès autorisé\n");
+}
+
+// OR : au moins une condition doit être vraie
+if (age < 18 || !has_id) {
+    printf("Accès refusé\n");
+}
+
+// NOT : inverse
+if (!authenticated) {
+    printf("Veuillez vous connecter\n");
+}
+```
+
+### Short-circuit evaluation
+
+Le C évalue de gauche à droite et s'arrête dès que le résultat est connu.
+
+```c
+// AND : si le premier est faux, pas besoin de tester le second
+if (ptr != NULL && ptr->value > 0) { }
+// Si ptr est NULL, ptr->value n'est JAMAIS évalué (évite le crash)
+
+// OR : si le premier est vrai, pas besoin de tester le second
+if (is_admin || check_permission()) { }
+// Si is_admin est vrai, check_permission() n'est jamais appelée
+```
+
+**APPLICATION OFFENSIVE : Anti-debug**
+```c
+// Si une des vérifications échoue, on s'arrête
+if (IsDebuggerPresent() || check_timing() || check_breakpoints()) {
+    exit(1);  // Debugger détecté
+}
+```
+
+---
+
+## Partie 4 : Opérateurs bitwise - LE CŒUR DE L'OFFENSIVE
+
+Les opérateurs bitwise travaillent sur les bits individuels.
+
+### Rappel : représentation binaire
+
+```
+Décimal   Binaire
+   0      00000000
+   1      00000001
+   5      00000101
+  15      00001111
+ 255      11111111
+```
+
+### AND bitwise (`&`)
+
+Chaque bit du résultat est 1 seulement si LES DEUX bits correspondants sont 1.
+
+```
+    0b11001010  (202)
+  & 0b10101100  (172)
+  ─────────────
+    0b10001000  (136)
+```
+
+```c
+unsigned char a = 0b11001010;  // 202
+unsigned char b = 0b10101100;  // 172
+unsigned char result = a & b;  // 136
+```
+
+**APPLICATION OFFENSIVE : Masquage / Extraction de bits**
+
+```c
+// Extraire le byte de poids faible d'un int
+uint32_t value = 0x12345678;
+uint8_t low_byte = value & 0xFF;  // = 0x78
+
+// Vérifier si un bit spécifique est activé
+if (flags & FLAG_ADMIN) {
+    // Le flag admin est présent
+}
+
+// Extraire les 4 bits de poids faible
+uint8_t nibble = value & 0x0F;
+```
+
+### OR bitwise (`|`)
+
+Chaque bit du résultat est 1 si AU MOINS UN des bits correspondants est 1.
+
+```
+    0b11001010  (202)
+  | 0b10101100  (172)
+  ─────────────
+    0b11101110  (238)
+```
+
+**APPLICATION OFFENSIVE : Combinaison de flags**
+
+```c
+// Windows API : combiner des flags avec OR
+DWORD access = PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION;
+
+// Permissions fichier Unix
+mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP;  // rw-r-----
+
+// Activer un bit spécifique
+flags = flags | FLAG_ACTIVE;
+// Ou plus court :
+flags |= FLAG_ACTIVE;
+```
+
+### XOR bitwise (`^`) - LE PLUS IMPORTANT
+
+Chaque bit du résultat est 1 si les bits correspondants sont DIFFÉRENTS.
+
+```
+    0b11001010  (202)
+  ^ 0b10101100  (172)
+  ─────────────
+    0b01100110  (102)
+```
+
+**Propriété magique du XOR : il s'annule lui-même !**
+
+```
+A ^ B ^ B = A
+
+Exemple :
+  0x41 ^ 0xFF = 0xBE  (chiffrement)
+  0xBE ^ 0xFF = 0x41  (déchiffrement)
+```
+
+**APPLICATION OFFENSIVE : XOR Encryption**
+
+```c
+// Chiffrer une string
+void xor_encrypt(unsigned char *data, int len, unsigned char key) {
+    for (int i = 0; i < len; i++) {
+        data[i] ^= key;
+    }
+}
+
+// Déchiffrer = même opération !
+void xor_decrypt(unsigned char *data, int len, unsigned char key) {
+    for (int i = 0; i < len; i++) {
+        data[i] ^= key;  // Identique !
+    }
+}
+
+// Utilisation
+char secret[] = "password";
+xor_encrypt(secret, strlen(secret), 0x42);  // Chiffré
+// secret est maintenant illisible avec 'strings'
+
+xor_decrypt(secret, strlen(secret), 0x42);  // Déchiffré
+// secret = "password" à nouveau
+```
+
+**APPLICATION OFFENSIVE : Échange sans variable temporaire**
+
+```c
+// Classique (avec temp)
+int temp = a;
+a = b;
+b = temp;
+
+// Avec XOR (sans temp)
+a ^= b;  // a = a ^ b
+b ^= a;  // b = b ^ (a ^ b) = a
+a ^= b;  // a = (a ^ b) ^ a = b
+```
+
+### NOT bitwise (`~`)
+
+Inverse tous les bits.
+
+```
+  ~ 0b11001010  (202)
+  ─────────────
+    0b00110101  (53 en unsigned, -203 en signed)
+```
+
+**APPLICATION OFFENSIVE : Créer des masques**
+
+```c
+// Effacer des bits spécifiques
+flags = flags & ~FLAG_TO_REMOVE;
+// ~FLAG_TO_REMOVE inverse les bits du flag, puis AND efface ces positions
+```
+
+### Shift Left (`<<`)
+
+Décale tous les bits vers la gauche, remplit avec des 0 à droite.
+**Équivalent à multiplier par 2^n.**
+
+```
+    0b00000101  (5)
+ << 2
+  ─────────────
+    0b00010100  (20)   // 5 * 4 = 20
+```
+
+```c
+int x = 5;
+int result = x << 2;  // = 20 (5 * 2^2)
+```
+
+**APPLICATION OFFENSIVE : Construire des valeurs**
+
+```c
+// Construire une adresse 32-bit à partir de 4 bytes
+uint8_t b0 = 0x78, b1 = 0x56, b2 = 0x34, b3 = 0x12;
+uint32_t addr = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+// addr = 0x12345678
+
+// Créer des flags/masks
+#define FLAG_BIT_0  (1 << 0)   // 0x01
+#define FLAG_BIT_1  (1 << 1)   // 0x02
+#define FLAG_BIT_7  (1 << 7)   // 0x80
+```
+
+### Shift Right (`>>`)
+
+Décale tous les bits vers la droite.
+**Équivalent à diviser par 2^n.**
+
+```
+    0b00010100  (20)
+ >> 2
+  ─────────────
+    0b00000101  (5)    // 20 / 4 = 5
+```
+
+**APPLICATION OFFENSIVE : Extraction de bytes**
+
+```c
+// Extraire les bytes d'une valeur 32-bit
+uint32_t value = 0x12345678;
+
+uint8_t byte0 = value & 0xFF;           // 0x78
+uint8_t byte1 = (value >> 8) & 0xFF;    // 0x56
+uint8_t byte2 = (value >> 16) & 0xFF;   // 0x34
+uint8_t byte3 = (value >> 24) & 0xFF;   // 0x12
+```
+
+---
+
+## Partie 5 : Opérateurs d'affectation composés
+
+Ces opérateurs combinent une opération avec une affectation.
+
+| Opérateur | Équivalent |
+|-----------|------------|
+| `x += y` | `x = x + y` |
+| `x -= y` | `x = x - y` |
+| `x *= y` | `x = x * y` |
+| `x /= y` | `x = x / y` |
+| `x %= y` | `x = x % y` |
+| `x &= y` | `x = x & y` |
+| `x \|= y` | `x = x \| y` |
+| `x ^= y` | `x = x ^ y` |
+| `x <<= y` | `x = x << y` |
+| `x >>= y` | `x = x >> y` |
+
+**Utilisation courante**
+
+```c
+// XOR encryption compact
+for (int i = 0; i < len; i++) {
+    data[i] ^= key;
+}
+
+// Ajouter un flag
+flags |= NEW_FLAG;
+
+// Retirer un flag
+flags &= ~OLD_FLAG;
+
+// Toggle un flag (inverser)
+flags ^= TOGGLE_FLAG;
+```
+
+---
+
+## Partie 6 : L'opérateur ternaire
+
+Syntaxe : `condition ? valeur_si_vrai : valeur_si_faux`
+
+```c
+// Équivalent à if-else en une ligne
+int max = (a > b) ? a : b;
+
+// Classique if-else
+int max;
+if (a > b) {
+    max = a;
+} else {
+    max = b;
+}
+```
+
+**APPLICATION OFFENSIVE : Code compact**
+
+```c
+// Détection rapide
+int is_debugged = IsDebuggerPresent() ? 1 : 0;
+
+// Sélection conditionnelle
+char* status = (connected) ? "online" : "offline";
+```
+
+---
+
+## Partie 7 : Priorité des opérateurs
+
+Du plus prioritaire au moins prioritaire :
+
+```
+1. () [] -> .           (Parenthèses, accès)
+2. ! ~ ++ -- + - * &    (Unaires)
+3. * / %                (Multiplication, division)
+4. + -                  (Addition, soustraction)
+5. << >>                (Shifts)
+6. < <= > >=            (Comparaisons)
+7. == !=                (Égalité)
+8. &                    (AND bitwise)
+9. ^                    (XOR bitwise)
+10. |                   (OR bitwise)
+11. &&                  (AND logique)
+12. ||                  (OR logique)
+13. ?:                  (Ternaire)
+14. = += -= etc.        (Affectation)
+```
+
+**RÈGLE D'OR : En cas de doute, utilise des parenthèses !**
+
+```c
+// Ambigu
+int result = a & b == c;  // & ou == en premier ?
+
+// Clair
+int result = a & (b == c);  // Intention explicite
+int result = (a & b) == c;  // Autre intention
+```
+
+---
+
+## Partie 8 : Applications offensives complètes
+
+### XOR Encryption avec clé multi-bytes
+
+```c
+void xor_crypt(unsigned char *data, size_t len,
+               unsigned char *key, size_t key_len) {
+    for (size_t i = 0; i < len; i++) {
+        data[i] ^= key[i % key_len];  // Clé cyclique
+    }
+}
+
+// Utilisation
+unsigned char shellcode[] = { 0x90, 0x90, 0x31, 0xc0 };
+unsigned char key[] = { 0x41, 0x42, 0x43, 0x44 };
+
+xor_crypt(shellcode, sizeof(shellcode), key, sizeof(key));
+// Shellcode maintenant chiffré
+
+xor_crypt(shellcode, sizeof(shellcode), key, sizeof(key));
+// Shellcode déchiffré (même opération)
+```
+
+### Manipulation de flags Windows
+
+```c
+// Ouvrir un process avec les droits nécessaires pour injection
+DWORD access = PROCESS_CREATE_THREAD |    // Créer thread
+               PROCESS_VM_OPERATION |      // Modifier mémoire
+               PROCESS_VM_WRITE |          // Écrire mémoire
+               PROCESS_VM_READ;            // Lire mémoire
+
+HANDLE hProcess = OpenProcess(access, FALSE, pid);
+
+// Allouer mémoire exécutable
+DWORD alloc_type = MEM_COMMIT | MEM_RESERVE;
+DWORD protect = PAGE_EXECUTE_READWRITE;
+
+LPVOID addr = VirtualAllocEx(
+    hProcess,
+    NULL,
+    shellcode_size,
+    alloc_type,
+    protect
+);
+```
+
+### Extraction d'adresse pour shellcode
+
+```c
+// Convertir une adresse 64-bit en bytes (little endian)
+uint64_t target_addr = 0x7FFF12345678;
+unsigned char addr_bytes[8];
+
+for (int i = 0; i < 8; i++) {
+    addr_bytes[i] = (target_addr >> (i * 8)) & 0xFF;
+}
+
+// addr_bytes = { 0x78, 0x56, 0x34, 0x12, 0xFF, 0x7F, 0x00, 0x00 }
+```
+
+### Vérifier/Modifier des bits spécifiques
+
+```c
+#define FLAG_ADMIN     (1 << 0)  // 0x01
+#define FLAG_LOGGED    (1 << 1)  // 0x02
+#define FLAG_VERIFIED  (1 << 2)  // 0x04
+
+unsigned char user_flags = 0;
+
+// Ajouter des flags
+user_flags |= FLAG_LOGGED;
+user_flags |= FLAG_VERIFIED;
+
+// Vérifier un flag
+if (user_flags & FLAG_ADMIN) {
+    printf("User is admin\n");
+}
+
+// Retirer un flag
+user_flags &= ~FLAG_LOGGED;
+
+// Toggle un flag
+user_flags ^= FLAG_ADMIN;  // Active si inactif, désactive si actif
+```
+
+---
+
+## Partie 9 : Résumé et checklist
+
+### Tableau récapitulatif des opérateurs bitwise
+
+| Opérateur | Utilisation offensive |
+|-----------|----------------------|
+| `&` (AND) | Masquage, extraction de bits, vérification de flags |
+| `\|` (OR) | Combinaison de flags, activation de bits |
+| `^` (XOR) | Chiffrement, obfuscation, échange de valeurs |
+| `~` (NOT) | Création de masques pour effacement |
+| `<<` (Left shift) | Construction de valeurs, création de flags |
+| `>>` (Right shift) | Extraction de bytes, division rapide |
+
+### Checklist offensive
+
+- [ ] Je sais implémenter un chiffrement XOR simple
+- [ ] Je comprends comment combiner des flags avec OR
+- [ ] Je sais extraire des bytes avec shift et masque
+- [ ] Je connais la propriété d'annulation du XOR (A ^ B ^ B = A)
+- [ ] Je sais manipuler des bits individuels (set, clear, toggle)
+- [ ] Je comprends la différence entre opérateurs logiques (&&) et bitwise (&)
+
+---
+
+## Exercices pratiques
+
+Voir [exercice.md](exercice.md)
+
+## Code exemple
+
+Voir [example.c](example.c)
+
+---
+
+**Module suivant** : [04 - Control Flow](../04_control_flow/)

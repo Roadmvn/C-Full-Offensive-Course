@@ -1,293 +1,72 @@
-# Cours : Structures et Unions
+# Module 12 : Unions et Énumérations
 
-## Objectif du Module
+## Objectifs d'apprentissage
 
-Maîtriser les structures (struct) pour regrouper des données logiquement, comprendre les unions (overlay mémoire), utiliser typedef pour simplifier le code, gérer le padding et l'alignement mémoire, créer des structures imbriquées, et utiliser bit fields pour économiser de la mémoire. Application Red Team : parsing de headers PE/ELF.
+A la fin de ce module, tu sauras :
+- Comprendre les unions et le partage mémoire
+- Utiliser le type punning pour manipuler les représentations binaires
+- Définir et utiliser des énumérations
+- Créer des flags avec des bitfields enum
+- Combiner struct, union et enum
+- Applications offensives : parsing de protocoles, variant types, state machines
 
 ---
 
-## 1. Structures (struct) - Regroupement Logique
+## 1. Introduction aux unions
 
-### 1.1 Le Problème : Données Éparpillées
+### C'est quoi une union ?
 
-```c
-// MAUVAIS : variables éparpillées
-char nom1[50] = "Alice";
-int age1 = 20;
-float note1 = 15.5;
-
-char nom2[50] = "Bob";
-int age2 = 22;
-float note2 = 14.0;
-
-// Impossible de passer "un étudiant" à une fonction !
-```
-
-### 1.2 La Solution : struct
+Une **union** est comme une structure, mais tous les membres **partagent la même zone mémoire**. Un seul membre peut contenir une valeur valide à la fois.
 
 ```c
-// Créer un type "Etudiant"
-struct Etudiant {
-    char nom[50];
-    int age;
-    float note;
+union Data {
+    int i;
+    float f;
+    char str[20];
 };
-
-// Créer des variables de ce type
-struct Etudiant alice = {"Alice", 20, 15.5};
-struct Etudiant bob = {"Bob", 22, 14.0};
-
-// Facile à passer aux fonctions
-void afficher(struct Etudiant e) {
-    printf("%s : %d ans, note %.1f\n", e.nom, e.age, e.note);
-}
 ```
 
-**Schéma mémoire :**
-```
-struct Etudiant alice :
+### Différence struct vs union
 
-┌─────────────────────────────────────────┐
-│ Adresse : 0x1000                        │
-│ ┌──────────────────┐                    │
-│ │ nom[50]          │  50 bytes          │
-│ │ "Alice\0..."     │  (0x1000-0x1031)   │
-│ └──────────────────┘                    │
-│ ┌──────────────────┐                    │
-│ │ age              │  4 bytes (int)     │
-│ │  20              │  (0x1034-0x1037)   │
-│ └──────────────────┘                    │
-│ ┌──────────────────┐                    │
-│ │ note             │  4 bytes (float)   │
-│ │  15.5            │  (0x1038-0x103B)   │
-│ └──────────────────┘                    │
-└─────────────────────────────────────────┘
-
-Total : 58 bytes (+ padding possible)
-```
-
-### 1.3 Accès aux Membres
-
-**Avec variable directe : opérateur `.`**
 ```c
-struct Etudiant alice;
-alice.age = 20;           // Écriture
-printf("%d\n", alice.age);  // Lecture
+struct MyStruct {
+    int i;      // 4 bytes
+    float f;    // 4 bytes
+    char c;     // 1 byte
+};  // Total : ~12 bytes (avec padding)
+
+union MyUnion {
+    int i;      // 4 bytes
+    float f;    // 4 bytes
+    char c;     // 1 byte
+};  // Total : 4 bytes (taille du plus grand membre)
 ```
 
-**Avec pointeur : opérateur `->`**
-```c
-struct Etudiant *ptr = &alice;
-ptr->age = 21;            // Équivaut à (*ptr).age = 21
-printf("%d\n", ptr->age);
+### Schéma mémoire
+
 ```
+struct (membres séparés) :
+┌──────────┬──────────┬──────────┐
+│   int i  │  float f │  char c  │
+│ 4 bytes  │ 4 bytes  │ 1 byte   │
+└──────────┴──────────┴──────────┘
+        Total : ~12 bytes
 
-**Schéma des opérateurs :**
-```
-┌───────────────┐
-│ alice         │  Variable directe
-│  ├─ nom       │
-│  ├─ age: 20   │  ← alice.age
-│  └─ note      │
-└───────────────┘
-
-        ptr = 0x1000
-           ↓
-┌───────────────┐
-│ alice         │  Via pointeur
-│  ├─ nom       │
-│  ├─ age: 20   │  ← ptr->age
-│  └─ note      │
-└───────────────┘
-
-alice.age  → accès direct
-ptr->age   → accès via pointeur
+union (membres superposés) :
+┌──────────────────────────────────┐
+│          int i                   │
+│          float f     (MÊME zone) │
+│          char c                  │
+│                                  │
+└──────────────────────────────────┘
+        Total : 4 bytes
 ```
 
 ---
 
-## 2. Padding et Alignement Mémoire
+## 2. Utilisation des unions
 
-### 2.1 Le Problème du Padding
-
-Le compilateur ajoute des bytes vides pour aligner les données.
-
-```c
-struct Example {
-    char a;    // 1 byte
-    int b;     // 4 bytes
-    char c;    // 1 byte
-};
-
-printf("Taille : %zu\n", sizeof(struct Example));
-// Affiche 12 (pas 6 !)
-```
-
-**Pourquoi 12 au lieu de 6 ?**
-
-```
-SANS PADDING (naïf) - 6 bytes :
-┌───┬───┬───┬───┬───┬───┐
-│ a │ b │ b │ b │ b │ c │
-└───┴───┴───┴───┴───┴───┘
-  1   4               1
-
-AVEC PADDING (réel) - 12 bytes :
-┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
-│ a │PAD│PAD│PAD│ b │ b │ b │ b │ c │PAD│PAD│PAD│
-└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
-  1   3 padding  4 bytes (int)  1   3 padding
-
-Adresses :
-0x00 : a
-0x01-03 : PADDING (alignement pour b)
-0x04-07 : b (int aligné sur 4 bytes)
-0x08 : c
-0x09-0B : PADDING (alignement struct entière)
-```
-
-### 2.2 Pourquoi le CPU Veut de l'Alignement ?
-
-Le CPU lit la mémoire par blocs de 4 ou 8 bytes. Si les données sont alignées, c'est plus rapide.
-
-```
-CPU lit par blocs de 4 bytes :
-
-Bloc 0      Bloc 1      Bloc 2      Bloc 3
-┌────────┬────────┬────────┬────────┐
-│  0-3   │  4-7   │  8-11  │ 12-15  │
-└────────┴────────┴────────┴────────┘
-
-Si int est à l'adresse 4 (aligné) :
-→ 1 seule lecture (Bloc 1)
-
-Si int est à l'adresse 2 (non-aligné) :
-→ 2 lectures (Bloc 0 + Bloc 1) + reconstruction = LENT
-```
-
-### 2.3 Optimiser l'Ordre des Champs
-
-```c
-// MAUVAIS : Beaucoup de padding
-struct Bad {
-    char a;    // 1 + 3 padding
-    int b;     // 4
-    char c;    // 1 + 3 padding
-    int d;     // 4
-};  // Total : 16 bytes
-
-// BON : Moins de padding
-struct Good {
-    int b;     // 4
-    int d;     // 4
-    char a;    // 1
-    char c;    // 1 + 2 padding
-};  // Total : 12 bytes
-```
-
-**Règle : Ordonner par taille décroissante (gros → petits)**
-
----
-
-## 3. typedef - Simplifier les Déclarations
-
-### 3.1 Sans typedef (verbeux)
-
-```c
-struct Etudiant {
-    char nom[50];
-    int age;
-};
-
-struct Etudiant alice;   // Doit écrire "struct" à chaque fois
-struct Etudiant bob;
-struct Etudiant *ptr;
-```
-
-### 3.2 Avec typedef (concis)
-
-```c
-typedef struct {
-    char nom[50];
-    int age;
-} Etudiant;  // Alias créé
-
-Etudiant alice;   // Plus de "struct" !
-Etudiant bob;
-Etudiant *ptr;
-```
-
-**Comparaison :**
-```
-SANS typedef :          AVEC typedef :
-struct Etudiant alice;  Etudiant alice;
-struct Etudiant bob;    Etudiant bob;
-struct Etudiant *ptr;   Etudiant *ptr;
-
-→ Plus court et lisible
-```
-
----
-
-## 4. Structures Imbriquées
-
-```c
-struct Adresse {
-    char rue[100];
-    int numero;
-    char ville[50];
-};
-
-struct Personne {
-    char nom[50];
-    int age;
-    struct Adresse domicile;  // Structure dans structure
-};
-
-int main() {
-    struct Personne p;
-    strcpy(p.nom, "Alice");
-    p.age = 25;
-    strcpy(p.domicile.rue, "Rue de la Paix");
-    p.domicile.numero = 42;
-    strcpy(p.domicile.ville, "Paris");
-
-    printf("%s habite au %d %s, %s\n",
-           p.nom, p.domicile.numero, p.domicile.rue, p.domicile.ville);
-    return 0;
-}
-```
-
-**Schéma mémoire :**
-```
-struct Personne p :
-
-┌──────────────────────────────────────┐
-│ nom[50] : "Alice"                    │
-├──────────────────────────────────────┤
-│ age : 25                             │
-├──────────────────────────────────────┤
-│ domicile (struct Adresse) :          │
-│  ├─ rue[100] : "Rue de la Paix"     │
-│  ├─ numero : 42                      │
-│  └─ ville[50] : "Paris"              │
-└──────────────────────────────────────┘
-
-Accès :
-p.nom                  → "Alice"
-p.age                  → 25
-p.domicile.rue         → "Rue de la Paix"
-p.domicile.numero      → 42
-p.domicile.ville       → "Paris"
-```
-
----
-
-## 5. Unions - Overlay Mémoire
-
-### 5.1 Qu'est-ce qu'une union ?
-
-Une union permet de stocker PLUSIEURS types DANS LA MÊME zone mémoire (un seul actif à la fois).
+### Syntaxe de base
 
 ```c
 union Data {
@@ -296,218 +75,607 @@ union Data {
     char str[20];
 };
 
-printf("Taille union : %zu\n", sizeof(union Data));
-// Affiche 20 (la taille du plus gros membre)
+int main(void) {
+    union Data d;
+
+    // Utiliser comme int
+    d.i = 42;
+    printf("i = %d\n", d.i);  // 42
+
+    // Utiliser comme float (écrase i)
+    d.f = 3.14f;
+    printf("f = %f\n", d.f);  // 3.14
+    printf("i = %d\n", d.i);  // GARBAGE (écrasé)
+
+    return 0;
+}
 ```
 
-### 5.2 Overlay Mémoire
-
-```
-struct (membres séparés) :
-┌────────┬────────┬────────┐
-│ int i  │float f │char[20]│
-└────────┴────────┴────────┘
-  4 bytes  4 bytes  20 bytes = 28 bytes
-
-union (membres superposés) :
-┌────────────────────────┐
-│ int i                  │
-│ float f                │  ← Tous partagent
-│ char str[20]           │     la MÊME mémoire
-└────────────────────────┘
-         20 bytes (le plus gros)
-```
-
-**Exemple :**
-```c
-union Data d;
-
-d.i = 42;
-printf("int : %d\n", d.i);  // 42
-
-d.f = 3.14;
-printf("float : %f\n", d.f);  // 3.14
-printf("int : %d\n", d.i);    // GARBAGE ! (écrasé par f)
-
-strcpy(d.str, "Hello");
-printf("str : %s\n", d.str);  // "Hello"
-printf("int : %d\n", d.i);    // GARBAGE !
-```
-
-### 5.3 Cas d'Usage : Type-Punning
+### sizeof d'une union
 
 ```c
-union FloatInt {
+union Example {
+    char c;         // 1 byte
+    int i;          // 4 bytes
+    double d;       // 8 bytes
+    char str[20];   // 20 bytes
+};
+
+printf("Size: %lu\n", sizeof(union Example));  // 20 (le plus grand)
+```
+
+### typedef pour simplifier
+
+```c
+typedef union {
+    int i;
     float f;
-    unsigned int i;
+    char str[20];
+} Data;
+
+Data d;  // Plus besoin de "union"
+d.i = 100;
+```
+
+---
+
+## 3. Type Punning (réinterprétation de bits)
+
+### Concept
+
+Le **type punning** permet de voir la représentation binaire d'une valeur en l'interprétant comme un autre type.
+
+```c
+union FloatBits {
+    float f;
+    unsigned int bits;
 };
 
-union FloatInt fi;
-fi.f = 3.14;
+union FloatBits fb;
+fb.f = 3.14f;
 
-printf("Float : %f\n", fi.f);           // 3.14
-printf("Bits : 0x%08X\n", fi.i);        // 0x4048F5C3
-// Voir la représentation binaire du float !
+printf("Float: %f\n", fb.f);
+printf("Bits:  0x%08X\n", fb.bits);  // 0x4048F5C3
+```
+
+### Schéma
+
+```
+float 3.14 en mémoire :
+┌────────────────────────────────┐
+│ 0x4048F5C3                     │
+│ 01000000 01001000 11110101 ... │
+└────────────────────────────────┘
+         ↓                    ↓
+    float f = 3.14      uint bits = 0x4048F5C3
+    (interprété)        (même bytes)
+```
+
+### Manipulation de bits IEEE 754
+
+```c
+typedef union {
+    float f;
+    struct {
+        unsigned int mantissa : 23;
+        unsigned int exponent : 8;
+        unsigned int sign : 1;
+    } parts;
+} Float32;
+
+Float32 num;
+num.f = -3.14f;
+
+printf("Sign:     %u\n", num.parts.sign);      // 1 (négatif)
+printf("Exponent: %u\n", num.parts.exponent);  // 128 (biaisé)
+printf("Mantissa: 0x%X\n", num.parts.mantissa);
 ```
 
 ---
 
-## 6. Bit Fields - Économie Mémoire
+## 4. Énumérations (enum)
 
-### 6.1 Déclarer des Champs de Bits
+### C'est quoi un enum ?
 
-```c
-struct Flags {
-    unsigned int is_admin : 1;     // 1 bit
-    unsigned int is_logged : 1;    // 1 bit
-    unsigned int permissions : 3;  // 3 bits
-    unsigned int reserved : 27;    // 27 bits
-};  // Total : 32 bits = 4 bytes
-```
-
-**Schéma :**
-```
-4 bytes (32 bits) :
-┌─┬─┬───┬───────────────────────────┐
-│A│L│PER│      RESERVED (27)        │
-└─┴─┴───┴───────────────────────────┘
- 1  1  3           27 bits
-
-A = is_admin (1 bit)
-L = is_logged (1 bit)
-PER = permissions (3 bits → valeurs 0-7)
-```
-
-**Utilisation :**
-```c
-struct Flags f = {0};
-f.is_admin = 1;
-f.is_logged = 1;
-f.permissions = 5;  // rwx-r-x (101 en binaire)
-
-printf("Admin : %d\n", f.is_admin);       // 1
-printf("Permissions : %d\n", f.permissions);  // 5
-```
-
----
-
-## 7. Application Red Team
-
-### 7.1 Parsing de Headers PE (Windows)
+Un **enum** définit un ensemble de constantes nommées avec des valeurs entières.
 
 ```c
-typedef struct {
-    unsigned short e_magic;    // "MZ" signature
-    // ... autres champs ...
-    unsigned int e_lfanew;     // Offset vers PE header
-} IMAGE_DOS_HEADER;
-
-typedef struct {
-    unsigned int Signature;    // "PE\0\0"
-    // ... FILE_HEADER ...
-    // ... OPTIONAL_HEADER ...
-} IMAGE_NT_HEADERS;
-
-// Lire un fichier PE
-FILE *f = fopen("program.exe", "rb");
-IMAGE_DOS_HEADER dos_header;
-fread(&dos_header, sizeof(IMAGE_DOS_HEADER), 1, f);
-
-if (dos_header.e_magic == 0x5A4D) {  // "MZ"
-    printf("PE valide\n");
-    fseek(f, dos_header.e_lfanew, SEEK_SET);
-    IMAGE_NT_HEADERS nt_headers;
-    fread(&nt_headers, sizeof(IMAGE_NT_HEADERS), 1, f);
-    // ... analyser les sections ...
-}
-fclose(f);
-```
-
-### 7.2 Parsing de Headers ELF (Linux)
-
-```c
-#include <elf.h>
-
-typedef struct {
-    unsigned char e_ident[16];  // Magic number
-    uint16_t e_type;            // Type (ET_EXEC, ET_DYN, etc.)
-    uint16_t e_machine;         // Architecture
-    uint32_t e_version;
-    uint64_t e_entry;           // Entry point
-    // ... autres champs ...
-} Elf64_Ehdr;
-
-FILE *f = fopen("./program", "rb");
-Elf64_Ehdr elf_header;
-fread(&elf_header, sizeof(Elf64_Ehdr), 1, f);
-
-if (elf_header.e_ident[0] == 0x7F &&
-    elf_header.e_ident[1] == 'E' &&
-    elf_header.e_ident[2] == 'L' &&
-    elf_header.e_ident[3] == 'F') {
-    printf("ELF valide\n");
-    printf("Entry point : 0x%lx\n", elf_header.e_entry);
-}
-fclose(f);
-```
-
-### 7.3 Union pour Network Packets
-
-```c
-typedef struct {
-    unsigned char version : 4;   // IPv4 = 4
-    unsigned char ihl : 4;       // Header length
-    unsigned char tos;           // Type of service
-    unsigned short total_len;
-    // ...
-} IPv4Header;
-
-union Packet {
-    unsigned char raw[1500];     // Raw bytes
-    IPv4Header ipv4;             // Interprété comme IPv4
+enum Color {
+    RED,    // 0
+    GREEN,  // 1
+    BLUE    // 2
 };
 
-// Recevoir packet
-union Packet pkt;
-recv(sock, pkt.raw, sizeof(pkt.raw), 0);
+enum Color c = GREEN;
+printf("Color: %d\n", c);  // 1
+```
 
-// Parser
-if (pkt.ipv4.version == 4) {
-    printf("IPv4 packet\n");
-    printf("Length : %d\n", pkt.ipv4.total_len);
+### Valeurs personnalisées
+
+```c
+enum HttpStatus {
+    OK = 200,
+    CREATED = 201,
+    BAD_REQUEST = 400,
+    UNAUTHORIZED = 401,
+    NOT_FOUND = 404,
+    INTERNAL_ERROR = 500
+};
+
+enum HttpStatus status = NOT_FOUND;
+printf("Status: %d\n", status);  // 404
+```
+
+### typedef pour simplifier
+
+```c
+typedef enum {
+    STATE_IDLE,
+    STATE_RUNNING,
+    STATE_STOPPED,
+    STATE_ERROR
+} State;
+
+State current = STATE_RUNNING;
+```
+
+### Enum comme flags (bitwise)
+
+```c
+typedef enum {
+    PERM_NONE    = 0,        // 0000
+    PERM_READ    = 1 << 0,   // 0001
+    PERM_WRITE   = 1 << 1,   // 0010
+    PERM_EXECUTE = 1 << 2,   // 0100
+    PERM_ADMIN   = 1 << 3    // 1000
+} Permission;
+
+// Combinaison de flags
+Permission user_perms = PERM_READ | PERM_WRITE;  // 0011
+
+// Test de flag
+if (user_perms & PERM_READ) {
+    printf("Can read\n");
+}
+
+// Ajouter un flag
+user_perms |= PERM_EXECUTE;  // 0111
+
+// Retirer un flag
+user_perms &= ~PERM_WRITE;   // 0101
+```
+
+---
+
+## 5. Combiner struct, union et enum
+
+### Tagged union (union discriminée)
+
+```c
+typedef enum {
+    TYPE_INT,
+    TYPE_FLOAT,
+    TYPE_STRING
+} DataType;
+
+typedef struct {
+    DataType type;  // Tag pour savoir quel membre utiliser
+    union {
+        int i;
+        float f;
+        char str[32];
+    } value;
+} Variant;
+
+void print_variant(Variant *v) {
+    switch (v->type) {
+        case TYPE_INT:
+            printf("Int: %d\n", v->value.i);
+            break;
+        case TYPE_FLOAT:
+            printf("Float: %f\n", v->value.f);
+            break;
+        case TYPE_STRING:
+            printf("String: %s\n", v->value.str);
+            break;
+    }
+}
+
+int main(void) {
+    Variant v1 = {TYPE_INT, .value.i = 42};
+    Variant v2 = {TYPE_FLOAT, .value.f = 3.14f};
+    Variant v3 = {TYPE_STRING, .value.str = "Hello"};
+
+    print_variant(&v1);  // Int: 42
+    print_variant(&v2);  // Float: 3.14
+    print_variant(&v3);  // String: Hello
+
+    return 0;
 }
 ```
 
----
+### Schéma tagged union
 
-## 8. Checklist de Compréhension
+```
+Variant v1 (TYPE_INT):
+┌────────────┬───────────────────────────────┐
+│ type = 0   │ value (union)                 │
+│ (TYPE_INT) │ i = 42 (actif)                │
+│            │ f = ??? (ignoré)              │
+│            │ str = ??? (ignoré)            │
+└────────────┴───────────────────────────────┘
 
-- [ ] Différence entre `.` et `->` ?
-- [ ] Pourquoi le padding existe ?
-- [ ] Comment optimiser l'ordre des champs ?
-- [ ] Utilité de typedef ?
-- [ ] Différence struct vs union ?
-- [ ] À quoi servent les bit fields ?
-- [ ] Comment parser un header binaire ?
-
----
-
-## 9. Exercices Pratiques
-
-Voir `exercice.txt` pour :
-- Créer une structure Personne complète
-- Optimiser le padding
-- Parser un header PE/ELF
-- Implémenter une linked list
-
-**Astuce Debug :**
-```c
-// Voir le padding
-#include <stddef.h>
-printf("Offset nom : %zu\n", offsetof(struct Etudiant, nom));
-printf("Offset age : %zu\n", offsetof(struct Etudiant, age));
+Le tag "type" indique quel membre de l'union est valide.
 ```
 
 ---
 
-**Prochaine étape :** Module 15 - Fichiers I/O (fopen/fread/fwrite, modes d'ouverture, parsing fichiers binaires).
+## 6. Applications offensives
+
+### 6.1 Parsing d'adresses IP
+
+```c
+typedef union {
+    uint32_t addr;  // Adresse comme entier
+    uint8_t octets[4];  // Adresse comme 4 bytes
+    struct {
+        uint8_t d;
+        uint8_t c;
+        uint8_t b;
+        uint8_t a;
+    } parts;
+} IPv4Address;
+
+IPv4Address ip;
+ip.addr = 0xC0A80101;  // 192.168.1.1 (big-endian)
+
+printf("IP: %u.%u.%u.%u\n",
+       ip.octets[3], ip.octets[2],
+       ip.octets[1], ip.octets[0]);
+// IP: 192.168.1.1
+```
+
+### 6.2 Parsing de paquets réseau
+
+```c
+typedef enum {
+    PROTO_TCP = 6,
+    PROTO_UDP = 17,
+    PROTO_ICMP = 1
+} Protocol;
+
+typedef struct __attribute__((packed)) {
+    uint16_t src_port;
+    uint16_t dst_port;
+    uint32_t seq_num;
+    uint32_t ack_num;
+    // ... autres champs
+} TCPHeader;
+
+typedef struct __attribute__((packed)) {
+    uint16_t src_port;
+    uint16_t dst_port;
+    uint16_t length;
+    uint16_t checksum;
+} UDPHeader;
+
+typedef struct __attribute__((packed)) {
+    uint8_t type;
+    uint8_t code;
+    uint16_t checksum;
+    uint32_t data;
+} ICMPHeader;
+
+typedef struct {
+    Protocol proto;
+    union {
+        TCPHeader tcp;
+        UDPHeader udp;
+        ICMPHeader icmp;
+        uint8_t raw[64];
+    } header;
+} TransportPacket;
+
+void parse_packet(TransportPacket *pkt, uint8_t *data, Protocol proto) {
+    pkt->proto = proto;
+
+    switch (proto) {
+        case PROTO_TCP:
+            memcpy(&pkt->header.tcp, data, sizeof(TCPHeader));
+            printf("TCP: %u -> %u\n",
+                   ntohs(pkt->header.tcp.src_port),
+                   ntohs(pkt->header.tcp.dst_port));
+            break;
+
+        case PROTO_UDP:
+            memcpy(&pkt->header.udp, data, sizeof(UDPHeader));
+            printf("UDP: %u -> %u\n",
+                   ntohs(pkt->header.udp.src_port),
+                   ntohs(pkt->header.udp.dst_port));
+            break;
+
+        case PROTO_ICMP:
+            memcpy(&pkt->header.icmp, data, sizeof(ICMPHeader));
+            printf("ICMP: type=%u code=%u\n",
+                   pkt->header.icmp.type,
+                   pkt->header.icmp.code);
+            break;
+    }
+}
+```
+
+### 6.3 État d'un implant (state machine)
+
+```c
+typedef enum {
+    IMPLANT_INIT,
+    IMPLANT_CONNECTING,
+    IMPLANT_CONNECTED,
+    IMPLANT_EXECUTING,
+    IMPLANT_SLEEPING,
+    IMPLANT_ERROR,
+    IMPLANT_DEAD
+} ImplantState;
+
+typedef struct {
+    char id[32];
+    ImplantState state;
+    int error_code;
+    time_t last_checkin;
+} Implant;
+
+const char *state_to_string(ImplantState s) {
+    switch (s) {
+        case IMPLANT_INIT:       return "INIT";
+        case IMPLANT_CONNECTING: return "CONNECTING";
+        case IMPLANT_CONNECTED:  return "CONNECTED";
+        case IMPLANT_EXECUTING:  return "EXECUTING";
+        case IMPLANT_SLEEPING:   return "SLEEPING";
+        case IMPLANT_ERROR:      return "ERROR";
+        case IMPLANT_DEAD:       return "DEAD";
+        default:                 return "UNKNOWN";
+    }
+}
+
+void implant_transition(Implant *imp, ImplantState new_state) {
+    printf("[%s] %s -> %s\n",
+           imp->id,
+           state_to_string(imp->state),
+           state_to_string(new_state));
+    imp->state = new_state;
+}
+```
+
+### 6.4 Type de commande C2
+
+```c
+typedef enum {
+    CMD_SHELL      = 0x01,
+    CMD_DOWNLOAD   = 0x02,
+    CMD_UPLOAD     = 0x03,
+    CMD_SCREENSHOT = 0x04,
+    CMD_KEYLOG     = 0x05,
+    CMD_SLEEP      = 0x06,
+    CMD_EXIT       = 0xFF
+} CommandType;
+
+typedef struct {
+    char path[256];
+    char url[256];
+} DownloadArgs;
+
+typedef struct {
+    char local_path[256];
+    char remote_path[256];
+} UploadArgs;
+
+typedef struct {
+    int seconds;
+    int jitter;
+} SleepArgs;
+
+typedef struct {
+    CommandType type;
+    uint32_t id;
+    union {
+        char shell_cmd[512];
+        DownloadArgs download;
+        UploadArgs upload;
+        SleepArgs sleep;
+    } args;
+} C2Command;
+
+void execute_command(C2Command *cmd) {
+    printf("[CMD %u] ", cmd->id);
+
+    switch (cmd->type) {
+        case CMD_SHELL:
+            printf("SHELL: %s\n", cmd->args.shell_cmd);
+            // system(cmd->args.shell_cmd);
+            break;
+
+        case CMD_DOWNLOAD:
+            printf("DOWNLOAD: %s -> %s\n",
+                   cmd->args.download.url,
+                   cmd->args.download.path);
+            break;
+
+        case CMD_UPLOAD:
+            printf("UPLOAD: %s -> %s\n",
+                   cmd->args.upload.local_path,
+                   cmd->args.upload.remote_path);
+            break;
+
+        case CMD_SLEEP:
+            printf("SLEEP: %d seconds (±%d%% jitter)\n",
+                   cmd->args.sleep.seconds,
+                   cmd->args.sleep.jitter);
+            break;
+
+        case CMD_EXIT:
+            printf("EXIT\n");
+            break;
+
+        default:
+            printf("UNKNOWN TYPE: 0x%02X\n", cmd->type);
+    }
+}
+```
+
+### 6.5 Permissions et flags
+
+```c
+typedef enum {
+    FLAG_NONE       = 0,
+    FLAG_ENCRYPTED  = 1 << 0,   // Communication chiffrée
+    FLAG_COMPRESSED = 1 << 1,   // Données compressées
+    FLAG_CHUNKED    = 1 << 2,   // Envoi par morceaux
+    FLAG_PRIORITY   = 1 << 3,   // Message prioritaire
+    FLAG_ACK_REQ    = 1 << 4    // Accusé de réception requis
+} MessageFlags;
+
+typedef struct {
+    uint32_t id;
+    MessageFlags flags;
+    uint32_t data_len;
+    uint8_t data[];
+} Message;
+
+void print_flags(MessageFlags flags) {
+    printf("Flags: ");
+    if (flags == FLAG_NONE) {
+        printf("NONE");
+    } else {
+        if (flags & FLAG_ENCRYPTED)  printf("ENCRYPTED ");
+        if (flags & FLAG_COMPRESSED) printf("COMPRESSED ");
+        if (flags & FLAG_CHUNKED)    printf("CHUNKED ");
+        if (flags & FLAG_PRIORITY)   printf("PRIORITY ");
+        if (flags & FLAG_ACK_REQ)    printf("ACK_REQ ");
+    }
+    printf("\n");
+}
+
+// Usage
+MessageFlags flags = FLAG_ENCRYPTED | FLAG_COMPRESSED | FLAG_ACK_REQ;
+print_flags(flags);  // ENCRYPTED COMPRESSED ACK_REQ
+```
+
+### 6.6 Conversion d'endianness
+
+```c
+typedef union {
+    uint16_t value;
+    uint8_t bytes[2];
+} Word16;
+
+typedef union {
+    uint32_t value;
+    uint8_t bytes[4];
+} Word32;
+
+uint16_t swap16(uint16_t val) {
+    Word16 w;
+    w.value = val;
+    return (w.bytes[0] << 8) | w.bytes[1];
+}
+
+uint32_t swap32(uint32_t val) {
+    Word32 w;
+    w.value = val;
+    return (w.bytes[0] << 24) |
+           (w.bytes[1] << 16) |
+           (w.bytes[2] << 8)  |
+           w.bytes[3];
+}
+
+// Test
+uint16_t port = 0x1234;
+printf("Original: 0x%04X\n", port);       // 0x1234
+printf("Swapped:  0x%04X\n", swap16(port)); // 0x3412
+```
+
+---
+
+## 7. Bonnes pratiques
+
+### Toujours utiliser un tag pour les unions
+
+```c
+// MAL : on ne sait pas quel membre est valide
+union Bad {
+    int i;
+    float f;
+};
+
+// BIEN : le tag indique le type actif
+typedef struct {
+    enum { TAG_INT, TAG_FLOAT } tag;
+    union {
+        int i;
+        float f;
+    } value;
+} Good;
+```
+
+### Enum : utiliser des valeurs explicites pour les protocoles
+
+```c
+// Pour les protocoles, définir explicitement les valeurs
+typedef enum {
+    MSG_BEACON    = 0x0001,
+    MSG_TASK      = 0x0002,
+    MSG_RESULT    = 0x0003,
+    // Laisser de la place pour les futures versions
+    MSG_HEARTBEAT = 0x0010
+} MessageType;
+```
+
+### Union : attention à l'alignement
+
+```c
+// Les unions peuvent avoir un padding implicite
+union Example {
+    char c;      // 1 byte
+    double d;    // 8 bytes
+};  // Taille = 8 bytes (aligné sur double)
+```
+
+### Documenter les unions
+
+```c
+typedef union {
+    uint32_t raw;           // Accès brut aux 4 bytes
+    uint8_t bytes[4];       // Accès byte par byte
+    struct {
+        uint16_t low;       // 2 bytes de poids faible
+        uint16_t high;      // 2 bytes de poids fort
+    } words;
+} Register32;  // Représente un registre 32-bit
+```
+
+---
+
+## 8. Récapitulatif
+
+| Concept | Description | Usage |
+|---------|-------------|-------|
+| union | Membres partagent la même mémoire | Type punning, variant types |
+| sizeof(union) | Taille du plus grand membre | Optimisation mémoire |
+| enum | Constantes nommées | États, types, codes d'erreur |
+| Enum flags | Valeurs puissance de 2 | Permissions, options combinables |
+| Tagged union | struct + enum + union | Variant types sûrs |
+| Type punning | Réinterpréter les bits | Parsing binaire, IEEE 754 |
+
+---
+
+## 9. Exercices
+
+Voir [exercice.md](exercice.md) pour les exercices pratiques.
+
+## 10. Prochaine étape
+
+Le module suivant abordera le **préprocesseur** :
+- Macros (#define)
+- Compilation conditionnelle (#ifdef)
+- Inclusion de fichiers (#include)
+- Applications : anti-debug, obfuscation

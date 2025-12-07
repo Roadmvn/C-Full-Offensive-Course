@@ -1,208 +1,463 @@
-#include <stdio.h>
-#include <string.h>
-
 /*
- * Programme : Fonctions
- * Description : Démonstration des fonctions en C
- * Compilation : gcc example.c -o example
+ * Module 09 : Pointeurs - Les Fondamentaux
+ *
+ * Description : Démonstration complète des pointeurs avec applications offensives
+ * Compilation : gcc -o example example.c
+ * Exécution  : ./example
  */
 
-// ========== PROTOTYPES ==========
-int add(int a, int b);
-int multiply(int a, int b);
-void print_banner(char* title);
-int is_even(int n);
-void print_array(int arr[], int size);
-void xor_encode(unsigned char* data, int size, unsigned char key);
-int factorial(int n);
-void increment_by_value(int x);
-void increment_by_reference(int* x);
-int is_valid_user(char* username);
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-// ========== MAIN ==========
-int main() {
-    printf("=== FONCTIONS EN C ===\n\n");
+// ============================================================================
+// DEMO 1 : Fondamentaux - Adresse et déréférencement
+// ============================================================================
+void demo_basics(void) {
+    printf("=== DEMO 1 : Fondamentaux ===\n\n");
 
-    // 1. Fonction simple avec retour
-    printf("1. Fonction avec retour\n");
-    int sum = add(5, 3);
-    printf("   add(5, 3) = %d\n\n", sum);
+    int x = 42;
+    int *ptr = &x;
 
-    // 2. Fonction avec plusieurs paramètres
-    printf("2. Fonction avec plusieurs paramètres\n");
-    int product = multiply(4, 7);
-    printf("   multiply(4, 7) = %d\n\n", product);
+    printf("Variable x :\n");
+    printf("  Valeur    : %d\n", x);
+    printf("  Adresse   : %p\n", (void*)&x);
+    printf("  Taille    : %lu bytes\n\n", sizeof(x));
 
-    // 3. Fonction void (sans retour)
-    printf("3. Fonction void\n");
-    print_banner("RED TEAM");
-    printf("\n");
+    printf("Pointeur ptr :\n");
+    printf("  Valeur (adresse pointée) : %p\n", (void*)ptr);
+    printf("  Adresse du pointeur      : %p\n", (void*)&ptr);
+    printf("  Valeur déréférencée (*ptr) : %d\n", *ptr);
+    printf("  Taille du pointeur       : %lu bytes\n\n", sizeof(ptr));
 
-    // 4. Fonction booléenne
-    printf("4. Fonction booléenne\n");
-    int num = 42;
-    if (is_even(num)) {
-        printf("   %d est pair\n\n", num);
-    } else {
-        printf("   %d est impair\n\n", num);
-    }
+    // Modification via pointeur
+    printf("[*] Modification via pointeur : *ptr = 99\n");
+    *ptr = 99;
+    printf("  Nouvelle valeur de x : %d\n\n", x);
+}
 
-    // 5. Fonction avec tableau
-    printf("5. Fonction avec tableau\n");
-    int ports[] = {80, 443, 22, 21, 3389};
-    printf("   Ports ouverts : ");
-    print_array(ports, 5);
-    printf("\n");
+// ============================================================================
+// DEMO 2 : Types de pointeurs et tailles
+// ============================================================================
+void demo_pointer_types(void) {
+    printf("=== DEMO 2 : Types de pointeurs ===\n\n");
 
-    // 6. Passage par valeur
-    printf("6. Passage par valeur\n");
-    int a = 10;
-    printf("   Avant : a = %d\n", a);
-    increment_by_value(a);
-    printf("   Après : a = %d (inchangé)\n\n", a);
+    int i = 100;
+    char c = 'A';
+    float f = 3.14f;
+    double d = 2.71828;
 
-    // 7. Passage par référence (pointeur)
-    printf("7. Passage par référence\n");
-    int b = 10;
-    printf("   Avant : b = %d\n", b);
-    increment_by_reference(&b);
-    printf("   Après : b = %d (modifié)\n\n", b);
+    int *pi = &i;
+    char *pc = &c;
+    float *pf = &f;
+    double *pd = &d;
+    void *pv = &i;
 
-    // 8. Fonction récursive
-    printf("8. Fonction récursive (factorielle)\n");
-    int n = 5;
-    int fact = factorial(n);
-    printf("   factorial(%d) = %d\n\n", n, fact);
+    printf("Tailles des pointeurs (tous identiques sur 64-bit) :\n");
+    printf("  sizeof(int*)    : %lu bytes\n", sizeof(pi));
+    printf("  sizeof(char*)   : %lu bytes\n", sizeof(pc));
+    printf("  sizeof(float*)  : %lu bytes\n", sizeof(pf));
+    printf("  sizeof(double*) : %lu bytes\n", sizeof(pd));
+    printf("  sizeof(void*)   : %lu bytes\n\n", sizeof(pv));
 
-    // 9. Fonction d'encodage XOR
-    printf("9. Fonction d'encodage XOR\n");
-    unsigned char shellcode[] = {0x48, 0x65, 0x6C, 0x6C, 0x6F};  // "Hello"
-    unsigned char key = 0x42;
-    int size = sizeof(shellcode);
+    printf("Tailles des types pointés (différentes) :\n");
+    printf("  sizeof(int)    : %lu bytes\n", sizeof(*pi));
+    printf("  sizeof(char)   : %lu bytes\n", sizeof(*pc));
+    printf("  sizeof(float)  : %lu bytes\n", sizeof(*pf));
+    printf("  sizeof(double) : %lu bytes\n\n", sizeof(*pd));
+}
 
-    printf("   Original : ");
-    for (int i = 0; i < size; i++) {
-        printf("%c", shellcode[i]);
-    }
-    printf("\n");
+// ============================================================================
+// DEMO 3 : Arithmétique de pointeurs
+// ============================================================================
+void demo_pointer_arithmetic(void) {
+    printf("=== DEMO 3 : Arithmétique de pointeurs ===\n\n");
 
-    xor_encode(shellcode, size, key);
+    int arr[] = {10, 20, 30, 40, 50};
+    int *ptr = arr;
 
-    printf("   Encodé   : ");
-    for (int i = 0; i < size; i++) {
-        printf("\\x%02x ", shellcode[i]);
+    printf("Tableau : {10, 20, 30, 40, 50}\n");
+    printf("Adresse de base : %p\n\n", (void*)ptr);
+
+    printf("Parcours avec arithmétique de pointeur :\n");
+    for (int i = 0; i < 5; i++) {
+        printf("  ptr + %d = %p -> valeur = %d\n", i, (void*)(ptr + i), *(ptr + i));
     }
     printf("\n");
 
-    xor_encode(shellcode, size, key);  // Décoder
+    // Différence entre pointeurs
+    int *start = &arr[0];
+    int *end = &arr[4];
+    printf("Différence entre pointeurs :\n");
+    printf("  end - start = %ld éléments\n", end - start);
+    printf("  (en bytes : %ld)\n\n", (char*)end - (char*)start);
+}
 
-    printf("   Décodé   : ");
-    for (int i = 0; i < size; i++) {
-        printf("%c", shellcode[i]);
+// ============================================================================
+// DEMO 4 : Passage par référence
+// ============================================================================
+void increment_value(int x) {
+    x++;
+    printf("  [increment_value] x local = %d\n", x);
+}
+
+void increment_pointer(int *px) {
+    (*px)++;
+    printf("  [increment_pointer] *px = %d\n", *px);
+}
+
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void demo_pass_by_reference(void) {
+    printf("=== DEMO 4 : Passage par référence ===\n\n");
+
+    int num = 10;
+
+    printf("1. Passage par valeur :\n");
+    printf("  Avant : num = %d\n", num);
+    increment_value(num);
+    printf("  Après : num = %d (inchangé!)\n\n", num);
+
+    printf("2. Passage par pointeur :\n");
+    printf("  Avant : num = %d\n", num);
+    increment_pointer(&num);
+    printf("  Après : num = %d (modifié!)\n\n", num);
+
+    printf("3. Fonction swap :\n");
+    int a = 100, b = 200;
+    printf("  Avant : a = %d, b = %d\n", a, b);
+    swap(&a, &b);
+    printf("  Après : a = %d, b = %d\n\n", a, b);
+}
+
+// ============================================================================
+// DEMO 5 : Pointeurs et tableaux
+// ============================================================================
+void demo_pointers_and_arrays(void) {
+    printf("=== DEMO 5 : Pointeurs et tableaux ===\n\n");
+
+    int arr[] = {100, 200, 300, 400, 500};
+    int *ptr = arr;
+
+    printf("Équivalence tableau/pointeur :\n");
+    printf("  arr      = %p\n", (void*)arr);
+    printf("  &arr[0]  = %p\n", (void*)&arr[0]);
+    printf("  ptr      = %p\n\n", (void*)ptr);
+
+    printf("Accès équivalents :\n");
+    for (int i = 0; i < 5; i++) {
+        printf("  arr[%d] = %d, *(arr+%d) = %d, ptr[%d] = %d, *(ptr+%d) = %d\n",
+               i, arr[i], i, *(arr + i), i, ptr[i], i, *(ptr + i));
+    }
+    printf("\n");
+
+    // Parcours avec pointeur
+    printf("Parcours avec pointeur itérant :\n  ");
+    for (int *p = arr; p < arr + 5; p++) {
+        printf("%d ", *p);
     }
     printf("\n\n");
-
-    // 10. Fonction avec conditions
-    printf("10. Fonction de validation\n");
-    char username1[] = "admin";
-    char username2[] = "guest";
-
-    if (is_valid_user(username1)) {
-        printf("   '%s' est un utilisateur valide\n", username1);
-    }
-
-    if (!is_valid_user(username2)) {
-        printf("   '%s' n'est pas un utilisateur valide\n", username2);
-    }
-
-    printf("\n[+] Programme terminé avec succès.\n");
-    return 0;
 }
 
-// ========== DÉFINITIONS ==========
-
-// Addition de deux entiers
-int add(int a, int b) {
-    return a + b;
+// ============================================================================
+// DEMO 6 : Void pointer (pointeur générique)
+// ============================================================================
+void print_value(void *ptr, char type) {
+    switch (type) {
+        case 'i':
+            printf("  int: %d\n", *(int*)ptr);
+            break;
+        case 'f':
+            printf("  float: %.2f\n", *(float*)ptr);
+            break;
+        case 'c':
+            printf("  char: '%c'\n", *(char*)ptr);
+            break;
+        case 's':
+            printf("  string: \"%s\"\n", (char*)ptr);
+            break;
+    }
 }
 
-// Multiplication de deux entiers
-int multiply(int a, int b) {
-    return a * b;
-}
+void demo_void_pointer(void) {
+    printf("=== DEMO 6 : Void pointer ===\n\n");
 
-// Affiche un banner stylisé
-void print_banner(char* title) {
-    int len = strlen(title);
+    int i = 42;
+    float f = 3.14f;
+    char c = 'X';
+    char s[] = "Hello Hacker";
 
-    // Ligne du haut
-    printf("   ");
-    for (int i = 0; i < len + 4; i++) {
-        printf("=");
-    }
-    printf("\n");
+    void *generic;
 
-    // Titre
-    printf("   | %s |\n", title);
+    printf("Pointeur générique vers différents types :\n");
 
-    // Ligne du bas
-    printf("   ");
-    for (int i = 0; i < len + 4; i++) {
-        printf("=");
-    }
+    generic = &i;
+    print_value(generic, 'i');
+
+    generic = &f;
+    print_value(generic, 'f');
+
+    generic = &c;
+    print_value(generic, 'c');
+
+    generic = s;
+    print_value(generic, 's');
+
     printf("\n");
 }
 
-// Vérifie si un nombre est pair
-int is_even(int n) {
-    return (n % 2 == 0);  // Retourne 1 (vrai) ou 0 (faux)
-}
+// ============================================================================
+// DEMO 7 : Application offensive - Hexdump mémoire
+// ============================================================================
+void hexdump(void *ptr, int size) {
+    unsigned char *bytes = (unsigned char*)ptr;
 
-// Affiche un tableau
-void print_array(int arr[], int size) {
     for (int i = 0; i < size; i++) {
-        printf("%d ", arr[i]);
-    }
-    printf("\n");
-}
-
-// Encode/décode un tableau avec XOR
-void xor_encode(unsigned char* data, int size, unsigned char key) {
-    for (int i = 0; i < size; i++) {
-        data[i] ^= key;
-    }
-}
-
-// Calcul factoriel (récursif)
-int factorial(int n) {
-    if (n <= 1) {
-        return 1;  // Cas de base
-    }
-    return n * factorial(n - 1);  // Récursion
-}
-
-// Passage par valeur (ne modifie pas l'original)
-void increment_by_value(int x) {
-    x++;
-    printf("   Dans la fonction : x = %d\n", x);
-}
-
-// Passage par référence (modifie l'original)
-void increment_by_reference(int* x) {
-    (*x)++;
-    printf("   Dans la fonction : *x = %d\n", *x);
-}
-
-// Validation d'utilisateur (Red Team)
-int is_valid_user(char* username) {
-    // Liste d'utilisateurs autorisés
-    char* valid_users[] = {"admin", "root", "operator"};
-    int count = 3;
-
-    for (int i = 0; i < count; i++) {
-        if (strcmp(username, valid_users[i]) == 0) {
-            return 1;  // Valide
+        if (i % 16 == 0) {
+            printf("  %p: ", (void*)(bytes + i));
+        }
+        printf("%02X ", bytes[i]);
+        if ((i + 1) % 16 == 0) {
+            printf("\n");
         }
     }
-    return 0;  // Non valide
+    if (size % 16 != 0) printf("\n");
+}
+
+void demo_hexdump(void) {
+    printf("=== DEMO 7 : Hexdump mémoire ===\n\n");
+
+    // Examiner un int
+    int x = 0x41424344;
+    printf("Hexdump de int x = 0x41424344 :\n");
+    hexdump(&x, sizeof(x));
+    printf("  Note: Little-endian -> bytes inversés\n\n");
+
+    // Examiner une string
+    char str[] = "ATTACK";
+    printf("Hexdump de string \"ATTACK\" :\n");
+    hexdump(str, sizeof(str));
+    printf("\n");
+
+    // Examiner une structure
+    struct {
+        int id;
+        char name[8];
+        int value;
+    } data = {0x1234, "PAYLOAD", 0xDEAD};
+
+    printf("Hexdump de structure :\n");
+    hexdump(&data, sizeof(data));
+    printf("\n");
+}
+
+// ============================================================================
+// DEMO 8 : Application offensive - XOR decode avec pointeurs
+// ============================================================================
+void xor_decode(unsigned char *data, int len, unsigned char key) {
+    unsigned char *ptr = data;
+    unsigned char *end = data + len;
+
+    while (ptr < end) {
+        *ptr ^= key;
+        ptr++;
+    }
+}
+
+void demo_xor_decode(void) {
+    printf("=== DEMO 8 : XOR decode avec pointeurs ===\n\n");
+
+    // "PAYLOAD" XOR 0x42
+    unsigned char encoded[] = {0x12, 0x03, 0x1B, 0x0E, 0x0D, 0x03, 0x06, 0x00};
+    unsigned char key = 0x42;
+    int len = 7;
+
+    printf("Données encodées (hex) : ");
+    for (int i = 0; i < len; i++) {
+        printf("0x%02X ", encoded[i]);
+    }
+    printf("\n");
+
+    printf("Clé XOR : 0x%02X\n", key);
+
+    xor_decode(encoded, len, key);
+
+    printf("Données décodées : \"%s\"\n\n", encoded);
+}
+
+// ============================================================================
+// DEMO 9 : Application offensive - Recherche de pattern
+// ============================================================================
+unsigned char* find_pattern(unsigned char *memory, int mem_size,
+                            unsigned char *pattern, int pat_size) {
+    for (int i = 0; i <= mem_size - pat_size; i++) {
+        int found = 1;
+        for (int j = 0; j < pat_size; j++) {
+            if (memory[i + j] != pattern[j]) {
+                found = 0;
+                break;
+            }
+        }
+        if (found) {
+            return &memory[i];  // Retourne pointeur vers pattern trouvé
+        }
+    }
+    return NULL;  // Non trouvé
+}
+
+void demo_pattern_search(void) {
+    printf("=== DEMO 9 : Recherche de pattern ===\n\n");
+
+    unsigned char memory[] = {
+        0x00, 0x00, 0x90, 0x90, 0x90,  // NOP sled
+        0xCC,                          // INT3 (breakpoint)
+        0x31, 0xC0,                    // xor eax, eax
+        0x50,                          // push eax
+        0xC3,                          // ret
+        0x00, 0x00
+    };
+    int mem_size = sizeof(memory);
+
+    // Chercher "xor eax, eax" (0x31 0xC0)
+    unsigned char pattern[] = {0x31, 0xC0};
+    int pat_size = sizeof(pattern);
+
+    printf("Mémoire :\n");
+    hexdump(memory, mem_size);
+
+    printf("Recherche du pattern {0x31, 0xC0} (xor eax, eax)...\n");
+
+    unsigned char *found = find_pattern(memory, mem_size, pattern, pat_size);
+
+    if (found) {
+        int offset = found - memory;
+        printf("[+] Pattern trouvé à l'offset %d (adresse %p)\n\n", offset, (void*)found);
+    } else {
+        printf("[-] Pattern non trouvé\n\n");
+    }
+}
+
+// ============================================================================
+// DEMO 10 : Application offensive - Modification de bytes
+// ============================================================================
+void patch_bytes(unsigned char *target, unsigned char *patch, int size) {
+    for (int i = 0; i < size; i++) {
+        target[i] = patch[i];
+    }
+}
+
+void demo_memory_patching(void) {
+    printf("=== DEMO 10 : Memory patching ===\n\n");
+
+    // Simule du code avec une vérification
+    unsigned char code[] = {
+        0x83, 0xF8, 0x00,  // cmp eax, 0
+        0x74, 0x05,        // je +5 (saute si égal)
+        0xB8, 0x01, 0x00, 0x00, 0x00,  // mov eax, 1
+        0xC3               // ret
+    };
+
+    printf("Code original :\n");
+    hexdump(code, sizeof(code));
+
+    // Patch : changer JE (0x74) en JMP (0xEB) pour bypass
+    printf("[*] Patching: JE (0x74) -> JMP (0xEB) à l'offset 3\n");
+
+    unsigned char *target = &code[3];
+    unsigned char patch[] = {0xEB};
+    patch_bytes(target, patch, 1);
+
+    printf("\nCode patché :\n");
+    hexdump(code, sizeof(code));
+    printf("  Le saut conditionnel est maintenant inconditionnel!\n\n");
+}
+
+// ============================================================================
+// DEMO 11 : Pointeur NULL et sécurité
+// ============================================================================
+int safe_dereference(int *ptr) {
+    if (ptr == NULL) {
+        printf("  [!] Tentative de déréférencement NULL évitée!\n");
+        return -1;
+    }
+    return *ptr;
+}
+
+void demo_null_safety(void) {
+    printf("=== DEMO 11 : Pointeur NULL et sécurité ===\n\n");
+
+    int value = 42;
+    int *valid = &value;
+    int *invalid = NULL;
+
+    printf("Déréférencement sécurisé :\n");
+    printf("  Pointeur valide : %d\n", safe_dereference(valid));
+    printf("  Pointeur NULL   : ");
+    safe_dereference(invalid);
+    printf("\n");
+}
+
+// ============================================================================
+// DEMO 12 : Constantes et pointeurs
+// ============================================================================
+void demo_const_pointers(void) {
+    printf("=== DEMO 12 : Constantes et pointeurs ===\n\n");
+
+    int x = 10, y = 20;
+
+    // 1. Pointeur vers constante (ne peut pas modifier la valeur)
+    const int *ptr1 = &x;
+    printf("1. const int *ptr (pointeur vers constante) :\n");
+    printf("   *ptr1 = %d\n", *ptr1);
+    // *ptr1 = 100;  // ERREUR de compilation!
+    ptr1 = &y;  // OK, peut changer l'adresse
+    printf("   Après ptr1 = &y : *ptr1 = %d\n\n", *ptr1);
+
+    // 2. Pointeur constant (ne peut pas changer d'adresse)
+    int * const ptr2 = &x;
+    printf("2. int * const ptr (pointeur constant) :\n");
+    printf("   *ptr2 = %d\n", *ptr2);
+    *ptr2 = 100;  // OK, peut modifier la valeur
+    // ptr2 = &y;  // ERREUR de compilation!
+    printf("   Après *ptr2 = 100 : x = %d\n\n", x);
+
+    // 3. Les deux constants
+    const int * const ptr3 = &y;
+    printf("3. const int * const ptr (tout constant) :\n");
+    printf("   *ptr3 = %d\n", *ptr3);
+    // *ptr3 = 200;  // ERREUR!
+    // ptr3 = &x;    // ERREUR!
+    printf("   Rien ne peut être modifié\n\n");
+}
+
+// ============================================================================
+// MAIN
+// ============================================================================
+int main(void) {
+    printf("================================================================\n");
+    printf("     MODULE 09 : POINTEURS FONDAMENTAUX - DEMONSTRATIONS\n");
+    printf("================================================================\n\n");
+
+    demo_basics();
+    demo_pointer_types();
+    demo_pointer_arithmetic();
+    demo_pass_by_reference();
+    demo_pointers_and_arrays();
+    demo_void_pointer();
+    demo_hexdump();
+    demo_xor_decode();
+    demo_pattern_search();
+    demo_memory_patching();
+    demo_null_safety();
+    demo_const_pointers();
+
+    printf("================================================================\n");
+    printf("                  FIN DES DEMONSTRATIONS\n");
+    printf("================================================================\n");
+
+    return 0;
 }

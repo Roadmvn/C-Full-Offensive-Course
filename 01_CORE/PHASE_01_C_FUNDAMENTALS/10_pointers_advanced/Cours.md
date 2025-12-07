@@ -1,720 +1,681 @@
-# Cours : Les Pointeurs - Introduction Fondamentale
+# Module 10 : Pointeurs Avancés
 
-## Objectif du Module
+## Objectifs d'apprentissage
 
-Maîtriser le concept de pointeur depuis zéro : comprendre ce qu'est une adresse mémoire, pourquoi les pointeurs existent, comment utiliser les opérateurs & et *, gérer les pointeurs NULL, et utiliser l'arithmétique de pointeurs. C'est le concept CENTRAL de toute programmation système et Red Team.
-
----
-
-## 1. C'est quoi une adresse mémoire ?
-
-### 1.1 La RAM : Un Immense Tableau
-
-Imagine la mémoire RAM comme une gigantesque rue avec des milliards de cases numérotées. Chaque case peut contenir 1 octet (8 bits).
-
-```
-        MÉMOIRE RAM (vue simplifiée)
-
-Adresse      Contenu (1 octet)
-┌────────┬──────────────────────┐
-│0x1000  │     0x41  ('A')      │
-├────────┼──────────────────────┤
-│0x1001  │     0x42  ('B')      │
-├────────┼──────────────────────┤
-│0x1002  │     0x19  (25)       │
-├────────┼──────────────────────┤
-│0x1003  │     0x00  (NULL)     │
-├────────┼──────────────────────┤
-│0x1004  │     0xFF             │
-├────────┼──────────────────────┤
-│  ...   │      ...             │
-└────────┴──────────────────────┘
-
-Chaque case a un NUMÉRO UNIQUE = son ADRESSE
-```
-
-### 1.2 Les 3 Concepts Clés
-
-**Variable** : Un nom donné à une ou plusieurs cases mémoire
-```c
-int age = 25;
-// "age" est un nom pour 4 cases mémoire contenant le nombre 25
-```
-
-**Adresse** : Le numéro de la première case occupée
-```c
-// Si "age" est stocké à partir de la case 0x1000
-// Alors l'adresse de "age" est 0x1000
-```
-
-**Pointeur** : Une variable qui contient une ADRESSE (pas une valeur normale)
-```c
-int *ptr = &age;
-// "ptr" contient l'adresse de "age" (0x1000)
-// C'est un pointeur !
-```
+A la fin de ce module, tu sauras :
+- Allouer et libérer de la mémoire dynamiquement (malloc, free, realloc)
+- Utiliser des pointeurs de pointeurs (int **)
+- Créer et utiliser des pointeurs de fonctions
+- Gérer des tableaux de pointeurs
+- Comprendre les problèmes de mémoire (leaks, use-after-free)
+- Applications offensives : shellcode loaders, hooking, callbacks
 
 ---
 
-## 2. Pourquoi les pointeurs existent ?
+## 1. Allocation dynamique de mémoire
 
-### 2.1 Problème : Passage par Valeur
+### Pourquoi l'allocation dynamique ?
 
-En C, quand tu passes une variable à une fonction, elle est COPIÉE.
+Jusqu'ici, on déclarait des tableaux de taille fixe :
+```c
+int arr[100];  // Taille fixée à la compilation
+```
+
+Problèmes :
+- Taille inconnue à l'avance
+- Gaspillage de mémoire si trop grand
+- Stack limitée (généralement quelques MB)
+
+**Solution** : Allouer sur le **heap** (tas) avec `malloc`.
+
+### malloc - Memory Allocation
 
 ```c
-void modifier(int x) {
-    x = 100;  // Modifie la COPIE, pas l'original
+#include <stdlib.h>
+
+void *malloc(size_t size);
+```
+
+`malloc` alloue `size` bytes et retourne un pointeur vers cette zone.
+
+```c
+// Allouer un tableau de 100 entiers
+int *arr = (int *)malloc(100 * sizeof(int));
+
+if (arr == NULL) {
+    printf("Erreur d'allocation!\n");
+    return 1;
 }
 
-int main() {
-    int age = 25;
-    modifier(age);
-    printf("%d\n", age);  // Affiche 25 (inchangé !)
+// Utiliser le tableau
+arr[0] = 42;
+arr[99] = 100;
+
+// Libérer quand on n'en a plus besoin
+free(arr);
+```
+
+### Schéma mémoire
+
+```
+STACK (pile)                    HEAP (tas)
+┌──────────────┐               ┌──────────────────────┐
+│ int *arr     │───────────────│ 400 bytes alloués    │
+│ = 0x10000    │               │ (100 * sizeof(int))  │
+└──────────────┘               └──────────────────────┘
+                               Adresse : 0x10000
+```
+
+### free - Libérer la mémoire
+
+```c
+void free(void *ptr);
+```
+
+**OBLIGATOIRE** : Libérer la mémoire allouée quand on n'en a plus besoin.
+
+```c
+int *data = malloc(1000);
+// ... utilisation ...
+free(data);     // Libère la mémoire
+data = NULL;    // Bonne pratique : évite les dangling pointers
+```
+
+### calloc - Allocation avec initialisation à zéro
+
+```c
+void *calloc(size_t nmemb, size_t size);
+```
+
+Comme malloc mais initialise tout à zéro.
+
+```c
+// Allouer 100 entiers initialisés à 0
+int *arr = (int *)calloc(100, sizeof(int));
+// arr[0] == 0, arr[1] == 0, etc.
+```
+
+### realloc - Redimensionner
+
+```c
+void *realloc(void *ptr, size_t new_size);
+```
+
+Change la taille d'une zone allouée.
+
+```c
+int *arr = malloc(10 * sizeof(int));
+// ... besoin de plus d'espace ...
+arr = realloc(arr, 20 * sizeof(int));
+// arr contient maintenant 20 entiers
+// Les 10 premiers sont préservés
+```
+
+---
+
+## 2. Pointeurs de pointeurs
+
+### Le concept
+
+Un pointeur de pointeur stocke l'adresse d'un pointeur.
+
+```c
+int x = 42;
+int *p = &x;      // p pointe vers x
+int **pp = &p;    // pp pointe vers p
+```
+
+### Schéma
+
+```
+┌───────────┐     ┌───────────┐     ┌───────────┐
+│ pp        │────→│ p         │────→│ x = 42    │
+│ = &p      │     │ = &x      │     │           │
+└───────────┘     └───────────┘     └───────────┘
+  int **            int *              int
+```
+
+### Accès aux valeurs
+
+```c
+int x = 42;
+int *p = &x;
+int **pp = &p;
+
+printf("%d\n", x);      // 42
+printf("%d\n", *p);     // 42
+printf("%d\n", **pp);   // 42 (double déréférencement)
+
+printf("%p\n", p);      // Adresse de x
+printf("%p\n", *pp);    // Adresse de x (identique)
+printf("%p\n", pp);     // Adresse de p
+```
+
+### Modification à plusieurs niveaux
+
+```c
+**pp = 100;     // Modifie x
+*pp = autre_ptr; // Fait pointer p vers autre chose
+```
+
+### Cas d'usage : Modifier un pointeur dans une fonction
+
+```c
+// PROBLÈME : ne modifie pas le pointeur original
+void bad_alloc(int *ptr) {
+    ptr = malloc(sizeof(int));  // Modifie la copie locale!
+}
+
+// SOLUTION : passer un pointeur de pointeur
+void good_alloc(int **ptr) {
+    *ptr = malloc(sizeof(int));  // Modifie le pointeur original
+}
+
+int main(void) {
+    int *data = NULL;
+    good_alloc(&data);  // Maintenant data pointe vers la mémoire allouée
+    *data = 42;
+    free(data);
     return 0;
 }
 ```
 
-**Schéma du problème :**
-```
-main() :
-┌──────────┐
-│ age = 25 │  Adresse: 0x1000
-└──────────┘
-     │
-     │ Appel modifier(age) → Copie la valeur
-     ↓
-modifier() :
-┌──────────┐
-│ x = 25   │  Adresse: 0x2000 (NOUVELLE case !)
-└──────────┘
-     │
-     ↓ x = 100
-┌──────────┐
-│ x = 100  │  Modifie la copie
-└──────────┘
+---
 
-Retour à main() :
-┌──────────┐
-│ age = 25 │  INCHANGÉ !
-└──────────┘
-```
+## 3. Tableaux de pointeurs
 
-### 2.2 Solution : Passage par Référence (Pointeurs !)
-
-Si on passe l'ADRESSE de la variable, on peut modifier l'original.
+### Déclaration
 
 ```c
-void modifier(int *ptr) {  // Reçoit une ADRESSE
-    *ptr = 100;  // Modifie la valeur À cette adresse
-}
-
-int main() {
-    int age = 25;
-    modifier(&age);  // Passe l'ADRESSE de age
-    printf("%d\n", age);  // Affiche 100 (modifié !)
-    return 0;
-}
+int *arr[10];   // Tableau de 10 pointeurs vers int
+char *args[5];  // Tableau de 5 pointeurs vers char (strings)
 ```
 
-**Schéma de la solution :**
-```
-main() :
-┌──────────┐
-│ age = 25 │  Adresse: 0x1000
-└──────────┘
-     ↑
-     │ Appel modifier(&age) → Passe l'adresse 0x1000
-     │
-modifier() :
-┌─────────────┐
-│ ptr = 0x1000│  Contient l'adresse de age
-└─────────────┘
-     │
-     ↓ *ptr = 100 (va à l'adresse 0x1000 et modifie)
-     │
-┌──────────┐
-│ age = 100│  MODIFIÉ directement !
-└──────────┘
-```
+### Tableau de strings
 
-### 2.3 Autres Cas d'Usage
-
-**1. Structures de données dynamiques**
 ```c
-// Liste chaînée : chaque élément pointe vers le suivant
-struct Node {
-    int data;
-    struct Node *next;  // Pointeur vers le prochain nœud
+char *commands[] = {
+    "whoami",
+    "pwd",
+    "ls -la",
+    "cat /etc/passwd",
+    NULL  // Sentinelle
 };
+
+// Parcours
+for (int i = 0; commands[i] != NULL; i++) {
+    printf("[%d] %s\n", i, commands[i]);
+}
 ```
 
-**2. Allocation dynamique (malloc)**
-```c
-int *tableau = malloc(100 * sizeof(int));
-// malloc retourne un POINTEUR vers la mémoire allouée
+### Schéma
+
+```
+commands (tableau de pointeurs)
+┌─────────┐
+│ [0]     │────→ "whoami\0"
+├─────────┤
+│ [1]     │────→ "pwd\0"
+├─────────┤
+│ [2]     │────→ "ls -la\0"
+├─────────┤
+│ [3]     │────→ "cat /etc/passwd\0"
+├─────────┤
+│ [4]     │────→ NULL
+└─────────┘
 ```
 
-**3. Red Team : Manipulation mémoire**
+### Allocation dynamique d'un tableau 2D
+
 ```c
-// Lire/écrire à une adresse spécifique
-int *ptr = (int *)0x12345678;
-*ptr = 0xDEADBEEF;  // Écriture arbitraire !
+// Allouer une matrice rows x cols
+int **matrix = malloc(rows * sizeof(int *));
+for (int i = 0; i < rows; i++) {
+    matrix[i] = malloc(cols * sizeof(int));
+}
+
+// Utilisation
+matrix[2][3] = 42;
+
+// Libération (dans l'ordre inverse!)
+for (int i = 0; i < rows; i++) {
+    free(matrix[i]);
+}
+free(matrix);
 ```
 
 ---
 
-## 3. Opérateur & (Adresse de...)
+## 4. Pointeurs de fonctions
 
-### 3.1 Obtenir l'Adresse d'une Variable
+### Le concept
 
-L'opérateur `&` permet d'obtenir l'adresse mémoire d'une variable.
-
-```c
-int age = 25;
-printf("Adresse de age : %p\n", &age);
-// Affiche quelque chose comme : 0x7ffe00
-```
-
-**Schéma visuel :**
-```
-int age = 25;
-
-┌─────────────────────────┐
-│ Variable : age          │
-│ Adresse  : 0x7ffe00  ← &age retourne CECI
-│ Valeur   : 25           │
-└─────────────────────────┘
-
-&age = 0x7ffe00
-```
-
-### 3.2 Analogie : L'Adresse Postale
-
-Tu peux voir `&` comme le panneau "Adresse postale" devant une maison.
-
-```
-Maison (variable) :     age = 25
-Adresse postale :       &age = 0x7ffe00
-
-Si quelqu'un demande "où habite age ?"
-Tu réponds : "à l'adresse 0x7ffe00"
-```
-
-### 3.3 Stocker une Adresse : Créer un Pointeur
-
-Pour stocker une adresse, on utilise un **pointeur**.
+Une fonction a une adresse en mémoire. On peut stocker cette adresse dans un pointeur.
 
 ```c
-int age = 25;
-int *ptr = &age;  // ptr contient l'adresse de age
+// Déclaration d'un pointeur de fonction
+int (*func_ptr)(int, int);
+
+// func_ptr peut pointer vers n'importe quelle fonction
+// qui prend 2 int et retourne un int
 ```
 
-**Décortiquons la syntaxe :**
+### Syntaxe détaillée
+
 ```
-int *ptr = &age;
-│   │ │    │
-│   │ │    └─ Adresse de age (0x7ffe00)
-│   │ └─ Nom du pointeur
-│   └─ * = c'est un POINTEUR
-└─ Type de la valeur pointée (int)
+int (*func_ptr)(int, int);
+│    │         │
+│    │         └─ Paramètres de la fonction
+│    └─ Nom du pointeur (les parenthèses sont obligatoires!)
+└─ Type de retour
 ```
 
-**Schéma complet :**
+### Exemple de base
+
+```c
+int add(int a, int b) {
+    return a + b;
+}
+
+int multiply(int a, int b) {
+    return a * b;
+}
+
+int main(void) {
+    // Pointeur de fonction
+    int (*operation)(int, int);
+
+    // Pointer vers add
+    operation = add;
+    printf("5 + 3 = %d\n", operation(5, 3));  // 8
+
+    // Pointer vers multiply
+    operation = multiply;
+    printf("5 * 3 = %d\n", operation(5, 3));  // 15
+
+    return 0;
+}
 ```
-┌─────────────────────────┐
-│ Variable : age          │
-│ Adresse  : 0x7ffe00     │
-│ Valeur   : 25           │
-└─────────────────────────┘
-           ▲
-           │
-           │ ptr "pointe" vers age
-           │
-┌─────────────────────────┐
-│ Pointeur : ptr          │
-│ Adresse  : 0x7ffe08     │ (adresse de ptr lui-même)
-│ Valeur   : 0x7ffe00     │ (contient l'adresse de age)
-└─────────────────────────┘
+
+### typedef pour simplifier
+
+```c
+// Définir un type de pointeur de fonction
+typedef int (*math_func)(int, int);
+
+int add(int a, int b) { return a + b; }
+int sub(int a, int b) { return a - b; }
+
+int main(void) {
+    math_func op = add;
+    printf("%d\n", op(10, 5));  // 15
+
+    op = sub;
+    printf("%d\n", op(10, 5));  // 5
+
+    return 0;
+}
+```
+
+### Tableau de pointeurs de fonctions
+
+```c
+typedef void (*cmd_handler)(const char *);
+
+void cmd_whoami(const char *arg) {
+    printf("Current user: root\n");
+}
+
+void cmd_pwd(const char *arg) {
+    printf("/home/hacker\n");
+}
+
+void cmd_echo(const char *arg) {
+    printf("%s\n", arg);
+}
+
+int main(void) {
+    // Tableau de fonctions
+    cmd_handler handlers[] = {cmd_whoami, cmd_pwd, cmd_echo};
+
+    handlers[0]("");        // whoami
+    handlers[1]("");        // pwd
+    handlers[2]("Hello!");  // echo
+
+    return 0;
+}
 ```
 
 ---
 
-## 4. Opérateur * (Déréférencement)
+## 5. Callbacks
 
-### 4.1 Deux Usages du Symbole *
+### Le concept
 
-Le symbole `*` a **DEUX significations différentes** selon le contexte.
-
-**Usage 1 : Déclaration de pointeur**
-```c
-int *ptr;  // "ptr est un pointeur vers un int"
-```
-
-**Usage 2 : Déréférencement (accès à la valeur)**
-```c
-int value = *ptr;  // "Va à l'adresse contenue dans ptr et lis la valeur"
-```
-
-### 4.2 Déréférencement Expliqué
-
-Déréférencer un pointeur signifie : "Aller à l'adresse stockée dans le pointeur et accéder à la valeur qui s'y trouve".
+Un callback est une fonction passée en paramètre à une autre fonction.
 
 ```c
-int age = 25;
-int *ptr = &age;  // ptr contient 0x7ffe00
+void process_data(int *data, int size, void (*callback)(int)) {
+    for (int i = 0; i < size; i++) {
+        callback(data[i]);  // Appelle la fonction passée
+    }
+}
 
-printf("%d\n", *ptr);  // Affiche 25
+void print_value(int x) {
+    printf("%d ", x);
+}
+
+void double_value(int x) {
+    printf("%d ", x * 2);
+}
+
+int main(void) {
+    int data[] = {1, 2, 3, 4, 5};
+
+    printf("Original: ");
+    process_data(data, 5, print_value);
+    printf("\n");
+
+    printf("Doubled: ");
+    process_data(data, 5, double_value);
+    printf("\n");
+
+    return 0;
+}
 ```
 
-**Schéma étape par étape :**
-```
-Étape 1 : ptr contient 0x7ffe00
-┌─────────────┐
-│ ptr = 0x7ffe00
-└─────────────┘
-
-Étape 2 : *ptr signifie "va à l'adresse 0x7ffe00"
-           ↓
-┌─────────────────────────┐
-│ Adresse : 0x7ffe00      │
-│ Valeur  : 25         ← *ptr accède ici
-└─────────────────────────┘
-
-Résultat : *ptr = 25
-```
-
-### 4.3 Modifier via un Pointeur
-
-Tu peux aussi MODIFIER la valeur pointée avec `*`.
+### Application : Encodeurs modulaires
 
 ```c
-int age = 25;
-int *ptr = &age;
+typedef void (*encoder_t)(unsigned char *, int);
 
-*ptr = 30;  // Modifie la valeur À l'adresse stockée dans ptr
+void xor_encoder(unsigned char *data, int len) {
+    for (int i = 0; i < len; i++) {
+        data[i] ^= 0x42;
+    }
+}
 
-printf("%d\n", age);  // Affiche 30 (age a changé !)
+void add_encoder(unsigned char *data, int len) {
+    for (int i = 0; i < len; i++) {
+        data[i] += 5;
+    }
+}
+
+void encode_payload(unsigned char *data, int len, encoder_t encoder) {
+    encoder(data, len);  // Utilise l'encodeur passé
+}
+
+// Usage
+encode_payload(shellcode, len, xor_encoder);
 ```
 
-**Schéma de modification :**
-```
-AVANT : *ptr = 30;
+---
 
-┌─────────────┐         ┌─────────────────────┐
-│ ptr = 0x7ffe00 │─────→│ Adresse : 0x7ffe00  │
-└─────────────┘         │ Valeur  : 25        │
-                        └─────────────────────┘
+## 6. Problèmes de mémoire courants
 
-APRÈS : *ptr = 30;
+### Memory Leak (fuite mémoire)
 
-┌─────────────┐         ┌─────────────────────┐
-│ ptr = 0x7ffe00 │─────→│ Adresse : 0x7ffe00  │
-└─────────────┘         │ Valeur  : 30     ← Modifié !
-                        └─────────────────────┘
-
-age a changé de 25 à 30
+```c
+void memory_leak(void) {
+    int *data = malloc(1000);
+    // ... utilisation ...
+    // OUBLI de free(data) !
+}  // data perdu, mémoire jamais libérée
 ```
 
-### 4.4 Exemple Complet
+**Solution** : Toujours `free()` ce qui a été `malloc()`.
+
+### Double Free
+
+```c
+int *data = malloc(100);
+free(data);
+free(data);  // CRASH ou corruption!
+```
+
+**Solution** : Mettre le pointeur à NULL après free.
+```c
+free(data);
+data = NULL;
+```
+
+### Use-After-Free
+
+```c
+int *data = malloc(100);
+free(data);
+data[0] = 42;  // DANGER : mémoire peut être réutilisée!
+```
+
+**Solution** : Ne jamais utiliser un pointeur après free.
+
+### Dangling Pointer
+
+```c
+int *get_value(void) {
+    int x = 42;
+    return &x;  // DANGER : x n'existe plus après return!
+}
+
+int *ptr = get_value();
+printf("%d\n", *ptr);  // Comportement indéfini!
+```
+
+### Buffer Overflow
+
+```c
+int *data = malloc(10 * sizeof(int));
+data[100] = 42;  // Écriture hors limites!
+```
+
+---
+
+## 7. Applications offensives
+
+### 7.1 Shellcode Loader
 
 ```c
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
 
-int main() {
-    int age = 25;
-    int *ptr = &age;
+int main(void) {
+    // Shellcode minimal (exit(0))
+    unsigned char shellcode[] = {
+        0x48, 0x31, 0xc0,  // xor rax, rax
+        0xb0, 0x3c,        // mov al, 60 (sys_exit)
+        0x48, 0x31, 0xff,  // xor rdi, rdi
+        0x0f, 0x05         // syscall
+    };
 
-    printf("age = %d\n", age);        // 25
-    printf("&age = %p\n", &age);      // 0x7ffe00 (adresse de age)
-    printf("ptr = %p\n", ptr);        // 0x7ffe00 (ptr contient l'adresse)
-    printf("*ptr = %d\n", *ptr);      // 25 (déréférence : lit la valeur)
+    int size = sizeof(shellcode);
 
-    *ptr = 30;  // Modification via pointeur
+    // Allouer mémoire exécutable
+    void *mem = mmap(NULL, size,
+                     PROT_READ | PROT_WRITE | PROT_EXEC,
+                     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
-    printf("age = %d\n", age);        // 30 (modifié !)
+    if (mem == MAP_FAILED) {
+        perror("mmap");
+        return 1;
+    }
 
-    return 0;
+    // Copier le shellcode
+    memcpy(mem, shellcode, size);
+
+    // Créer pointeur de fonction et exécuter
+    void (*func)(void) = (void (*)(void))mem;
+    func();
+
+    return 0;  // N'arrive jamais (shellcode fait exit)
 }
 ```
 
----
-
-## 5. Pointeur NULL et Segfault
-
-### 5.1 Qu'est-ce que NULL ?
-
-`NULL` est une adresse spéciale qui signifie "pointeur vide" ou "ne pointe nulle part".
+### 7.2 Table de dispatch C2
 
 ```c
-int *ptr = NULL;  // ptr ne pointe vers rien
-```
+typedef struct {
+    const char *name;
+    void (*handler)(const char *arg);
+} Command;
 
-En réalité, `NULL` est l'adresse `0x0` (zéro).
+void cmd_download(const char *url) {
+    printf("[*] Downloading: %s\n", url);
+}
 
-**Schéma :**
-```
-┌─────────────┐
-│ ptr = NULL  │ = ptr = 0x00000000
-└─────────────┘
-      │
-      └─ Ne pointe vers RIEN
-```
+void cmd_execute(const char *cmd) {
+    printf("[*] Executing: %s\n", cmd);
+    system(cmd);
+}
 
-### 5.2 Pourquoi NULL est Important ?
+void cmd_exfil(const char *path) {
+    printf("[*] Exfiltrating: %s\n", path);
+}
 
-Un pointeur non-initialisé contient une adresse ALÉATOIRE (garbage).
+Command commands[] = {
+    {"download", cmd_download},
+    {"execute", cmd_execute},
+    {"exfil", cmd_exfil},
+    {NULL, NULL}  // Sentinelle
+};
 
-```c
-int *ptr;  // ptr contient n'importe quoi (ex: 0x8F3A2B10)
-*ptr = 42; // CRASH ! Tente d'écrire à une adresse random
-```
-
-**Schéma du problème :**
-```
-int *ptr;  (non-initialisé)
-
-┌──────────────────┐
-│ ptr = 0x8F3A2B10 │ ← Adresse aléatoire (DANGEREUSE)
-└──────────────────┘
-         │
-         ↓ *ptr = 42
-    CRASH ! Segmentation Fault
-```
-
-**Solution : Initialiser à NULL**
-```c
-int *ptr = NULL;  // Explicitement vide
-if (ptr != NULL) {
-    *ptr = 42;  // Seulement si ptr pointe quelque part
+void dispatch(const char *name, const char *arg) {
+    for (int i = 0; commands[i].name != NULL; i++) {
+        if (strcmp(commands[i].name, name) == 0) {
+            commands[i].handler(arg);
+            return;
+        }
+    }
+    printf("[-] Unknown command: %s\n", name);
 }
 ```
 
-### 5.3 Segmentation Fault Expliqué
-
-Un **Segmentation Fault** (segfault) arrive quand tu essaies d'accéder à une adresse invalide.
-
-```c
-int *ptr = NULL;
-printf("%d\n", *ptr);  // CRASH : Segmentation Fault
-```
-
-**Pourquoi ça crash ?**
-```
-Le système d'exploitation protège la mémoire.
-L'adresse 0x0 (NULL) est VOLONTAIREMENT invalide.
-
-Tentative d'accès :
-┌──────────┐
-│ ptr = NULL│ = 0x00000000
-└──────────┘
-     │
-     ↓ *ptr (tentative de lecture à 0x0)
-     │
-  ┌──┴──┐
-  │ OS  │ "STOP ! Adresse invalide !"
-  └─────┘
-     │
-  CRASH (signal SIGSEGV)
-```
-
-**Cas courants de segfault :**
-```c
-// 1. Déréférencement de NULL
-int *ptr = NULL;
-*ptr = 10;  // CRASH
-
-// 2. Pointeur non-initialisé
-int *ptr;
-*ptr = 10;  // CRASH
-
-// 3. Double free (on verra plus tard)
-free(ptr);
-free(ptr);  // CRASH
-
-// 4. Use-after-free
-free(ptr);
-*ptr = 10;  // CRASH
-```
-
----
-
-## 6. Arithmétique de Pointeurs
-
-### 6.1 Les Pointeurs et les Tableaux
-
-Un tableau en C est juste un pointeur vers le premier élément.
-
-```c
-int ages[5] = {10, 20, 30, 40, 50};
-int *ptr = ages;  // ages "se dégrade" en pointeur
-```
-
-**Schéma mémoire :**
-```
-Adresse      Valeur      Variable
-┌─────────┬──────────┬────────────┐
-│ 0x1000  │   10     │  ages[0]   │ ← ptr pointe ici
-├─────────┼──────────┼────────────┤
-│ 0x1004  │   20     │  ages[1]   │
-├─────────┼──────────┼────────────┤
-│ 0x1008  │   30     │  ages[2]   │
-├─────────┼──────────┼────────────┤
-│ 0x100C  │   40     │  ages[3]   │
-├─────────┼──────────┼────────────┤
-│ 0x1010  │   50     │  ages[4]   │
-└─────────┴──────────┴────────────┘
-
-ages = 0x1000 (adresse du premier élément)
-ptr  = 0x1000
-```
-
-### 6.2 Addition et Soustraction
-
-Quand tu fais `ptr + 1`, le compilateur avance de `sizeof(type)` octets automatiquement.
-
-```c
-int *ptr = ages;  // ptr = 0x1000
-
-ptr + 0  → 0x1000 (ages[0])
-ptr + 1  → 0x1004 (ages[1])  ← Avance de 4 bytes (sizeof(int))
-ptr + 2  → 0x1008 (ages[2])
-ptr + 3  → 0x100C (ages[3])
-ptr + 4  → 0x1010 (ages[4])
-```
-
-**Schéma visuel :**
-```
-ptr = 0x1000
-│
-↓
-┌────┐  +1  ┌────┐  +1  ┌────┐  +1  ┌────┐  +1  ┌────┐
-│ 10 │ ───→ │ 20 │ ───→ │ 30 │ ───→ │ 40 │ ───→ │ 50 │
-└────┘      └────┘      └────┘      └────┘      └────┘
-0x1000      0x1004      0x1008      0x100C      0x1010
-
-Chaque +1 avance de sizeof(int) = 4 bytes
-```
-
-### 6.3 Équivalence Tableau/Pointeur
-
-Ces deux notations sont IDENTIQUES :
-
-```c
-ages[2]  ≡  *(ages + 2)
-&ages[2] ≡  (ages + 2)
-```
-
-**Exemple concret :**
-```c
-int ages[5] = {10, 20, 30, 40, 50};
-
-printf("%d\n", ages[2]);      // 30
-printf("%d\n", *(ages + 2));  // 30 (identique !)
-
-printf("%p\n", &ages[2]);     // 0x1008
-printf("%p\n", ages + 2);     // 0x1008 (identique !)
-```
-
-### 6.4 Incrémenter/Décrémenter un Pointeur
-
-```c
-int ages[5] = {10, 20, 30, 40, 50};
-int *ptr = ages;
-
-printf("%d\n", *ptr);  // 10
-
-ptr++;  // Avance au prochain élément
-printf("%d\n", *ptr);  // 20
-
-ptr += 2;  // Avance de 2 éléments
-printf("%d\n", *ptr);  // 40
-
-ptr--;  // Recule d'un élément
-printf("%d\n", *ptr);  // 30
-```
-
-**Schéma d'avancement :**
-```
-DÉBUT : ptr = 0x1000
-┌────┐
-│ 10 │ ← ptr
-└────┘
-
-ptr++ :
-┌────┐  ┌────┐
-│ 10 │  │ 20 │ ← ptr (avancé de 4 bytes)
-└────┘  └────┘
-
-ptr += 2 :
-┌────┐  ┌────┐  ┌────┐  ┌────┐
-│ 10 │  │ 20 │  │ 30 │  │ 40 │ ← ptr
-└────┘  └────┘  └────┘  └────┘
-
-ptr-- :
-┌────┐  ┌────┐  ┌────┐  ┌────┐
-│ 10 │  │ 20 │  │ 30 │  │ 40 │
-└────┘  └────┘  └────┘  └────┘
-                   ↑
-                  ptr (reculé de 4 bytes)
-```
-
----
-
-## 7. Application Red Team
-
-### 7.1 Pourquoi les Pointeurs Sont le Coeur du Red Team ?
-
-Les pointeurs permettent de manipuler la mémoire directement. C'est LA compétence fondamentale pour :
-
-**1. Process Injection** : Injecter du code dans un autre processus
-```c
-// Allouer de la mémoire dans un processus distant
-LPVOID addr = VirtualAllocEx(hProcess, NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-// addr est un POINTEUR vers la mémoire du processus cible
-
-// Écrire notre shellcode à cette adresse
-WriteProcessMemory(hProcess, addr, shellcode, size, NULL);
-```
-
-**2. Buffer Overflow** : Écraser la mémoire pour contrôler le flux d'exécution
-```c
-char buffer[10];
-char *ptr = buffer;
-
-// Écriture au-delà des limites
-strcpy(ptr, "AAAAAAAAAAAAAAAAAAAAAAAA");  // Dépasse 10 bytes
-// Peut écraser la return address sur la stack !
-```
-
-**3. Lecture/Écriture Arbitraire**
-```c
-// Lire une adresse mémoire spécifique
-int *ptr = (int *)0x12345678;
-int valeur = *ptr;  // Lit la valeur à cette adresse
-
-// Écrire à une adresse spécifique
-*ptr = 0xDEADBEEF;  // Écrit notre valeur
-```
-
-### 7.2 Exemple Concret : API Hooking Basique
+### 7.3 Fonction Hooking
 
 ```c
 #include <stdio.h>
 
 // Fonction originale
-int verifier_licence() {
-    return 0;  // 0 = licence invalide
+int (*original_check)(int) = NULL;
+
+int real_check_license(int key) {
+    return (key == 12345);  // True seulement si clé valide
 }
 
-int main() {
-    // Créer un pointeur vers la fonction
-    int (*func_ptr)() = verifier_licence;
+// Notre hook (bypass)
+int hooked_check(int key) {
+    printf("[HOOK] License check bypassed!\n");
+    return 1;  // Toujours valide
+}
 
-    printf("Licence valide : %d\n", func_ptr());  // Affiche 0
+int main(void) {
+    // Normalement
+    original_check = real_check_license;
+    printf("License valid: %d\n", original_check(99999));  // 0
 
-    // RED TEAM : Remplacer le pointeur par une autre fonction
-    int toujours_valide() { return 1; }
-    func_ptr = toujours_valide;
-
-    printf("Licence valide : %d\n", func_ptr());  // Affiche 1 (bypass !)
+    // Après hook
+    original_check = hooked_check;
+    printf("License valid: %d\n", original_check(99999));  // 1 (bypass!)
 
     return 0;
 }
 ```
 
-**Schéma de l'exploit :**
-```
-AVANT :
-func_ptr ─────→ verifier_licence() { return 0; }
-
-APRÈS (hook) :
-func_ptr ─────→ toujours_valide() { return 1; }
-
-Le programme appelle func_ptr() qui exécute maintenant notre fonction !
-```
-
-### 7.3 Format String Vulnerability (Aperçu)
+### 7.4 Allocation de payload dynamique
 
 ```c
-// Code vulnérable
-void vulnerable(char *input) {
-    printf(input);  // DANGER ! input contrôlé par l'attaquant
+unsigned char *create_encoded_payload(unsigned char *raw, int size, unsigned char key) {
+    unsigned char *encoded = malloc(size);
+    if (!encoded) return NULL;
+
+    for (int i = 0; i < size; i++) {
+        encoded[i] = raw[i] ^ key;
+    }
+
+    return encoded;  // Caller doit free()
 }
 
-// Exploitation
-char exploit[] = "%p %p %p %p";  // Lit la stack
-vulnerable(exploit);
-// Affiche les adresses mémoire de la stack !
+void decode_and_execute(unsigned char *encoded, int size, unsigned char key) {
+    // Décoder in-place
+    for (int i = 0; i < size; i++) {
+        encoded[i] ^= key;
+    }
 
-char exploit2[] = "%n";  // Écrit dans la mémoire (!)
-```
-
-Le `%p` lit des POINTEURS sur la stack. Le `%n` écrit à une adresse pointée.
-
-### 7.4 Pourquoi C'est Possible ?
-
-En C, les pointeurs donnent un **contrôle total** sur la mémoire. C'est puissant mais dangereux.
-
-```
-Langages de haut niveau (Python, Java) :
-┌────────────────┐
-│  Gestionnaire  │  ← Protège la mémoire
-│   Mémoire      │
-└────────────────┘
-       ↓
-   [Mémoire]
-
-
-Langage C :
-┌────────────────┐
-│  Ton code      │  ← Accès DIRECT à la mémoire
-└────────────────┘
-       ↓
-   [Mémoire]  ← Tu peux lire/écrire n'importe où !
-```
-
-Cette liberté est ce qui rend le C parfait pour le Red Team, mais aussi source de vulnérabilités.
-
----
-
-## 8. Checklist de Compréhension
-
-Avant de passer au module suivant, assure-toi de pouvoir répondre :
-
-- [ ] C'est quoi une adresse mémoire ?
-- [ ] Quelle différence entre `&age` et `*ptr` ?
-- [ ] Pourquoi `int *ptr; *ptr = 10;` crash ?
-- [ ] Comment fonctionne `ptr + 1` sur un tableau ?
-- [ ] Que contient exactement un pointeur ?
-- [ ] Pourquoi NULL est important ?
-- [ ] Qu'est-ce qu'un segmentation fault ?
-
-Si tu hésites sur une question, relis la section correspondante.
-
----
-
-## 9. Exercices Pratiques
-
-Va dans le fichier `exercice.txt` pour pratiquer :
-- Manipulation basique de pointeurs
-- Arithmétique de pointeurs sur tableaux
-- Passage par référence
-- Debug avec gdb
-
-**Astuce Debug :**
-```bash
-gcc example.c -g -o program
-gdb ./program
-(gdb) break main
-(gdb) run
-(gdb) print &age       # Voir l'adresse
-(gdb) print ptr        # Voir le contenu du pointeur
-(gdb) print *ptr       # Déréférencer
-(gdb) x/4wx ptr        # Examiner la mémoire (4 words en hexa)
+    // Exécuter (nécessite mémoire exécutable)
+    // ...
+}
 ```
 
 ---
 
-**Prochaine étape :** Module 12 - Pointeurs Avancés (pointeur de pointeur, pointeurs de fonctions, void*, const).
+## 8. Bonnes pratiques
 
+### Vérifier les allocations
+
+```c
+int *data = malloc(size);
+if (data == NULL) {
+    fprintf(stderr, "Allocation failed\n");
+    return -1;
+}
+```
+
+### Initialiser après allocation
+
+```c
+int *data = malloc(100 * sizeof(int));
+memset(data, 0, 100 * sizeof(int));
+// Ou utiliser calloc
+```
+
+### Libérer dans l'ordre inverse
+
+```c
+// Allocation
+char **matrix = malloc(rows * sizeof(char *));
+for (int i = 0; i < rows; i++) {
+    matrix[i] = malloc(cols);
+}
+
+// Libération (ordre inverse!)
+for (int i = 0; i < rows; i++) {
+    free(matrix[i]);
+}
+free(matrix);
+```
+
+### Mettre à NULL après free
+
+```c
+free(data);
+data = NULL;  // Évite use-after-free accidentel
+```
+
+---
+
+## 9. Récapitulatif
+
+| Concept | Description | Exemple |
+|---------|-------------|---------|
+| malloc | Allouer mémoire | `int *p = malloc(n);` |
+| calloc | Allouer + init à 0 | `int *p = calloc(n, sizeof(int));` |
+| realloc | Redimensionner | `p = realloc(p, new_size);` |
+| free | Libérer | `free(p);` |
+| int ** | Pointeur de pointeur | `int **pp = &p;` |
+| Function ptr | Pointeur de fonction | `int (*f)(int) = func;` |
+| Callback | Fonction passée en arg | `process(data, callback);` |
+
+---
+
+## 10. Exercices
+
+Voir [exercice.md](exercice.md) pour les exercices pratiques.
+
+## 11. Prochaine étape
+
+Le module suivant abordera les **structures** :
+- Définition de structures
+- Pointeurs vers structures
+- Structures imbriquées
+- Applications : représentation de données réseau, C2 protocols

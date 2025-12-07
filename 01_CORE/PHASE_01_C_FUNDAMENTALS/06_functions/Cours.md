@@ -1,579 +1,832 @@
-# 07 - Boucles (Loops)
+# Module 06 : Fonctions
 
-## 🎯 Ce que tu vas apprendre
+## Partie 0 : Pourquoi les fonctions en sécurité offensive ?
 
-- Ce qu'est une boucle et pourquoi elle existe
-- Les trois types de boucles : for, while, do-while
-- Les instructions break et continue
-- Les boucles imbriquées
-- Comment éviter les boucles infinies
+Les fonctions sont la **base de tout code réutilisable et structuré**. En offensive security, elles permettent :
 
-## 📚 Théorie
+### Applications directes
 
-### Concept 1 : C'est quoi une boucle ?
+| Concept | Application offensive |
+|---------|----------------------|
+| Modularisation | Séparer payload, encoder, loader |
+| Callbacks | Hooks, shellcode, API hijacking |
+| Pointeurs de fonction | Technique anti-analyse, obfuscation |
+| Conventions d'appel | Shellcode, ROP chains, calling conventions |
+| Récursion | Traversée de systèmes de fichiers |
+| Variadic functions | Format string attacks |
 
-**C'est quoi ?**
-Une boucle permet de répéter un bloc de code plusieurs fois, tant qu'une condition est vraie.
-
-**Pourquoi ça existe ?**
-Sans boucles, tu devrais copier-coller le même code des centaines de fois. Les boucles automatisent la répétition.
-
-**Comment ça marche ?**
-
-Le processeur exécute le code, teste une condition, et recommence si la condition est vraie.
+### Exemple motivant
 
 ```c
-// Sans boucle (répétitif) :
-printf("0\n");
-printf("1\n");
-printf("2\n");
-printf("3\n");
-printf("4\n");
+// Sans fonctions : code répétitif et impossible à maintenir
+unsigned char encoded1 = data1 ^ 0x42;
+unsigned char encoded2 = data2 ^ 0x42;
+unsigned char encoded3 = data3 ^ 0x42;
+// ... répété 100 fois
 
-// Avec boucle (automatique) :
-for (int i = 0; i < 5; i++) {
-    printf("%d\n", i);
-}
-```
-
-### Concept 2 : Boucle for
-
-**C'est quoi ?**
-La boucle `for` est utilisée quand tu connais le nombre d'itérations à l'avance.
-
-**Syntaxe** :
-```c
-for (initialisation; condition; incrémentation) {
-    // Code à répéter
-}
-```
-
-**Décomposition** :
-```c
-for (int i = 0; i < 10; i++) {
-    printf("%d\n", i);
-}
-```
-
-**Processus d'exécution** :
-```
-1. Initialisation : int i = 0 (exécutée UNE SEULE FOIS)
-2. Test condition : i < 10 ? (si faux → sort de la boucle)
-3. Exécute le bloc : printf("%d\n", i);
-4. Incrémentation : i++
-5. Retour à l'étape 2
-```
-
-**Schéma** :
-```
-┌─────────────────────────────────┐
-│ 1. Initialisation : i = 0       │
-└──────────┬──────────────────────┘
-           ↓
-┌──────────▼──────────────────────┐
-│ 2. Test : i < 10 ?              │
-└──────────┬──────────────────────┘
-           │ Vrai
-           ↓
-┌──────────▼──────────────────────┐
-│ 3. Exécute le bloc              │
-└──────────┬──────────────────────┘
-           ↓
-┌──────────▼──────────────────────┐
-│ 4. Incrémentation : i++         │
-└──────────┬──────────────────────┘
-           │
-           └──> Retour à l'étape 2
-
-           Faux → Sort de la boucle
-```
-
-**Exemple avec trace** :
-```c
-for (int i = 0; i < 3; i++) {
-    printf("i = %d\n", i);
+// Avec fonction : propre et réutilisable
+unsigned char xor_encode(unsigned char byte, unsigned char key) {
+    return byte ^ key;
 }
 
-Itération 1 : i=0, test 0<3 (vrai), affiche "i = 0", i++ → i=1
-Itération 2 : i=1, test 1<3 (vrai), affiche "i = 1", i++ → i=2
-Itération 3 : i=2, test 2<3 (vrai), affiche "i = 2", i++ → i=3
-Itération 4 : i=3, test 3<3 (faux) → Sort
-
-Output :
-i = 0
-i = 1
-i = 2
-```
-
-**Variations** :
-```c
-// Compter à l'envers
-for (int i = 10; i > 0; i--) {
-    printf("%d\n", i);
-}
-
-// Incrémenter de 2
-for (int i = 0; i < 10; i += 2) {
-    printf("%d\n", i);  // 0, 2, 4, 6, 8
-}
-
-// Multiple variables
-for (int i = 0, j = 10; i < 10; i++, j--) {
-    printf("i=%d, j=%d\n", i, j);
+for (int i = 0; i < data_len; i++) {
+    data[i] = xor_encode(data[i], 0x42);
 }
 ```
-
-### Concept 3 : Boucle while
-
-**C'est quoi ?**
-La boucle `while` est utilisée quand tu ne connais pas le nombre d'itérations à l'avance.
-
-**Syntaxe** :
-```c
-while (condition) {
-    // Code à répéter
-}
-```
-
-**La condition est testée AVANT chaque itération.**
-
-**Exemple** :
-```c
-int i = 0;
-while (i < 5) {
-    printf("%d\n", i);
-    i++;
-}
-```
-
-**Processus** :
-```
-1. Test condition : i < 5 ?
-2. Si vrai : exécute le bloc
-3. Retour à l'étape 1
-4. Si faux : sort de la boucle
-```
-
-**Cas d'usage** :
-```c
-// Lire jusqu'à EOF
-char c;
-while ((c = getchar()) != EOF) {
-    process(c);
-}
-
-// Boucle de serveur
-while (server_running) {
-    handle_request();
-}
-```
-
-### Concept 4 : Boucle do-while
-
-**C'est quoi ?**
-Similaire à `while`, MAIS la condition est testée APRÈS le bloc. Garantit AU MOINS UNE exécution.
-
-**Syntaxe** :
-```c
-do {
-    // Code exécuté au moins une fois
-} while (condition);
-```
-
-**Différence clé** :
-
-```c
-// while : peut ne jamais s'exécuter
-int x = 10;
-while (x < 5) {
-    printf("Jamais affiché\n");
-}
-
-// do-while : s'exécute AU MOINS une fois
-int x = 10;
-do {
-    printf("Affiché une fois\n");
-} while (x < 5);
-```
-
-**Cas d'usage** :
-```c
-// Menu qui doit s'afficher au moins une fois
-int choice;
-do {
-    printf("1. Option 1\n");
-    printf("2. Option 2\n");
-    printf("0. Quit\n");
-    scanf("%d", &choice);
-} while (choice != 0);
-```
-
-### Concept 5 : break - Sortir d'une boucle
-
-**C'est quoi ?**
-`break` sort immédiatement de la boucle, peu importe la condition.
-
-**Exemple** :
-```c
-for (int i = 0; i < 100; i++) {
-    if (i == 5) {
-        break;  // Sort quand i == 5
-    }
-    printf("%d\n", i);
-}
-// Affiche : 0, 1, 2, 3, 4
-```
-
-**Schéma** :
-```
-i=0 : test, affiche, i++
-i=1 : test, affiche, i++
-i=2 : test, affiche, i++
-i=3 : test, affiche, i++
-i=4 : test, affiche, i++
-i=5 : test, break → SORT DE LA BOUCLE
-```
-
-**Cas d'usage** :
-```c
-// Recherche dans un tableau
-int found = 0;
-for (int i = 0; i < size; i++) {
-    if (array[i] == target) {
-        found = 1;
-        break;  // Trouvé, pas besoin de continuer
-    }
-}
-```
-
-### Concept 6 : continue - Passer à l'itération suivante
-
-**C'est quoi ?**
-`continue` saute le reste du bloc et passe immédiatement à l'itération suivante.
-
-**Exemple** :
-```c
-for (int i = 0; i < 10; i++) {
-    if (i % 2 == 0) {
-        continue;  // Saute les pairs
-    }
-    printf("%d\n", i);  // Affiche seulement les impairs
-}
-// Output : 1, 3, 5, 7, 9
-```
-
-**Schéma** :
-```
-i=0 : pair → continue → passe au suivant
-i=1 : impair → affiche 1
-i=2 : pair → continue → passe au suivant
-i=3 : impair → affiche 3
-...
-```
-
-**Différence break vs continue** :
-```c
-// break : SORT de la boucle
-for (int i = 0; i < 10; i++) {
-    if (i == 5) break;
-    printf("%d ", i);  // 0 1 2 3 4
-}
-
-// continue : PASSE au suivant
-for (int i = 0; i < 10; i++) {
-    if (i == 5) continue;
-    printf("%d ", i);  // 0 1 2 3 4 6 7 8 9 (pas de 5)
-}
-```
-
-### Concept 7 : Boucles imbriquées
-
-**C'est quoi ?**
-Une boucle à l'intérieur d'une autre boucle.
-
-**Exemple** :
-```c
-for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-        printf("(%d, %d) ", i, j);
-    }
-    printf("\n");
-}
-```
-
-**Output** :
-```
-(0, 0) (0, 1) (0, 2)
-(1, 0) (1, 1) (1, 2)
-(2, 0) (2, 1) (2, 2)
-```
-
-**Processus** :
-```
-i=0 : j=0,1,2 → affiche (0,0), (0,1), (0,2)
-i=1 : j=0,1,2 → affiche (1,0), (1,1), (1,2)
-i=2 : j=0,1,2 → affiche (2,0), (2,1), (2,2)
-```
-
-**Complexité** : Si 2 boucles de N itérations → N*N = N² opérations.
-
-### Concept 8 : Boucle infinie
-
-**C'est quoi ?**
-Une boucle qui ne se termine jamais.
-
-**Volontaire** :
-```c
-// Serveur qui tourne en continu
-while (1) {  // ou for(;;)
-    handle_request();
-}
-```
-
-**Accidentelle (BUG)** :
-```c
-int i = 0;
-while (i < 10) {
-    printf("%d\n", i);
-    // OUBLI : pas de i++
-    // Boucle infinie : i reste à 0
-}
-```
-
-**Pour l'arrêter** :
-- Ctrl+C dans le terminal
-- Utiliser break avec une condition
-
-```c
-while (1) {
-    if (should_stop()) {
-        break;  // Sortie propre
-    }
-    // ...
-}
-```
-
-### Concept 9 : Parcourir un tableau
-
-**Méthode classique** :
-```c
-int numbers[] = {10, 20, 30, 40, 50};
-int size = 5;
-
-for (int i = 0; i < size; i++) {
-    printf("numbers[%d] = %d\n", i, numbers[i]);
-}
-```
-
-**Avec sizeof** :
-```c
-int numbers[] = {10, 20, 30, 40, 50};
-int size = sizeof(numbers) / sizeof(numbers[0]);
-
-for (int i = 0; i < size; i++) {
-    printf("%d\n", numbers[i]);
-}
-```
-
-### Concept 10 : Compteurs et accumulateurs
-
-**Compteur (count)** :
-```c
-int count = 0;
-for (int i = 0; i < 100; i++) {
-    if (i % 2 == 0) {
-        count++;  // Compte les pairs
-    }
-}
-printf("Pairs : %d\n", count);  // 50
-```
-
-**Accumulateur (sum)** :
-```c
-int sum = 0;
-for (int i = 1; i <= 10; i++) {
-    sum += i;  // Somme : 1+2+3+...+10
-}
-printf("Somme : %d\n", sum);  // 55
-```
-
-## 🔍 Visualisation : Trace d'exécution
-
-```c
-int factorial = 1;
-for (int i = 1; i <= 4; i++) {
-    factorial *= i;
-}
-```
-
-**Trace** :
-```
-Initialisation : i=1, factorial=1
-
-Itération 1 :
-   Test : 1 <= 4 ? Vrai
-   factorial = 1 * 1 = 1
-   i++ → i=2
-
-Itération 2 :
-   Test : 2 <= 4 ? Vrai
-   factorial = 1 * 2 = 2
-   i++ → i=3
-
-Itération 3 :
-   Test : 3 <= 4 ? Vrai
-   factorial = 2 * 3 = 6
-   i++ → i=4
-
-Itération 4 :
-   Test : 4 <= 4 ? Vrai
-   factorial = 6 * 4 = 24
-   i++ → i=5
-
-Itération 5 :
-   Test : 5 <= 4 ? Faux
-   → Sort de la boucle
-
-Résultat : factorial = 24
-```
-
-## 🎯 Application Red Team
-
-### 1. Scanner de ports
-
-```c
-char* ip = "192.168.1.1";
-for (int port = 1; port <= 1024; port++) {
-    if (can_connect(ip, port)) {
-        printf("Port %d : OPEN\n", port);
-    }
-}
-```
-
-### 2. Brute force
-
-```c
-char* passwords[] = {"admin", "password", "123456", "root"};
-int size = 4;
-
-for (int i = 0; i < size; i++) {
-    if (try_login(username, passwords[i])) {
-        printf("Password found: %s\n", passwords[i]);
-        break;  // Arrête dès qu'on trouve
-    }
-}
-```
-
-### 3. XOR Encoder/Decoder
-
-```c
-unsigned char shellcode[] = {0x90, 0x90, 0x31, 0xc0, 0x50};
-unsigned char key = 0xAA;
-int size = sizeof(shellcode);
-
-// Encoder
-for (int i = 0; i < size; i++) {
-    shellcode[i] ^= key;
-}
-
-// Décoder (même opération)
-for (int i = 0; i < size; i++) {
-    shellcode[i] ^= key;
-}
-```
-
-### 4. Parsing de données binaires
-
-```c
-unsigned char packet[1500];
-int packet_len = recv_packet(packet);
-
-for (int i = 0; i < packet_len; i++) {
-    if (packet[i] == 0xFF && packet[i+1] == 0xD9) {
-        printf("JPEG end marker at offset %d\n", i);
-        break;
-    }
-}
-```
-
-### 5. Reconnaissance réseau
-
-```c
-// Scanner un sous-réseau
-char base_ip[] = "192.168.1.";
-for (int i = 1; i < 255; i++) {
-    char ip[16];
-    sprintf(ip, "%s%d", base_ip, i);
-    if (ping(ip)) {
-        printf("Host %s is UP\n", ip);
-    }
-}
-```
-
-### 6. Event loop (C2 beacon)
-
-```c
-while (1) {
-    char* command = check_for_command();
-    if (command != NULL) {
-        execute_command(command);
-        send_result();
-    }
-    sleep(60);  // Attendre 1 minute
-}
-```
-
-### 7. Recherche de pattern en mémoire
-
-```c
-unsigned char pattern[] = {0x48, 0x8B, 0x05};  // mov rax, [rip+...]
-int pattern_len = 3;
-
-for (int i = 0; i < mem_size - pattern_len; i++) {
-    int found = 1;
-    for (int j = 0; j < pattern_len; j++) {
-        if (memory[i+j] != pattern[j]) {
-            found = 0;
-            break;
-        }
-    }
-    if (found) {
-        printf("Pattern found at 0x%lx\n", base_addr + i);
-    }
-}
-```
-
-### 8. ROPgadgets finder
-
-```c
-unsigned char* binary = load_binary("program");
-int size = get_size("program");
-
-// Chercher "pop rdi; ret" (0x5f 0xc3)
-for (int i = 0; i < size - 1; i++) {
-    if (binary[i] == 0x5f && binary[i+1] == 0xc3) {
-        printf("pop rdi; ret @ 0x%lx\n", base_addr + i);
-    }
-}
-```
-
-## 📝 Points clés à retenir
-
-- `for` : nombre d'itérations connu à l'avance
-- `while` : condition testée AVANT le bloc
-- `do-while` : condition testée APRÈS (au moins 1 exécution)
-- `break` : sort immédiatement de la boucle
-- `continue` : passe à l'itération suivante
-- Boucles imbriquées : complexité N*M
-- Toujours incrémenter la variable de boucle (sinon boucle infinie)
-- Les boucles sont essentielles pour scanner, brute-force, parser
-- Utiliser break pour optimiser (arrêter dès qu'on trouve)
-
-## ➡️ Prochaine étape
-
-Maintenant que tu sais répéter des actions, tu vas apprendre à stocker des collections de données avec les [tableaux (arrays)](../08_arrays/)
 
 ---
 
-**Exercices** : Voir [exercice.txt](exercice.txt)
-**Code exemple** : Voir [example.c](example.c)
+## Partie 1 : Anatomie d'une fonction
+
+### Structure de base
+
+```c
+type_retour nom_fonction(paramètres) {
+    // Corps de la fonction
+    return valeur;
+}
+```
+
+### Les 4 composants
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  int    add    (int a, int b)    {                         │
+│   │      │          │                                       │
+│   │      │          └─── Paramètres (entrées)              │
+│   │      └────────────── Nom de la fonction                │
+│   └───────────────────── Type de retour (sortie)           │
+│                                                             │
+│      return a + b;   ← Valeur retournée                    │
+│  }                                                          │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Exemples simples
+
+```c
+#include <stdio.h>
+
+// Fonction sans retour ni paramètres
+void say_hello(void) {
+    printf("Hello!\n");
+}
+
+// Fonction avec retour, sans paramètres
+int get_magic_number(void) {
+    return 42;
+}
+
+// Fonction avec paramètres et retour
+int add(int a, int b) {
+    return a + b;
+}
+
+// Fonction avec paramètres, sans retour
+void print_number(int n) {
+    printf("Number: %d\n", n);
+}
+
+int main(void) {
+    say_hello();                          // Hello!
+    int magic = get_magic_number();       // magic = 42
+    int sum = add(5, 3);                  // sum = 8
+    print_number(sum);                    // Number: 8
+    return 0;
+}
+```
+
+---
+
+## Partie 2 : Déclaration vs Définition
+
+### Le problème
+
+```c
+int main(void) {
+    greet();  // ERREUR : greet() pas encore défini !
+    return 0;
+}
+
+void greet(void) {
+    printf("Hello!\n");
+}
+```
+
+### Solution : Prototype (déclaration)
+
+```c
+// Prototype : annonce l'existence de la fonction
+void greet(void);
+
+int main(void) {
+    greet();  // OK : le compilateur connaît greet()
+    return 0;
+}
+
+// Définition : implémentation complète
+void greet(void) {
+    printf("Hello!\n");
+}
+```
+
+### Règle d'or
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  PROTOTYPE : type nom(paramètres);   ← avec point-virgule  │
+│                                                             │
+│  DÉFINITION : type nom(paramètres) { ... }  ← avec corps   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Organisation typique
+
+```c
+// ===== Prototypes (en haut du fichier) =====
+int xor_encode(unsigned char* data, int len, unsigned char key);
+void print_hex(unsigned char* data, int len);
+int check_signature(unsigned char* data);
+
+// ===== Main =====
+int main(void) {
+    // Utilise les fonctions
+    return 0;
+}
+
+// ===== Définitions (en bas du fichier) =====
+int xor_encode(unsigned char* data, int len, unsigned char key) {
+    // Implémentation
+}
+
+void print_hex(unsigned char* data, int len) {
+    // Implémentation
+}
+```
+
+---
+
+## Partie 3 : Passage de paramètres
+
+### Passage par valeur (copie)
+
+```c
+void double_value(int x) {
+    x = x * 2;  // Modifie la COPIE, pas l'original
+}
+
+int main(void) {
+    int n = 5;
+    double_value(n);
+    printf("%d\n", n);  // Affiche 5 (inchangé !)
+    return 0;
+}
+```
+
+### Passage par pointeur (adresse)
+
+```c
+void double_value(int* x) {
+    *x = *x * 2;  // Modifie l'original via le pointeur
+}
+
+int main(void) {
+    int n = 5;
+    double_value(&n);  // Passe l'adresse
+    printf("%d\n", n);  // Affiche 10 (modifié !)
+    return 0;
+}
+```
+
+### Visualisation
+
+```
+Passage par valeur :              Passage par pointeur :
+┌───────┐      ┌───────┐          ┌───────┐
+│ n = 5 │      │ x = 5 │          │ n = 5 │ ←─────────┐
+└───────┘      └───────┘          └───────┘           │
+  main()        double_value()      main()            │
+                                                      │
+                copie                          ┌──────┴──────┐
+                indépendante                   │ x = adresse │
+                                               └─────────────┘
+                                                double_value()
+                                                modifie via *x
+```
+
+### Tableaux : toujours par pointeur
+
+```c
+// Les tableaux sont TOUJOURS passés par pointeur
+void modify_array(int arr[], int size) {
+    for (int i = 0; i < size; i++) {
+        arr[i] *= 2;  // Modifie l'original !
+    }
+}
+
+int main(void) {
+    int numbers[] = {1, 2, 3, 4, 5};
+    modify_array(numbers, 5);
+    // numbers est maintenant {2, 4, 6, 8, 10}
+    return 0;
+}
+```
+
+---
+
+## Partie 4 : Retour de valeurs
+
+### Types de retour simples
+
+```c
+int get_random(void) {
+    return rand() % 100;
+}
+
+float calculate_average(int a, int b) {
+    return (float)(a + b) / 2;
+}
+
+char get_first_char(const char* str) {
+    return str[0];
+}
+```
+
+### Retour de pointeur (attention !)
+
+```c
+// MAUVAIS : retourne un pointeur vers une variable locale
+char* get_string_wrong(void) {
+    char str[] = "Hello";  // Locale, disparaît après return !
+    return str;  // DANGEREUX : pointeur invalide
+}
+
+// BON : retourne un pointeur vers de la mémoire allouée
+char* get_string_good(void) {
+    char* str = malloc(6);
+    strcpy(str, "Hello");
+    return str;  // OK : mémoire persistante (penser à free())
+}
+
+// BON : retourne un pointeur vers une constante statique
+const char* get_string_static(void) {
+    return "Hello";  // OK : chaîne littérale, persistante
+}
+```
+
+### Retour multiple via pointeurs
+
+```c
+// Retourne plusieurs valeurs via des pointeurs
+void get_min_max(int* arr, int size, int* min, int* max) {
+    *min = arr[0];
+    *max = arr[0];
+
+    for (int i = 1; i < size; i++) {
+        if (arr[i] < *min) *min = arr[i];
+        if (arr[i] > *max) *max = arr[i];
+    }
+}
+
+int main(void) {
+    int numbers[] = {5, 2, 8, 1, 9};
+    int min, max;
+
+    get_min_max(numbers, 5, &min, &max);
+    printf("Min: %d, Max: %d\n", min, max);  // Min: 1, Max: 9
+
+    return 0;
+}
+```
+
+---
+
+## Partie 5 : Portée et durée de vie
+
+### Variables locales
+
+```c
+void example(void) {
+    int x = 10;  // Locale : existe seulement dans cette fonction
+}  // x est détruit ici
+
+int main(void) {
+    example();
+    // printf("%d", x);  // ERREUR : x n'existe pas ici
+    return 0;
+}
+```
+
+### Variables globales
+
+```c
+int global_counter = 0;  // Globale : accessible partout
+
+void increment(void) {
+    global_counter++;  // OK
+}
+
+int main(void) {
+    increment();
+    increment();
+    printf("%d\n", global_counter);  // 2
+    return 0;
+}
+```
+
+### Variables statiques
+
+```c
+void count_calls(void) {
+    static int counter = 0;  // Initialisé une seule fois !
+    counter++;
+    printf("Called %d times\n", counter);
+}
+
+int main(void) {
+    count_calls();  // Called 1 times
+    count_calls();  // Called 2 times
+    count_calls();  // Called 3 times
+    return 0;
+}
+```
+
+### Application offensive : Compteur d'exécution
+
+```c
+// Détection anti-sandbox : compter les exécutions
+int should_execute(void) {
+    static int exec_count = 0;
+    exec_count++;
+
+    // Ne s'exécute qu'après 3 appels (évite les analyses rapides)
+    return (exec_count >= 3);
+}
+```
+
+---
+
+## Partie 6 : Récursion
+
+### Concept
+
+Une fonction qui s'appelle elle-même.
+
+```c
+int factorial(int n) {
+    if (n <= 1) {
+        return 1;  // Cas de base (arrête la récursion)
+    }
+    return n * factorial(n - 1);  // Appel récursif
+}
+
+// factorial(4) = 4 * factorial(3)
+//              = 4 * 3 * factorial(2)
+//              = 4 * 3 * 2 * factorial(1)
+//              = 4 * 3 * 2 * 1
+//              = 24
+```
+
+### Visualisation de la pile
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    PILE D'APPELS                    │
+├─────────────────────────────────────────────────────┤
+│  factorial(1) → return 1                            │
+├─────────────────────────────────────────────────────┤
+│  factorial(2) → return 2 * factorial(1) = 2        │
+├─────────────────────────────────────────────────────┤
+│  factorial(3) → return 3 * factorial(2) = 6        │
+├─────────────────────────────────────────────────────┤
+│  factorial(4) → return 4 * factorial(3) = 24       │
+├─────────────────────────────────────────────────────┤
+│  main()                                             │
+└─────────────────────────────────────────────────────┘
+```
+
+### Application offensive : Parcours de répertoires
+
+```c
+#include <dirent.h>
+#include <stdio.h>
+#include <string.h>
+
+void scan_directory(const char* path) {
+    DIR* dir = opendir(path);
+    if (!dir) return;
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        // Ignore . et ..
+        if (strcmp(entry->d_name, ".") == 0 ||
+            strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+
+        if (entry->d_type == DT_DIR) {
+            // Répertoire : appel récursif
+            scan_directory(full_path);
+        } else {
+            // Fichier : traiter
+            printf("Found: %s\n", full_path);
+        }
+    }
+
+    closedir(dir);
+}
+```
+
+---
+
+## Partie 7 : Pointeurs de fonction
+
+### Concept
+
+Un pointeur qui pointe vers le code d'une fonction (pas vers des données).
+
+```c
+// Déclaration d'un pointeur de fonction
+int (*operation)(int, int);
+
+// Fonctions cibles
+int add(int a, int b) { return a + b; }
+int sub(int a, int b) { return a - b; }
+int mul(int a, int b) { return a * b; }
+
+int main(void) {
+    operation = add;  // Pointe vers add()
+    printf("%d\n", operation(5, 3));  // 8
+
+    operation = sub;  // Pointe vers sub()
+    printf("%d\n", operation(5, 3));  // 2
+
+    operation = mul;  // Pointe vers mul()
+    printf("%d\n", operation(5, 3));  // 15
+
+    return 0;
+}
+```
+
+### Syntaxe des pointeurs de fonction
+
+```
+int (*nom)(int, int)
+ │    │    │
+ │    │    └─── Paramètres de la fonction
+ │    └──────── Nom du pointeur
+ └───────────── Type de retour
+```
+
+### Tableau de pointeurs de fonction
+
+```c
+typedef int (*math_op)(int, int);
+
+int add(int a, int b) { return a + b; }
+int sub(int a, int b) { return a - b; }
+int mul(int a, int b) { return a * b; }
+int div_op(int a, int b) { return b != 0 ? a / b : 0; }
+
+int main(void) {
+    math_op operations[] = {add, sub, mul, div_op};
+
+    for (int i = 0; i < 4; i++) {
+        printf("Result: %d\n", operations[i](10, 5));
+    }
+    // Output: 15, 5, 50, 2
+
+    return 0;
+}
+```
+
+### Application offensive : Dispatcher de commandes
+
+```c
+typedef void (*command_handler)(const char*);
+
+void cmd_shell(const char* arg) {
+    printf("[SHELL] Executing: %s\n", arg);
+    // system(arg);
+}
+
+void cmd_download(const char* arg) {
+    printf("[DOWNLOAD] File: %s\n", arg);
+}
+
+void cmd_upload(const char* arg) {
+    printf("[UPLOAD] File: %s\n", arg);
+}
+
+void cmd_exit(const char* arg) {
+    printf("[EXIT] Terminating...\n");
+}
+
+int main(void) {
+    // Table de handlers indexée par ID de commande
+    command_handler handlers[] = {
+        cmd_shell,      // 0
+        cmd_download,   // 1
+        cmd_upload,     // 2
+        cmd_exit        // 3
+    };
+
+    // Dispatch
+    int cmd_id = 0;
+    handlers[cmd_id]("whoami");  // Appelle cmd_shell
+
+    return 0;
+}
+```
+
+---
+
+## Partie 8 : Callbacks
+
+### Concept
+
+Une fonction passée en paramètre à une autre fonction.
+
+```c
+// Fonction qui accepte un callback
+void process_array(int* arr, int size, int (*callback)(int)) {
+    for (int i = 0; i < size; i++) {
+        arr[i] = callback(arr[i]);
+    }
+}
+
+// Callbacks possibles
+int double_it(int x) { return x * 2; }
+int square_it(int x) { return x * x; }
+int negate_it(int x) { return -x; }
+
+int main(void) {
+    int numbers[] = {1, 2, 3, 4, 5};
+
+    process_array(numbers, 5, double_it);
+    // numbers = {2, 4, 6, 8, 10}
+
+    process_array(numbers, 5, square_it);
+    // numbers = {4, 16, 36, 64, 100}
+
+    return 0;
+}
+```
+
+### Application offensive : Encoder personnalisable
+
+```c
+typedef unsigned char (*encoder_func)(unsigned char, int);
+
+unsigned char xor_encoder(unsigned char byte, int key) {
+    return byte ^ key;
+}
+
+unsigned char add_encoder(unsigned char byte, int key) {
+    return byte + key;
+}
+
+unsigned char rot_encoder(unsigned char byte, int key) {
+    return (byte << key) | (byte >> (8 - key));
+}
+
+void encode_payload(unsigned char* data, int len, int key,
+                    encoder_func encoder) {
+    for (int i = 0; i < len; i++) {
+        data[i] = encoder(data[i], key);
+    }
+}
+
+int main(void) {
+    unsigned char payload[] = {0x90, 0x90, 0x31, 0xC0};
+    int len = 4;
+
+    // Encoder avec XOR
+    encode_payload(payload, len, 0x42, xor_encoder);
+
+    // Ou encoder avec ADD
+    // encode_payload(payload, len, 5, add_encoder);
+
+    return 0;
+}
+```
+
+---
+
+## Partie 9 : Conventions d'appel
+
+### Importance pour l'offensive
+
+Les conventions d'appel définissent comment les arguments sont passés et les valeurs retournées. Crucial pour :
+- Écrire du shellcode
+- Créer des ROP chains
+- Appeler des API Windows/Linux
+- Analyser du code compilé
+
+### x86 (32-bit) - cdecl
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      cdecl (x86)                            │
+├─────────────────────────────────────────────────────────────┤
+│  Arguments : empilés de droite à gauche sur la pile         │
+│  Retour    : EAX                                            │
+│  Nettoyage : l'appelant nettoie la pile                     │
+├─────────────────────────────────────────────────────────────┤
+│  func(1, 2, 3)                                              │
+│                                                             │
+│       PUSH 3                                                │
+│       PUSH 2                                                │
+│       PUSH 1                                                │
+│       CALL func                                             │
+│       ADD ESP, 12  ; Nettoie 3 arguments (3 × 4 bytes)     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### x64 (64-bit) - System V AMD64 ABI (Linux)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 System V AMD64 (Linux)                      │
+├─────────────────────────────────────────────────────────────┤
+│  Arguments :                                                │
+│    1er → RDI                                                │
+│    2e  → RSI                                                │
+│    3e  → RDX                                                │
+│    4e  → RCX                                                │
+│    5e  → R8                                                 │
+│    6e  → R9                                                 │
+│    7e+ → pile                                               │
+│                                                             │
+│  Retour : RAX                                               │
+├─────────────────────────────────────────────────────────────┤
+│  func(a, b, c, d)                                           │
+│                                                             │
+│       MOV RDI, a                                            │
+│       MOV RSI, b                                            │
+│       MOV RDX, c                                            │
+│       MOV RCX, d                                            │
+│       CALL func                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### x64 (64-bit) - Microsoft x64 (Windows)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  Microsoft x64 (Windows)                    │
+├─────────────────────────────────────────────────────────────┤
+│  Arguments :                                                │
+│    1er → RCX                                                │
+│    2e  → RDX                                                │
+│    3e  → R8                                                 │
+│    4e  → R9                                                 │
+│    5e+ → pile                                               │
+│                                                             │
+│  Retour : RAX                                               │
+│                                                             │
+│  Shadow space : 32 bytes réservés sur la pile              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Application offensive : Shellcode syscall (Linux x64)
+
+```c
+// write(1, "Hi", 2) en shellcode
+// syscall number pour write = 1
+// RDI = fd (1 = stdout)
+// RSI = buffer
+// RDX = length
+
+unsigned char shellcode[] = {
+    0x48, 0xc7, 0xc0, 0x01, 0x00, 0x00, 0x00,  // mov rax, 1 (syscall #)
+    0x48, 0xc7, 0xc7, 0x01, 0x00, 0x00, 0x00,  // mov rdi, 1 (stdout)
+    0x48, 0x8d, 0x35, 0x0a, 0x00, 0x00, 0x00,  // lea rsi, [rip+10]
+    0x48, 0xc7, 0xc2, 0x02, 0x00, 0x00, 0x00,  // mov rdx, 2 (length)
+    0x0f, 0x05,                                 // syscall
+    0xc3,                                       // ret
+    'H', 'i'                                    // data: "Hi"
+};
+```
+
+---
+
+## Partie 10 : Bonnes pratiques
+
+### Nommage clair
+
+```c
+// MAUVAIS
+int f(int a, int b);
+void p(char* s);
+
+// BON
+int calculate_checksum(unsigned char* data, int length);
+void send_beacon(const char* c2_server);
+int verify_signature(unsigned char* data, int len);
+```
+
+### Documentation minimale
+
+```c
+// Encode les données avec XOR
+// Retourne 0 en cas de succès, -1 en cas d'erreur
+int xor_encode(unsigned char* data, int len, unsigned char key) {
+    if (data == NULL || len <= 0) {
+        return -1;
+    }
+
+    for (int i = 0; i < len; i++) {
+        data[i] ^= key;
+    }
+
+    return 0;
+}
+```
+
+### Validation des paramètres
+
+```c
+char* read_file(const char* filename) {
+    // Valider les entrées
+    if (filename == NULL) {
+        return NULL;
+    }
+
+    FILE* f = fopen(filename, "rb");
+    if (f == NULL) {
+        return NULL;
+    }
+
+    // ... reste du code
+
+    return buffer;
+}
+```
+
+### Fonctions courtes et focalisées
+
+```c
+// MAUVAIS : fonction qui fait tout
+void do_everything(void) {
+    // 200 lignes de code
+}
+
+// BON : fonctions séparées
+void connect_to_server(void);
+void authenticate(void);
+void receive_command(void);
+void execute_command(void);
+void send_result(void);
+```
+
+---
+
+## Résumé visuel
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      FONCTIONS EN C                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  DÉCLARATION : void func(int x);  ← prototype              │
+│                                                             │
+│  DÉFINITION  : void func(int x) { ... }  ← implémentation  │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│  PASSAGE DE PARAMÈTRES :                                    │
+│    • Par valeur : copie, original inchangé                 │
+│    • Par pointeur : modifie l'original                     │
+│    • Tableaux : toujours par pointeur                      │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│  DURÉE DE VIE :                                             │
+│    • Locale : dans la fonction seulement                   │
+│    • Globale : partout                                      │
+│    • Statique : persiste entre les appels                  │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│  POINTEURS DE FONCTION :                                    │
+│    int (*ptr)(int, int);  ← pointe vers code               │
+│    ptr = add;             ← assigne                        │
+│    ptr(5, 3);             ← appelle                        │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Exercices
+
+Voir [exercice.md](exercice.md) pour pratiquer ces concepts.
+
+## Solutions
+
+Voir [solution.md](solution.md) pour les solutions commentées.
