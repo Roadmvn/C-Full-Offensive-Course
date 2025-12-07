@@ -67,3 +67,5 @@ test_exploit
 # Fichiers de test temporaires
 test_*
 tmp_*
+
+Rules.md
