@@ -1,276 +1,227 @@
-# Module 21 : Structures de Données en C
+# Module 21 - Structures de Données pour l'Offensif
 
-## Objectifs
+## Pourquoi tu dois maîtriser ça
 
-À la fin de ce module, tu seras capable de :
-- Implémenter une liste chaînée (linked list)
-- Créer et manipuler des piles (stacks) et files (queues)
-- Comprendre les arbres binaires et tables de hash
-- Appliquer ces structures dans un contexte offensif
+```c
+// Tracker les processus injectés
+InjectedProc *list = NULL;
+add_injection(&list, pid, remote_addr);
+
+// Cache de credentials volés
+hashtable_set(creds, "DOMAIN\\admin", hash);
+
+// Queue d'exfiltration asynchrone
+enqueue(&exfil_queue, stolen_data, size);
+```
+
+**Structures de données = gérer des listes dynamiques, cacher des données, organiser des tâches.**
 
 ---
 
-## 1. Pourquoi les Structures de Données ?
+## Liste Chaînée : Le pattern de base
 
-### Le Problème des Tableaux
+> **Liste chaînée** = nœuds en mémoire reliés par pointeurs. Taille dynamique, insertion O(1).
 
-```c
-// PROBLÈME 1 : Taille fixe
-int arr[100];  // Toujours 100 éléments, même si on en utilise 3
-
-// PROBLÈME 2 : Insertion coûteuse
-// Pour insérer au milieu, il faut décaler tous les éléments
-// O(n) opérations !
-
-// PROBLÈME 3 : Suppression coûteuse
-// Même problème : décalage nécessaire
-```
-
-### La Solution : Structures Dynamiques
-
-```
-TABLEAU vs LISTE CHAÎNÉE :
-
-TABLEAU :
-┌───┬───┬───┬───┬───┐
-│ A │ B │ C │ D │ E │  Mémoire CONTIGUË
-└───┴───┴───┴───┴───┘
-  0   1   2   3   4
-
-LISTE CHAÎNÉE :
-┌───┬───┐    ┌───┬───┐    ┌───┬───┐
-│ A │ ●─┼───→│ B │ ●─┼───→│ C │ ∅ │
-└───┴───┘    └───┴───┘    └───┴───┘
-  data next    data next    data next
-
-Chaque nœud pointe vers le suivant
-Mémoire NON contiguë
-```
-
----
-
-## 2. Liste Chaînée (Linked List)
-
-### 2.1 Structure d'un Nœud
+### Structure
 
 ```c
-// Nœud de liste chaînée
 typedef struct Node {
-    int data;              // Données
-    struct Node *next;     // Pointeur vers le suivant
+    void *data;             // Données (générique)
+    struct Node *next;      // Prochain nœud
 } Node;
 
-// Tête de liste
 Node *head = NULL;
 ```
 
-### 2.2 Visualisation
-
 ```
-head
-  │
-  ↓
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│ data: 10     │     │ data: 20     │     │ data: 30     │
-│ next: ●──────┼────→│ next: ●──────┼────→│ next: NULL   │
-└──────────────┘     └──────────────┘     └──────────────┘
-     Node 1               Node 2               Node 3
+head → [data|next] → [data|next] → [data|NULL]
 ```
 
-### 2.3 Opérations de Base
+### Opérations essentielles
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct Node {
-    int data;
-    struct Node *next;
-} Node;
-
-// Créer un nouveau nœud
-Node* create_node(int data) {
-    Node *new_node = malloc(sizeof(Node));
-    if (new_node == NULL) return NULL;
-
-    new_node->data = data;
-    new_node->next = NULL;
-    return new_node;
+// Créer un nœud
+Node* create_node(void *data) {
+    Node *n = malloc(sizeof(Node));
+    n->data = data;
+    n->next = NULL;
+    return n;
 }
 
 // Insérer en tête - O(1)
-void insert_head(Node **head, int data) {
-    Node *new_node = create_node(data);
-    if (new_node == NULL) return;
-
-    new_node->next = *head;  // Nouveau pointe vers ancien head
-    *head = new_node;        // Head devient nouveau nœud
+void insert_head(Node **head, void *data) {
+    Node *n = create_node(data);
+    n->next = *head;
+    *head = n;
 }
 
-// Insérer en queue - O(n)
-void insert_tail(Node **head, int data) {
-    Node *new_node = create_node(data);
-    if (new_node == NULL) return;
-
-    if (*head == NULL) {
-        *head = new_node;
-        return;
-    }
-
-    Node *current = *head;
-    while (current->next != NULL) {
-        current = current->next;
-    }
-    current->next = new_node;
-}
-
-// Supprimer un nœud - O(n)
-void delete_node(Node **head, int data) {
-    if (*head == NULL) return;
-
-    // Cas spécial : supprimer la tête
-    if ((*head)->data == data) {
-        Node *temp = *head;
-        *head = (*head)->next;
-        free(temp);
-        return;
-    }
-
-    // Chercher le nœud précédent
-    Node *current = *head;
-    while (current->next != NULL && current->next->data != data) {
-        current = current->next;
-    }
-
-    if (current->next != NULL) {
-        Node *temp = current->next;
-        current->next = current->next->next;
-        free(temp);
-    }
-}
-
-// Afficher la liste
-void print_list(Node *head) {
-    printf("Liste: ");
-    while (head != NULL) {
-        printf("%d -> ", head->data);
+// Parcourir
+void foreach_node(Node *head, void (*func)(void*)) {
+    while (head) {
+        func(head->data);
         head = head->next;
     }
-    printf("NULL\n");
 }
 
 // Libérer toute la liste
-void free_list(Node **head) {
+void free_list(Node **head, void (*free_data)(void*)) {
     Node *current = *head;
-    while (current != NULL) {
+    while (current) {
         Node *temp = current;
         current = current->next;
+        if (free_data) free_data(temp->data);
         free(temp);
     }
     *head = NULL;
 }
 ```
 
----
-
-## 3. Pile (Stack) - LIFO
-
-### 3.1 Concept
-
-```
-PILE (Stack) - Last In, First Out
-
-       push(30)
-          ↓
-    ┌─────────┐
-    │   30    │  ← top (dernier entré)
-    ├─────────┤
-    │   20    │
-    ├─────────┤
-    │   10    │  ← premier entré
-    └─────────┘
-
-    pop() → retourne 30 (le dernier)
-```
-
-### 3.2 Implémentation
+### Application : Tracker les injections
 
 ```c
-#define MAX_SIZE 100
-
 typedef struct {
-    int data[MAX_SIZE];
-    int top;
-} Stack;
+    DWORD pid;
+    void *remote_addr;
+    size_t size;
+} Injection;
 
-// Initialiser
-void stack_init(Stack *s) {
-    s->top = -1;
+Node *injections = NULL;
+
+void track_injection(DWORD pid, void *addr, size_t sz) {
+    Injection *inj = malloc(sizeof(Injection));
+    inj->pid = pid;
+    inj->remote_addr = addr;
+    inj->size = sz;
+    insert_head(&injections, inj);
 }
 
-// Vérifier si vide
-int stack_empty(Stack *s) {
-    return s->top == -1;
-}
-
-// Vérifier si plein
-int stack_full(Stack *s) {
-    return s->top == MAX_SIZE - 1;
-}
-
-// Empiler (push)
-int stack_push(Stack *s, int value) {
-    if (stack_full(s)) return -1;
-    s->data[++s->top] = value;
-    return 0;
-}
-
-// Dépiler (pop)
-int stack_pop(Stack *s, int *value) {
-    if (stack_empty(s)) return -1;
-    *value = s->data[s->top--];
-    return 0;
-}
-
-// Voir le sommet (peek)
-int stack_peek(Stack *s, int *value) {
-    if (stack_empty(s)) return -1;
-    *value = s->data[s->top];
-    return 0;
+void cleanup_all(void) {
+    Node *n = injections;
+    while (n) {
+        Injection *inj = n->data;
+        // VirtualFreeEx(inj->pid, inj->remote_addr, ...);
+        n = n->next;
+    }
+    free_list(&injections, free);
 }
 ```
 
 ---
 
-## 4. File (Queue) - FIFO
+## Hash Table : Accès O(1)
 
-### 4.1 Concept
+> **Hash table** = tableau + fonction de hash. Accès direct par clé au lieu de recherche linéaire.
 
+### Structure
+
+```c
+#define TABLE_SIZE 256
+
+typedef struct Entry {
+    char *key;
+    void *value;
+    struct Entry *next;  // Gestion des collisions
+} Entry;
+
+typedef struct {
+    Entry *buckets[TABLE_SIZE];
+} HashTable;
 ```
-FILE (Queue) - First In, First Out
 
-enqueue(30)
-    ↓
-┌─────┬─────┬─────┬─────┐
-│ 10  │ 20  │ 30  │     │
-└─────┴─────┴─────┴─────┘
-  ↑
-front              rear
-  │
-  ↓
-dequeue() → retourne 10 (le premier)
+### Implémentation minimale
+
+```c
+// Fonction de hash (djb2)
+unsigned int hash(const char *str) {
+    unsigned int h = 5381;
+    int c;
+    while ((c = *str++))
+        h = ((h << 5) + h) + c;
+    return h % TABLE_SIZE;
+}
+
+// Créer
+HashTable* ht_create(void) {
+    return calloc(1, sizeof(HashTable));
+}
+
+// Insérer/Mettre à jour
+void ht_set(HashTable *ht, const char *key, void *value) {
+    unsigned int idx = hash(key);
+
+    // Vérifier si existe déjà
+    Entry *e = ht->buckets[idx];
+    while (e) {
+        if (strcmp(e->key, key) == 0) {
+            e->value = value;
+            return;
+        }
+        e = e->next;
+    }
+
+    // Nouveau
+    Entry *new = malloc(sizeof(Entry));
+    new->key = strdup(key);
+    new->value = value;
+    new->next = ht->buckets[idx];
+    ht->buckets[idx] = new;
+}
+
+// Chercher
+void* ht_get(HashTable *ht, const char *key) {
+    unsigned int idx = hash(key);
+    Entry *e = ht->buckets[idx];
+    while (e) {
+        if (strcmp(e->key, key) == 0)
+            return e->value;
+        e = e->next;
+    }
+    return NULL;
+}
 ```
 
-### 4.2 Implémentation (Circulaire)
+### Application : Cache de credentials
+
+```c
+typedef struct {
+    char *user;
+    char *domain;
+    char *ntlm_hash;
+} Credential;
+
+HashTable *cred_cache = NULL;
+
+void cache_cred(const char *domain, const char *user, const char *hash) {
+    char key[256];
+    snprintf(key, sizeof(key), "%s\\%s", domain, user);
+
+    Credential *c = malloc(sizeof(Credential));
+    c->user = strdup(user);
+    c->domain = strdup(domain);
+    c->ntlm_hash = strdup(hash);
+
+    ht_set(cred_cache, key, c);
+}
+
+Credential* get_cred(const char *domain, const char *user) {
+    char key[256];
+    snprintf(key, sizeof(key), "%s\\%s", domain, user);
+    return ht_get(cred_cache, key);
+}
+```
+
+---
+
+## Queue : Tâches asynchrones
+
+> **Queue (FIFO)** = premier entré, premier sorti. Idéal pour buffer d'exfiltration.
 
 ```c
 #define QUEUE_SIZE 100
 
 typedef struct {
-    int data[QUEUE_SIZE];
-    int front;
-    int rear;
-    int count;
+    void *items[QUEUE_SIZE];
+    int front, rear, count;
 } Queue;
 
 void queue_init(Queue *q) {
@@ -279,287 +230,94 @@ void queue_init(Queue *q) {
     q->count = 0;
 }
 
-int queue_empty(Queue *q) {
-    return q->count == 0;
-}
-
-int queue_full(Queue *q) {
-    return q->count == QUEUE_SIZE;
-}
-
-// Enfiler
-int enqueue(Queue *q, int value) {
-    if (queue_full(q)) return -1;
-
-    q->rear = (q->rear + 1) % QUEUE_SIZE;  // Circulaire
-    q->data[q->rear] = value;
+int enqueue(Queue *q, void *item) {
+    if (q->count >= QUEUE_SIZE) return -1;
+    q->rear = (q->rear + 1) % QUEUE_SIZE;
+    q->items[q->rear] = item;
     q->count++;
     return 0;
 }
 
-// Défiler
-int dequeue(Queue *q, int *value) {
-    if (queue_empty(q)) return -1;
-
-    *value = q->data[q->front];
-    q->front = (q->front + 1) % QUEUE_SIZE;  // Circulaire
+void* dequeue(Queue *q) {
+    if (q->count == 0) return NULL;
+    void *item = q->items[q->front];
+    q->front = (q->front + 1) % QUEUE_SIZE;
     q->count--;
-    return 0;
+    return item;
 }
 ```
 
----
-
-## 5. Table de Hash
-
-### 5.1 Concept
-
-```
-TABLE DE HASH :
-
-Clé "alice" → hash("alice") = 2 → index 2
-Clé "bob"   → hash("bob") = 5   → index 5
-
-Index:  0    1    2        3    4    5      6
-      ┌────┬────┬────────┬────┬────┬──────┬────┐
-      │    │    │ alice  │    │    │ bob  │    │
-      │    │    │ =1337  │    │    │ =42  │    │
-      └────┴────┴────────┴────┴────┴──────┴────┘
-
-Accès O(1) au lieu de O(n) !
-```
-
-### 5.2 Implémentation Simple
+### Application : Buffer d'exfiltration
 
 ```c
-#define TABLE_SIZE 256
-
-typedef struct Entry {
-    char *key;
-    int value;
-    struct Entry *next;  // Pour collisions
-} Entry;
-
 typedef struct {
-    Entry *buckets[TABLE_SIZE];
-} HashTable;
-
-// Fonction de hash simple (djb2)
-unsigned int hash(const char *str) {
-    unsigned int hash = 5381;
-    int c;
-    while ((c = *str++)) {
-        hash = ((hash << 5) + hash) + c;
-    }
-    return hash % TABLE_SIZE;
-}
-
-// Créer table
-HashTable* hashtable_create(void) {
-    HashTable *ht = calloc(1, sizeof(HashTable));
-    return ht;
-}
-
-// Insérer
-void hashtable_set(HashTable *ht, const char *key, int value) {
-    unsigned int index = hash(key);
-
-    Entry *entry = malloc(sizeof(Entry));
-    entry->key = strdup(key);
-    entry->value = value;
-    entry->next = ht->buckets[index];
-    ht->buckets[index] = entry;
-}
-
-// Chercher
-int hashtable_get(HashTable *ht, const char *key, int *value) {
-    unsigned int index = hash(key);
-
-    Entry *entry = ht->buckets[index];
-    while (entry != NULL) {
-        if (strcmp(entry->key, key) == 0) {
-            *value = entry->value;
-            return 0;
-        }
-        entry = entry->next;
-    }
-    return -1;  // Non trouvé
-}
-```
-
----
-
-## 6. Applications Offensives
-
-### 6.1 Liste Chaînée : Gestion de Processus Injectés
-
-```c
-// Tracker les processus où on a injecté du code
-typedef struct InjectedProcess {
-    DWORD pid;
-    void *remote_addr;
-    size_t payload_size;
-    struct InjectedProcess *next;
-} InjectedProcess;
-
-InjectedProcess *injected_list = NULL;
-
-void track_injection(DWORD pid, void *addr, size_t size) {
-    InjectedProcess *proc = malloc(sizeof(InjectedProcess));
-    proc->pid = pid;
-    proc->remote_addr = addr;
-    proc->payload_size = size;
-    proc->next = injected_list;
-    injected_list = proc;
-}
-
-void cleanup_all_injections(void) {
-    InjectedProcess *current = injected_list;
-    while (current != NULL) {
-        // Cleanup injection in process
-        // VirtualFreeEx(proc->pid, proc->remote_addr, ...)
-        InjectedProcess *temp = current;
-        current = current->next;
-        free(temp);
-    }
-}
-```
-
-### 6.2 Pile : Parsing de Commandes C2
-
-```c
-// Parser des commandes imbriquées du C2
-typedef struct {
-    char *commands[64];
-    int top;
-} CommandStack;
-
-void parse_c2_response(const char *response, CommandStack *stack) {
-    // Format: "cmd1;cmd2;cmd3"
-    // Push chaque commande sur la stack
-    // Exécuter en ordre inverse (LIFO)
-}
-
-void execute_commands(CommandStack *stack) {
-    char *cmd;
-    while (stack->top >= 0) {
-        cmd = stack->commands[stack->top--];
-        execute_single_command(cmd);
-    }
-}
-```
-
-### 6.3 File : Queue de Tâches Asynchrones
-
-```c
-// Queue pour exfiltration de données
-typedef struct {
-    char *data;
+    unsigned char *data;
     size_t size;
-} ExfilData;
+} ExfilPacket;
 
-typedef struct {
-    ExfilData items[100];
-    int front, rear, count;
-} ExfilQueue;
+Queue exfil_queue;
 
-void queue_exfil(ExfilQueue *q, void *data, size_t size) {
-    if (q->count >= 100) return;
-
-    ExfilData *item = &q->items[q->rear];
-    item->data = malloc(size);
-    memcpy(item->data, data, size);
-    item->size = size;
-
-    q->rear = (q->rear + 1) % 100;
-    q->count++;
+void queue_data(void *data, size_t size) {
+    ExfilPacket *pkt = malloc(sizeof(ExfilPacket));
+    pkt->data = malloc(size);
+    memcpy(pkt->data, data, size);
+    pkt->size = size;
+    enqueue(&exfil_queue, pkt);
 }
 
-// Thread séparé pour envoyer les données
+// Thread d'exfiltration
 void* exfil_thread(void *arg) {
-    ExfilQueue *q = (ExfilQueue*)arg;
-    ExfilData item;
-
     while (1) {
-        if (q->count > 0) {
-            item = q->items[q->front];
-            q->front = (q->front + 1) % 100;
-            q->count--;
-
-            send_to_c2(item.data, item.size);
-            free(item.data);
+        ExfilPacket *pkt = dequeue(&exfil_queue);
+        if (pkt) {
+            send_to_c2(pkt->data, pkt->size);
+            free(pkt->data);
+            free(pkt);
         }
         sleep(1);
     }
 }
 ```
 
-### 6.4 Table de Hash : Cache de Credentials
+---
 
-```c
-// Cache les credentials récupérés
-typedef struct Credential {
-    char *username;
-    char *domain;
-    char *password_hash;
-    struct Credential *next;
-} Credential;
+## Complexité : Pourquoi ça compte
 
-typedef struct {
-    Credential *buckets[256];
-} CredCache;
+| Structure | Insertion | Recherche | Suppression |
+|-----------|-----------|-----------|-------------|
+| Tableau | O(n) | O(n) | O(n) |
+| Liste chaînée | O(1)* | O(n) | O(n) |
+| Hash Table | O(1) | O(1) | O(1) |
+| Queue | O(1) | - | O(1) |
 
-void cache_credential(CredCache *cache,
-                      const char *user,
-                      const char *domain,
-                      const char *hash) {
-    char key[512];
-    snprintf(key, sizeof(key), "%s\\%s", domain, user);
+\* En tête
 
-    unsigned int index = hash_string(key);
+**Règle** : Beaucoup de lookups → Hash Table. Insertions fréquentes → Liste chaînée.
 
-    Credential *cred = malloc(sizeof(Credential));
-    cred->username = strdup(user);
-    cred->domain = strdup(domain);
-    cred->password_hash = strdup(hash);
-    cred->next = cache->buckets[index];
-    cache->buckets[index] = cred;
-}
+---
+
+## Checklist
+
+```
+□ Je sais implémenter une liste chaînée (insert, parcours, free)
+□ Je comprends le principe du hashing
+□ Je sais créer une hash table avec gestion de collisions
+□ Je sais utiliser une queue pour du buffering
+□ Je libère toujours la mémoire (pas de leaks)
 ```
 
 ---
 
-## 7. Complexité Algorithmique
+## Glossaire express
 
-| Structure | Insertion | Suppression | Recherche | Accès |
-|-----------|-----------|-------------|-----------|-------|
-| Tableau | O(n) | O(n) | O(n) | O(1) |
-| Liste chaînée | O(1)* | O(n) | O(n) | O(n) |
-| Pile | O(1) | O(1) | O(n) | O(1)** |
-| File | O(1) | O(1) | O(n) | O(1)** |
-| Hash Table | O(1)*** | O(1)*** | O(1)*** | - |
-
-\* En tête
-\** Sommet/Front uniquement
-\*** En moyenne, O(n) pire cas
+| Terme | Définition |
+|-------|------------|
+| **Liste chaînée** | Nœuds reliés par pointeurs |
+| **Hash Table** | Tableau avec accès par clé hashée |
+| **FIFO** | First In First Out (Queue) |
+| **LIFO** | Last In First Out (Stack) |
+| **Collision** | Deux clés avec même hash |
 
 ---
 
-## 8. Checklist
-
-- [ ] Comprendre la différence tableau vs liste chaînée
-- [ ] Savoir implémenter une liste chaînée
-- [ ] Comprendre LIFO (pile) vs FIFO (file)
-- [ ] Connaître le principe du hashing
-- [ ] Toujours free() les nœuds alloués
-- [ ] Gérer les cas limites (liste vide, etc.)
-
----
-
-## Exercices
-
-Voir [exercice.md](exercice.md)
-
----
-
-**Prochaine étape :** Phase 03 - Exploitation Basics (Assembly x64).
+**Temps lecture :** 5 min | **Pratique :** 30 min

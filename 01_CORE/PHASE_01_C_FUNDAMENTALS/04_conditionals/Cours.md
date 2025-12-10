@@ -1,907 +1,485 @@
-# Module 04 : Control Flow - Conditionnelles et Boucles
+# Module 04 - Control Flow : Conditionnelles et Boucles
 
-## Objectifs
-
-À la fin de ce module, tu seras capable de :
-- Utiliser if/else et switch pour contrôler le flux d'exécution
-- Maîtriser les boucles for, while et do-while
-- Comprendre break, continue et goto
-- Implémenter des techniques anti-debug basées sur le control flow
-- Créer du code obfusqué avec des structures de contrôle
-
----
-
-## Partie 0 : Pourquoi le Control Flow est CRUCIAL en offensive
-
-### Anti-Debug avec conditions
+## Pourquoi tu dois maîtriser ça
 
 ```c
-// Vérification multiple avec boucle
-int detected = 0;
-for (int i = 0; i < 10; i++) {
-    if (IsDebuggerPresent()) {
-        detected++;
-    }
-    Sleep(100);
-}
+// Sans boucles, tu scannes 5 ports manuellement
+scan_port(22); scan_port(80); scan_port(443);
 
-if (detected > 5) {
-    // Probablement sous débuggeur - exécution anormale
-    exit(1);
-}
-```
-
-### Obfuscation de flux
-
-```c
-// Au lieu de simplement appeler la fonction malveillante...
-// On utilise un switch avec des valeurs calculées
-int state = (timestamp ^ magic) % 5;
-switch(state) {
-    case 0: func_a(); break;
-    case 1: func_b(); break;
-    case 2: func_c(); break;  // <-- la vraie payload
-    case 3: func_d(); break;
-    case 4: func_e(); break;
-}
-```
-
-### Boucles pour énumération
-
-```c
-// Scanner les ports ouverts
+// Avec boucles, tu scannes tout un réseau
 for (int port = 1; port <= 65535; port++) {
-    if (is_port_open(target, port)) {
-        printf("Port %d ouvert\n", port);
-    }
+    scan_port(port);
+}
+
+// Sans conditions, pas d'anti-debug
+if (IsDebuggerPresent()) exit(1);
+
+// Sans switch, pas de command dispatcher
+switch (cmd) {
+    case 0x01: shell_exec(); break;
+    case 0x02: download(); break;
 }
 ```
 
-**Sans maîtriser le control flow, tu ne pourras pas :**
-- Implémenter des checks anti-debug efficaces
-- Créer du code avec un flux d'exécution imprévisible
-- Scanner des cibles efficacement
-- Parser des données binaires correctement
+**Control flow = la logique de ton implant.**
 
 ---
 
-## Partie 1 : Conditionnelle if/else
-
-### Syntaxe de base
+## if/else : Décisions
 
 ```c
 if (condition) {
-    // Exécuté si condition est VRAIE (non-zéro)
-}
-```
-
-En C, une condition est :
-- **Vraie** si elle vaut quelque chose de **différent de 0**
-- **Fausse** si elle vaut **0** (exactement)
-
-```c
-int x = 5;
-
-if (x) {
-    printf("x est non-zéro\n");  // Exécuté car x = 5
-}
-
-int y = 0;
-if (y) {
-    printf("y est non-zéro\n");  // NON exécuté car y = 0
-}
-```
-
-### if/else
-
-```c
-int age = 25;
-
-if (age >= 18) {
-    printf("Majeur\n");
+    // Exécuté si condition != 0 (vrai)
 } else {
-    printf("Mineur\n");
+    // Exécuté si condition == 0 (faux)
 }
 ```
 
-### if/else if/else
+> En C, **tout ce qui n'est pas 0 est vrai**. `if (5)` = vrai, `if (ptr)` = vrai si ptr non-NULL.
+
+### Chaîne de conditions
 
 ```c
 int score = 75;
 
 if (score >= 90) {
-    printf("Grade A\n");
-} else if (score >= 80) {
-    printf("Grade B\n");
+    printf("A\n");
 } else if (score >= 70) {
-    printf("Grade C\n");
-} else if (score >= 60) {
-    printf("Grade D\n");
+    printf("C\n");
 } else {
-    printf("Grade F\n");
+    printf("F\n");
 }
 ```
 
-### Conditions imbriquées
+### Application : Anti-debug checks
 
 ```c
-int is_admin = 1;
-int is_logged = 1;
-int is_banned = 0;
-
-if (is_logged) {
-    if (!is_banned) {
-        if (is_admin) {
-            printf("Accès admin accordé\n");
-        } else {
-            printf("Accès utilisateur accordé\n");
-        }
-    } else {
-        printf("Utilisateur banni\n");
-    }
-} else {
-    printf("Veuillez vous connecter\n");
-}
-```
-
-### APPLICATION OFFENSIVE : Vérifications de sécurité en chaîne
-
-```c
-// Anti-debug multi-checks
 int security_check(void) {
-    // Check 1 : IsDebuggerPresent
-    if (IsDebuggerPresent()) {
-        return 0;  // Échec
-    }
+    // Check 1 : API directe
+    if (IsDebuggerPresent()) return 0;
 
-    // Check 2 : Timing anomaly
+    // Check 2 : Timing (debugger = lent)
     DWORD start = GetTickCount();
-    // ... opérations ...
-    DWORD elapsed = GetTickCount() - start;
+    volatile int sum = 0;
+    for (int i = 0; i < 100000; i++) sum += i;
+    if (GetTickCount() - start > 100) return 0;
 
-    if (elapsed > 1000) {  // Trop lent = probablement débuggé
-        return 0;
-    }
+    // Check 3 : Breakpoint (0xCC = INT 3)
+    if (*(unsigned char*)&security_check == 0xCC) return 0;
 
-    // Check 3 : Breakpoint detection
-    unsigned char *func_ptr = (unsigned char*)&security_check;
-    if (func_ptr[0] == 0xCC) {  // INT 3 = breakpoint
-        return 0;
-    }
-
-    return 1;  // Tous les checks passés
+    return 1;  // Clean
 }
 ```
 
 ---
 
-## Partie 2 : Switch/Case
-
-### Syntaxe de base
-
-Le switch permet de comparer une valeur avec plusieurs cas possibles.
+## switch : Multi-choix
 
 ```c
-int choice = 2;
-
-switch (choice) {
+switch (value) {
     case 1:
-        printf("Option 1 sélectionnée\n");
-        break;
+        // Si value == 1
+        break;      // OBLIGATOIRE sinon fall-through !
     case 2:
-        printf("Option 2 sélectionnée\n");
-        break;
-    case 3:
-        printf("Option 3 sélectionnée\n");
+        // Si value == 2
         break;
     default:
-        printf("Option invalide\n");
+        // Tous les autres cas
         break;
 }
 ```
 
-### ATTENTION : Le fall-through
+> **Sans `break`**, l'exécution continue dans le case suivant (fall-through).
 
-Sans `break`, l'exécution continue dans le case suivant !
-
-```c
-int x = 1;
-
-switch (x) {
-    case 1:
-        printf("Un\n");
-        // PAS DE BREAK - fall-through !
-    case 2:
-        printf("Deux\n");
-        // PAS DE BREAK
-    case 3:
-        printf("Trois\n");
-        break;
-    default:
-        printf("Autre\n");
-}
-
-// Output :
-// Un
-// Deux
-// Trois
-```
-
-### Fall-through intentionnel
-
-Parfois utile pour grouper des cas :
+### Application : Command dispatcher
 
 ```c
-char c = 'a';
-
-switch (c) {
-    case 'a':
-    case 'e':
-    case 'i':
-    case 'o':
-    case 'u':
-        printf("Voyelle\n");
-        break;
-    default:
-        printf("Consonne\n");
-        break;
-}
-```
-
-### APPLICATION OFFENSIVE : State machine pour obfuscation
-
-```c
-// Machine à états pour exécution non-linéaire
-int state = 0;
-int counter = 0;
-
-while (counter < 100) {
-    switch (state) {
-        case 0:
-            // Décryptage partie 1
-            decrypt_chunk(0);
-            state = 3;  // Saute au state 3
-            break;
-
-        case 1:
-            // Exécution payload
-            execute_payload();
-            state = 4;
-            break;
-
-        case 2:
-            // Initialisation
-            init_environment();
-            state = 0;
-            break;
-
-        case 3:
-            // Décryptage partie 2
-            decrypt_chunk(1);
-            state = 1;  // Va au state 1
-            break;
-
-        case 4:
-            // Cleanup et sortie
-            cleanup();
-            return;
-
-        default:
-            state = 2;  // Reset au state 2
-            break;
-    }
-    counter++;
-}
-```
-
-### APPLICATION OFFENSIVE : Dispatcher de commandes
-
-```c
-// Parser de commandes C2
 void handle_command(unsigned char cmd) {
     switch (cmd) {
-        case 0x01:
-            cmd_shell_exec();
-            break;
-        case 0x02:
-            cmd_file_download();
-            break;
-        case 0x03:
-            cmd_file_upload();
-            break;
-        case 0x04:
-            cmd_screenshot();
-            break;
-        case 0x05:
-            cmd_keylogger_start();
-            break;
-        case 0xFF:
-            cmd_self_destruct();
-            break;
-        default:
-            // Commande inconnue - ignorer silencieusement
-            break;
+        case 0x01: shell_exec(); break;
+        case 0x02: file_download(); break;
+        case 0x03: file_upload(); break;
+        case 0x04: screenshot(); break;
+        case 0xFF: self_destruct(); break;
+        default: break;  // Ignorer commandes inconnues
     }
 }
 ```
 
----
-
-## Partie 3 : Boucle for
-
-### Syntaxe de base
+### Application : State machine (obfuscation)
 
 ```c
-for (initialisation; condition; incrémentation) {
-    // Corps de la boucle
+int state = 0;
+while (state != 99) {
+    switch (state) {
+        case 0: decrypt_part1(); state = 2; break;
+        case 1: execute_payload(); state = 99; break;
+        case 2: decrypt_part2(); state = 1; break;
+    }
 }
+// Flux non-linéaire = plus dur à analyser
 ```
 
-Équivalent à :
+---
+
+## for : Itérations comptées
+
 ```c
-initialisation;
+for (init; condition; increment) {
+    // Corps
+}
+
+// Équivalent à :
+init;
 while (condition) {
-    // Corps de la boucle
-    incrémentation;
+    // Corps
+    increment;
 }
 ```
 
 ### Exemples
 
 ```c
-// Compter de 0 à 9
+// 0 à 9
+for (int i = 0; i < 10; i++) { }
+
+// 10 à 1 (décroissant)
+for (int i = 10; i > 0; i--) { }
+
+// Par 2
+for (int i = 0; i <= 20; i += 2) { }
+
+// Parcours tableau
+int arr[] = {1, 2, 3};
+for (int i = 0; i < 3; i++) printf("%d ", arr[i]);
+```
+
+### Application : Port scanner
+
+```c
+for (int port = 1; port <= 1024; port++) {
+    if (check_port(target, port)) {
+        printf("[+] Port %d OPEN\n", port);
+    }
+}
+```
+
+### Application : XOR decoder
+
+```c
+void xor_decode(unsigned char* data, int len, unsigned char key) {
+    for (int i = 0; i < len; i++) {
+        data[i] ^= key;
+    }
+}
+```
+
+### Boucles imbriquées : Bruteforce
+
+```c
+char charset[] = "0123456789";
+char pin[4];
+
 for (int i = 0; i < 10; i++) {
-    printf("%d ", i);
-}
-// Output: 0 1 2 3 4 5 6 7 8 9
-
-// Compter à rebours
-for (int i = 10; i > 0; i--) {
-    printf("%d ", i);
-}
-// Output: 10 9 8 7 6 5 4 3 2 1
-
-// Pas de 2
-for (int i = 0; i < 20; i += 2) {
-    printf("%d ", i);
-}
-// Output: 0 2 4 6 8 10 12 14 16 18
-```
-
-### Boucles imbriquées
-
-```c
-// Matrice 3x3
-for (int row = 0; row < 3; row++) {
-    for (int col = 0; col < 3; col++) {
-        printf("[%d,%d] ", row, col);
-    }
-    printf("\n");
-}
-/*
-Output:
-[0,0] [0,1] [0,2]
-[1,0] [1,1] [1,2]
-[2,0] [2,1] [2,2]
-*/
-```
-
-### APPLICATION OFFENSIVE : XOR Decryption
-
-```c
-void xor_decrypt(unsigned char *data, size_t len,
-                 unsigned char *key, size_t key_len) {
-    for (size_t i = 0; i < len; i++) {
-        data[i] ^= key[i % key_len];  // Clé cyclique avec modulo
-    }
-}
-```
-
-### APPLICATION OFFENSIVE : Port Scanner
-
-```c
-void scan_ports(const char *target, int start, int end) {
-    for (int port = start; port <= end; port++) {
-        int sock = socket(AF_INET, SOCK_STREAM, 0);
-
-        struct sockaddr_in addr;
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(port);
-        inet_pton(AF_INET, target, &addr.sin_addr);
-
-        // Timeout rapide
-        struct timeval timeout = {0, 100000};  // 100ms
-        setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-
-        if (connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == 0) {
-            printf("[+] Port %d ouvert\n", port);
-        }
-
-        close(sock);
-    }
-}
-```
-
-### APPLICATION OFFENSIVE : Brute force simple
-
-```c
-// Générer toutes les combinaisons de 4 chiffres (0000-9999)
-void bruteforce_pin(void) {
-    for (int i = 0; i < 10000; i++) {
-        char pin[5];
-        snprintf(pin, sizeof(pin), "%04d", i);  // Format: 0000, 0001, ...
-
-        if (try_pin(pin)) {
-            printf("[+] PIN trouvé: %s\n", pin);
-            return;
-        }
-    }
-    printf("[-] PIN non trouvé\n");
-}
-```
-
----
-
-## Partie 4 : Boucle while
-
-### Syntaxe de base
-
-```c
-while (condition) {
-    // Exécuté tant que condition est VRAIE
-}
-```
-
-### Exemples
-
-```c
-// Compter jusqu'à 5
-int count = 0;
-while (count < 5) {
-    printf("%d ", count);
-    count++;
-}
-// Output: 0 1 2 3 4
-
-// Boucle infinie
-while (1) {
-    // Tourne pour toujours
-    // Utilise break pour sortir
-}
-```
-
-### APPLICATION OFFENSIVE : Main loop d'un agent
-
-```c
-void agent_main_loop(void) {
-    int running = 1;
-
-    while (running) {
-        // 1. Check-in avec le C2
-        char *command = beacon_checkin();
-
-        // 2. Exécuter la commande reçue
-        if (command != NULL) {
-            if (strcmp(command, "exit") == 0) {
-                running = 0;  // Sortir de la boucle
-            } else {
-                execute_command(command);
+    for (int j = 0; j < 10; j++) {
+        for (int k = 0; k < 10; k++) {
+            pin[0] = charset[i];
+            pin[1] = charset[j];
+            pin[2] = charset[k];
+            pin[3] = '\0';
+            if (try_pin(pin)) {
+                printf("[+] PIN: %s\n", pin);
+                return;
             }
-            free(command);
         }
-
-        // 3. Sleep pour éviter la détection
-        sleep(get_jitter_sleep());  // Sleep aléatoire
     }
-
-    // Cleanup avant sortie
-    cleanup_agent();
 }
-```
-
-### APPLICATION OFFENSIVE : Read until delimiter
-
-```c
-// Lire des données jusqu'à un délimiteur (comme recv jusqu'à \n)
-int read_until(int sock, char *buffer, int max_len, char delimiter) {
-    int total = 0;
-    char c;
-
-    while (total < max_len - 1) {
-        int received = recv(sock, &c, 1, 0);
-
-        if (received <= 0) {
-            break;  // Erreur ou connexion fermée
-        }
-
-        if (c == delimiter) {
-            break;  // Délimiteur trouvé
-        }
-
-        buffer[total++] = c;
-    }
-
-    buffer[total] = '\0';  // Null-terminate
-    return total;
-}
+// 10 × 10 × 10 = 1000 combinaisons
 ```
 
 ---
 
-## Partie 5 : Boucle do-while
-
-### Syntaxe de base
-
-Différence avec while : le corps est exécuté **au moins une fois** avant de vérifier la condition.
+## while : Itérations conditionnelles
 
 ```c
-do {
-    // Corps exécuté AU MOINS UNE FOIS
-} while (condition);
-```
-
-### Exemple
-
-```c
-int num;
-
-do {
-    printf("Entre un nombre positif: ");
-    scanf("%d", &num);
-} while (num <= 0);
-
-printf("Tu as entré: %d\n", num);
-```
-
-### APPLICATION OFFENSIVE : Retry avec backoff
-
-```c
-// Tenter une connexion avec retry exponentiel
-int connect_with_retry(const char *host, int port) {
-    int sock;
-    int retry = 0;
-    int max_retries = 5;
-    int delay = 1;  // Secondes
-
-    do {
-        sock = try_connect(host, port);
-
-        if (sock < 0) {
-            printf("Échec connexion, retry dans %d sec...\n", delay);
-            sleep(delay);
-            delay *= 2;  // Backoff exponentiel: 1, 2, 4, 8, 16 sec
-            retry++;
-        }
-    } while (sock < 0 && retry < max_retries);
-
-    return sock;
+while (condition) {
+    // Tant que condition vraie
 }
+```
+
+> **Utilise `while`** quand tu ne sais pas combien d'itérations.
+
+### Application : Main loop d'agent C2
+
+```c
+int running = 1;
+while (running) {
+    char* cmd = beacon_checkin();
+    if (cmd) {
+        if (strcmp(cmd, "exit") == 0) running = 0;
+        else execute(cmd);
+        free(cmd);
+    }
+    sleep(get_jitter());  // Sleep aléatoire
+}
+```
+
+### Application : Attendre un processus
+
+```c
+int pid = 0;
+while ((pid = find_process("target.exe")) == 0) {
+    sleep(1);  // Réessayer chaque seconde
+}
+printf("[+] Found PID: %d\n", pid);
+```
+
+### Boucle infinie
+
+```c
+while (1) { }  // Équivalent à for (;;) { }
 ```
 
 ---
 
-## Partie 6 : break, continue, goto
-
-### break - Sortir de la boucle
-
-`break` sort immédiatement de la boucle la plus proche.
+## do-while : Au moins une fois
 
 ```c
-for (int i = 0; i < 100; i++) {
-    if (i == 5) {
-        break;  // Sort de la boucle quand i = 5
-    }
-    printf("%d ", i);
-}
-// Output: 0 1 2 3 4
+do {
+    // Exécuté AU MOINS une fois
+} while (condition);  // Note le ; à la fin !
 ```
 
-### continue - Passer à l'itération suivante
+### Application : Retry avec backoff
 
-`continue` saute le reste du corps et passe à l'itération suivante.
+```c
+int sock = -1;
+int delay = 1;
+int attempts = 0;
+
+do {
+    sock = try_connect(host, port);
+    if (sock < 0) {
+        sleep(delay);
+        delay *= 2;  // Backoff exponentiel : 1, 2, 4, 8...
+        if (delay > 60) delay = 60;
+        attempts++;
+    }
+} while (sock < 0 && attempts < 10);
+```
+
+### Application : Menu/Input validation
+
+```c
+int choice;
+do {
+    printf("Choice (1-4): ");
+    scanf("%d", &choice);
+} while (choice < 1 || choice > 4);
+```
+
+---
+
+## break et continue
+
+| Keyword | Action |
+|---------|--------|
+| `break` | Sort immédiatement de la boucle |
+| `continue` | Passe à l'itération suivante |
 
 ```c
 for (int i = 0; i < 10; i++) {
-    if (i % 2 == 0) {
-        continue;  // Saute les nombres pairs
-    }
+    if (i == 3) continue;  // Saute i=3
+    if (i == 7) break;     // Sort à i=7
     printf("%d ", i);
 }
-// Output: 1 3 5 7 9
+// Output: 0 1 2 4 5 6
 ```
 
-### goto - Saut inconditionnel
-
-`goto` saute à un label défini. Utile pour la gestion d'erreurs.
+### Attention : break dans boucles imbriquées
 
 ```c
-int process_data(void) {
-    FILE *f = NULL;
-    char *buffer = NULL;
-    int result = -1;
+for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        if (j == 1) break;  // Sort SEULEMENT de la boucle j
+    }
+    // i continue normalement
+}
+```
+
+**Solution pour sortir de plusieurs boucles :**
+
+```c
+// Option 1 : Flag
+int found = 0;
+for (int i = 0; i < 10 && !found; i++) {
+    for (int j = 0; j < 10 && !found; j++) {
+        if (condition) found = 1;
+    }
+}
+
+// Option 2 : goto (acceptable ici)
+for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 10; j++) {
+        if (condition) goto done;
+    }
+}
+done:
+    printf("Sorti des deux boucles\n");
+```
+
+---
+
+## goto : Gestion d'erreurs
+
+```c
+int process_file(void) {
+    FILE* f = NULL;
+    char* buf = NULL;
+    int ret = -1;
 
     f = fopen("data.txt", "r");
-    if (f == NULL) {
-        goto cleanup;  // Erreur : saute au cleanup
-    }
+    if (!f) goto cleanup;
 
-    buffer = malloc(1024);
-    if (buffer == NULL) {
-        goto cleanup;  // Erreur : saute au cleanup
-    }
+    buf = malloc(1024);
+    if (!buf) goto cleanup;
 
     // Traitement...
-    result = 0;  // Succès
+    ret = 0;
 
-cleanup:  // Label
-    if (buffer) free(buffer);
+cleanup:
+    if (buf) free(buf);
     if (f) fclose(f);
-    return result;
+    return ret;
 }
 ```
 
-### APPLICATION OFFENSIVE : Anti-debug avec goto
+> **goto** évite la duplication du code de cleanup. Pattern très utilisé dans le kernel Linux.
+
+---
+
+## Patterns offensifs
+
+### Scan avec délai aléatoire (évasion)
 
 ```c
-// Obfuscation du flow avec goto
-void obfuscated_function(void) {
-    int check = 0;
+for (int port = 1; port <= 1024; port++) {
+    scan_port(port);
+    usleep((rand() % 500) * 1000);  // 0-500ms aléatoire
+}
+```
 
-start:
-    if (IsDebuggerPresent()) {
-        goto decoy;  // Mène vers du code inutile
+### Pattern search en mémoire
+
+```c
+unsigned char* find_sig(unsigned char* mem, int size,
+                        unsigned char* sig, int sig_len) {
+    for (int i = 0; i <= size - sig_len; i++) {
+        int match = 1;
+        for (int j = 0; j < sig_len && match; j++) {
+            if (mem[i+j] != sig[j]) match = 0;
+        }
+        if (match) return &mem[i];
     }
+    return NULL;
+}
+```
 
-    check++;
-    if (check < 3) {
-        goto start;  // Loop sans for/while
+### Polling avec timeout
+
+```c
+time_t start = time(NULL);
+int timeout = 30;
+
+while (time(NULL) - start < timeout) {
+    if (check_condition()) {
+        printf("[+] Success!\n");
+        break;
     }
-    goto payload;
-
-decoy:
-    // Code "leurre" qui ne fait rien d'utile
-    printf("Nothing to see here\n");
-    return;
-
-payload:
-    // Le vrai code malveillant
-    execute_real_payload();
-    return;
+    sleep(1);
 }
 ```
 
 ---
 
-## Partie 7 : Techniques anti-debug basées sur le control flow
+## Pièges courants
 
-### Timing checks avec boucle
+### Off-by-one
 
 ```c
-int timing_check(void) {
-    DWORD start = GetTickCount();
-
-    // Opérations qui devraient être rapides
-    volatile int sum = 0;
-    for (int i = 0; i < 100000; i++) {
-        sum += i;
-    }
-
-    DWORD elapsed = GetTickCount() - start;
-
-    // En exécution normale : quelques ms
-    // Sous debugger (single-step) : beaucoup plus
-    if (elapsed > 100) {
-        return 1;  // Debugger détecté
-    }
-
-    return 0;
+int arr[10];
+for (int i = 0; i <= 10; i++) {  // ❌ i <= 10 → accès arr[10] hors limites
+    arr[i] = 0;
+}
+for (int i = 0; i < 10; i++) {   // ✅ i < 10
+    arr[i] = 0;
 }
 ```
 
-### Multiple redundant checks
+### Integer overflow dans boucle
 
 ```c
-int paranoid_check(void) {
-    int detections = 0;
-
-    // Check plusieurs fois pour éviter les faux positifs
-    for (int i = 0; i < 5; i++) {
-        if (IsDebuggerPresent()) {
-            detections++;
-        }
-        Sleep(10);
-    }
-
-    // Si détecté plus de 3 fois sur 5 = probablement vrai
-    return (detections > 3);
-}
+for (unsigned char i = 0; i < 256; i++) { }  // ❌ Boucle infinie !
+// Quand i=255, i++ → i=0 (wrap), donc toujours < 256
 ```
 
-### Control flow flattening (simplifié)
+### Point-virgule après for
 
 ```c
-// Au lieu de :
-// if (a) { do_a(); } else { do_b(); } do_c();
-
-// On "aplatit" le flux :
-void flattened_flow(int a) {
-    int state = 0;
-    int done = 0;
-
-    while (!done) {
-        switch (state) {
-            case 0:
-                state = a ? 1 : 2;  // Décision
-                break;
-            case 1:
-                do_a();
-                state = 3;
-                break;
-            case 2:
-                do_b();
-                state = 3;
-                break;
-            case 3:
-                do_c();
-                done = 1;
-                break;
-        }
-    }
+for (int i = 0; i < 10; i++);  // ❌ Boucle vide !
+{
+    printf("Une seule fois\n");
 }
 ```
-
----
-
-## Partie 8 : Patterns offensifs courants
-
-### Pattern : Scanner avec timeout
-
-```c
-void scan_network(const char *subnet) {
-    for (int host = 1; host < 255; host++) {
-        char ip[16];
-        snprintf(ip, sizeof(ip), "%s.%d", subnet, host);
-
-        if (ping_host(ip, 100)) {  // 100ms timeout
-            printf("[+] Host actif: %s\n", ip);
-
-            // Scanner les ports intéressants
-            int ports[] = {22, 80, 443, 445, 3389};
-            for (int i = 0; i < 5; i++) {
-                if (is_port_open(ip, ports[i])) {
-                    printf("    Port %d ouvert\n", ports[i]);
-                }
-            }
-        }
-    }
-}
-```
-
-### Pattern : Parsing de données binaires
-
-```c
-void parse_pe_sections(unsigned char *pe_data, size_t size) {
-    // Vérifier le magic MZ
-    if (pe_data[0] != 'M' || pe_data[1] != 'Z') {
-        printf("Pas un PE valide\n");
-        return;
-    }
-
-    // Obtenir le nombre de sections
-    int num_sections = get_pe_num_sections(pe_data);
-
-    printf("Nombre de sections: %d\n", num_sections);
-
-    for (int i = 0; i < num_sections; i++) {
-        SECTION_HEADER *section = get_section_header(pe_data, i);
-
-        printf("Section %d: %.8s\n", i, section->Name);
-        printf("  Virtual Address: 0x%08X\n", section->VirtualAddress);
-        printf("  Size: 0x%08X\n", section->SizeOfRawData);
-
-        // Vérifier si exécutable
-        if (section->Characteristics & IMAGE_SCN_MEM_EXECUTE) {
-            printf("  [!] Section exécutable\n");
-        }
-    }
-}
-```
-
-### Pattern : State machine pour protocole
-
-```c
-typedef enum {
-    STATE_INIT,
-    STATE_HANDSHAKE,
-    STATE_AUTH,
-    STATE_READY,
-    STATE_ERROR
-} ConnectionState;
-
-void protocol_handler(int sock) {
-    ConnectionState state = STATE_INIT;
-    char buffer[1024];
-
-    while (state != STATE_READY && state != STATE_ERROR) {
-        switch (state) {
-            case STATE_INIT:
-                if (send_hello(sock)) {
-                    state = STATE_HANDSHAKE;
-                } else {
-                    state = STATE_ERROR;
-                }
-                break;
-
-            case STATE_HANDSHAKE:
-                if (recv_challenge(sock, buffer)) {
-                    state = STATE_AUTH;
-                } else {
-                    state = STATE_ERROR;
-                }
-                break;
-
-            case STATE_AUTH:
-                if (send_credentials(sock, buffer)) {
-                    state = STATE_READY;
-                } else {
-                    state = STATE_ERROR;
-                }
-                break;
-
-            default:
-                state = STATE_ERROR;
-                break;
-        }
-    }
-
-    if (state == STATE_READY) {
-        printf("Connexion établie\n");
-    } else {
-        printf("Erreur de connexion\n");
-    }
-}
-```
-
----
-
-## Partie 9 : Résumé et checklist
-
-### Tableau récapitulatif
-
-| Structure | Utilisation | Application offensive |
-|-----------|-------------|----------------------|
-| `if/else` | Décisions simples | Checks de sécurité, validation |
-| `switch` | Multiple choix | Dispatcher de commandes, state machines |
-| `for` | Itération comptée | Scan, brute force, parsing |
-| `while` | Itération conditionnelle | Main loop agent, lecture données |
-| `do-while` | Au moins une exécution | Retry, menu interactif |
-| `break` | Sortir de boucle | Early exit sur succès/erreur |
-| `continue` | Sauter itération | Filtrage, skip erreurs |
-| `goto` | Saut direct | Cleanup, obfuscation |
-
-### Checklist offensive
-
-- [ ] Je sais utiliser if/else pour des vérifications de sécurité
-- [ ] Je maîtrise switch/case sans oublier les break
-- [ ] Je sais implémenter un dispatcher de commandes
-- [ ] Je comprends les trois types de boucles et quand les utiliser
-- [ ] Je sais scanner des ports avec une boucle for
-- [ ] Je peux implémenter une main loop d'agent avec while
-- [ ] Je comprends break et continue
-- [ ] Je sais utiliser goto pour la gestion d'erreurs
-- [ ] Je connais les patterns anti-debug avec timing checks
-- [ ] Je comprends le control flow flattening
 
 ---
 
 ## Exercices pratiques
 
-Voir [exercice.md](exercice.md)
+### Exo 1 : Port scanner (5 min)
+Scanne les ports 20-25, 80, 443 et affiche ceux qui sont "ouverts" (simule avec un tableau).
 
-## Code exemple
+### Exo 2 : XOR encoder (5 min)
+Encode une string avec XOR et affiche en hex.
 
-Voir [example.c](example.c)
+### Exo 3 : Bruteforce PIN 4 digits (10 min)
+Génère toutes les combinaisons 0000-9999.
+
+### Exo 4 : Command dispatcher (10 min)
+Implémente un switch qui gère 5 commandes différentes.
 
 ---
 
-**Module suivant** : [05 - Functions](../05_functions/)
+## Checklist
+
+```
+□ Je maîtrise if/else et les conditions chaînées
+□ Je comprends switch et le fall-through
+□ Je sais quand utiliser for vs while vs do-while
+□ Je comprends break et continue
+□ Je sais sortir de boucles imbriquées
+□ Je connais le pattern goto pour cleanup
+□ Je sais éviter les pièges (off-by-one, overflow)
+```
+
+---
+
+## Glossaire express
+
+| Terme | Définition |
+|-------|------------|
+| **Fall-through** | Exécution continue au case suivant sans break |
+| **Off-by-one** | Erreur de 1 dans les limites (< vs <=) |
+| **Backoff exponentiel** | Délai qui double à chaque retry |
+| **State machine** | Flux contrôlé par variable d'état |
+| **Polling** | Vérification répétée d'une condition |
+
+---
+
+## Prochaine étape
+
+**Module suivant →** [06 - Fonctions](../06_functions/)
+
+---
+
+**Temps lecture :** 8 min | **Pratique :** 30 min

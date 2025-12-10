@@ -1,313 +1,353 @@
-# Module 01 : Hello World - Les fondations
+# Module 01 - Hello World : Les Fondations
 
-## Objectifs
+## Pourquoi tu dois maîtriser ça
 
-À la fin de ce module, tu seras capable de :
-- Comprendre ce qu'est réellement un programme et comment il s'exécute
-- Maîtriser le processus de compilation et ses implications en sécurité
-- Écrire et compiler ton premier programme C
-- Comprendre les choix architecturaux qui impactent la discrétion d'un binaire
+```
+Python implant : python.exe → 45MB + runtime détectable
+C implant      : implant.exe → 3KB + aucune dépendance
+```
+
+**Le C te donne le contrôle total.** Pas de VM, pas d'interpréteur, juste toi et le CPU.
 
 ---
 
-## Partie 0 : Les bases absolues (pour vrais débutants)
+## Binaire, Hexa, Bytes : Les bases absolues
 
-Avant de commencer à coder, il faut comprendre quelques concepts fondamentaux. Si tu connais déjà le binaire et l'hexadécimal, tu peux passer à la Partie 1.
+> **IMPORTANT :** Cette section est fondamentale. Si tu galères avec le binaire/hexa, tu galèreras partout (shellcode, reverse, exploitation). Prends le temps.
 
-### Les systèmes de numération
-
-Dans la vie quotidienne, on compte en **base 10** (décimal). On utilise 10 chiffres : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9.
-
-Quand on arrive à 9, on "repart à zéro" et on ajoute 1 à gauche : 10, 11, 12...
+### Pourquoi 3 systèmes ?
 
 ```
-Décimal : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13...
+Humain pense en décimal  →  255
+CPU travaille en binaire →  11111111
+Sécu utilise l'hexa      →  0xFF
 ```
 
-**Pourquoi base 10 ?** Probablement parce qu'on a 10 doigts !
+L'hexa est un **compromis** : plus compact que le binaire, plus proche de la machine que le décimal.
+
+---
 
 ### Le binaire (base 2)
 
-Les ordinateurs n'ont pas de doigts. Ils fonctionnent avec de l'électricité qui a deux états :
-- **Courant** = 1
-- **Pas de courant** = 0
+> **Binaire** = seulement 0 et 1. C'est ce que le CPU comprend vraiment.
 
-C'est tout. Un ordinateur ne "comprend" que des 0 et des 1. C'est le **binaire** (base 2).
-
-En binaire, on n'a que 2 chiffres : 0 et 1. Quand on arrive à 1, on repart à zéro et on ajoute 1 à gauche :
+**Chaque position a une valeur :**
 
 ```
-Décimal  →  Binaire
-   0     →     0
-   1     →     1
-   2     →    10      (on a utilisé 0 et 1, donc on repart : "1" puis "0")
-   3     →    11
-   4     →   100      (on repart encore)
-   5     →   101
-   6     →   110
-   7     →   111
-   8     →  1000
-  ...
-  255    →  11111111  (8 bits = 1 octet)
+Position :   7    6    5    4    3    2    1    0
+Valeur :   128   64   32   16    8    4    2    1
+            │    │    │    │    │    │    │    │
+Exemple :   1    1    0    0    1    0    1    0  = 128+64+8+2 = 202
 ```
 
-**Un bit** = un chiffre binaire (0 ou 1)
-**Un octet (byte)** = 8 bits = peut représenter 256 valeurs (de 0 à 255)
-
-**Pourquoi c'est important ?**
-Tout ce que fait ton ordinateur (afficher du texte, jouer de la musique, exécuter un malware) est au final une suite de 0 et de 1.
-
-### L'hexadécimal (base 16)
-
-Écrire en binaire, c'est long. `11111111` c'est juste 255 !
-
-L'**hexadécimal** (base 16) est un compromis pratique. On utilise 16 symboles :
+**Convertir binaire → décimal :**
 ```
-0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F
+11001010 = 128 + 64 + 0 + 0 + 8 + 0 + 2 + 0 = 202
 ```
 
-Où A=10, B=11, C=12, D=13, E=14, F=15.
-
+**Convertir décimal → binaire :**
 ```
-Décimal  →  Hexa  →  Binaire
-   0     →   0    →     0000
-   1     →   1    →     0001
-   9     →   9    →     1001
-  10     →   A    →     1010
-  15     →   F    →     1111
-  16     →  10    →    10000
- 255     →  FF    →  11111111
- 256     →  100   → 100000000
+202 ÷ 2 = 101 reste 0  ↑
+101 ÷ 2 = 50  reste 1  │  Lire de bas en haut
+50  ÷ 2 = 25  reste 0  │  → 11001010
+25  ÷ 2 = 12  reste 1  │
+12  ÷ 2 = 6   reste 0  │
+6   ÷ 2 = 3   reste 0  │
+3   ÷ 2 = 1   reste 1  │
+1   ÷ 2 = 0   reste 1  ↓
 ```
-
-**L'avantage clé** : 1 chiffre hexa = exactement 4 bits.
-Donc `FF` = `1111 1111` = 255. C'est compact et facile à convertir mentalement.
-
-**Notation** : Pour distinguer l'hexa du décimal, on écrit :
-- `0xFF` ou `0xff` (préfixe 0x, convention C)
-- `FFh` (suffixe h, convention assembleur)
-
-### Pourquoi l'hexa est partout en sécurité ?
-
-1. **Les adresses mémoire** sont affichées en hexa :
-   ```
-   0x7fff5fbff8c0  (beaucoup plus lisible que 140734799804608)
-   ```
-
-2. **Les opcodes** (instructions processeur) sont en hexa :
-   ```
-   48 89 e5  (au lieu de 01001000 10001001 11100101)
-   ```
-
-3. **L'analyse de binaires** utilise l'hexa pour les dumps mémoire :
-   ```
-   00000000  48 65 6c 6c 6f 20 57 6f  72 6c 64 21              |Hello World!|
-   ```
-
-4. **Les couleurs** en informatique : `#FF0000` = rouge (FF de rouge, 00 de vert, 00 de bleu)
-
-### La table ASCII
-
-Comment l'ordinateur représente-t-il les lettres avec des nombres ?
-
-La table **ASCII** (American Standard Code for Information Interchange) assigne un nombre à chaque caractère :
-
-```
-Caractère  →  Décimal  →  Hexa  →  Binaire
-    A      →    65     →  0x41  →  01000001
-    B      →    66     →  0x42  →  01000010
-    Z      →    90     →  0x5A  →  01011010
-    a      →    97     →  0x61  →  01100001
-    0      →    48     →  0x30  →  00110000
-    9      →    57     →  0x39  →  00111001
-  espace   →    32     →  0x20  →  00100000
-   \n      →    10     →  0x0A  →  00001010  (nouvelle ligne)
-```
-
-**Astuce** : La différence entre majuscule et minuscule est toujours 32 (0x20).
-`'A'` (65) + 32 = `'a'` (97)
-
-**Pourquoi c'est important pour la sécurité ?**
-Quand tu analyses un binaire avec `strings` ou un éditeur hexa, tu vois :
-```
-48 65 6c 6c 6f  →  "Hello"
-```
-Savoir lire l'hexa te permet de repérer des strings, des patterns, des signatures.
-
-### Exercice mental rapide
-
-Avant de continuer, assure-toi de comprendre :
-
-1. `0xFF` en décimal = ? (Réponse : 255)
-2. `0x10` en décimal = ? (Réponse : 16)
-3. Quel caractère est `0x41` ? (Réponse : 'A')
-4. Combien de valeurs peut contenir 1 octet ? (Réponse : 256, de 0 à 255)
-
-Si ces réponses sont claires, tu es prêt pour la suite !
 
 ---
 
-## Partie 1 : Qu'est-ce qu'un programme ?
+### L'hexadécimal (base 16)
 
-### Le concept de base
+> **Hexa** = 16 symboles (0-9 puis A-F). Chaque chiffre hexa = 4 bits.
 
-Un programme, c'est une suite d'instructions que le processeur exécute séquentiellement. Mais pour vraiment comprendre, il faut aller plus loin.
+**Table de correspondance :**
 
-**Ton processeur ne comprend qu'une chose : le langage machine (binaire).**
+| Hexa | Décimal | Binaire |
+|------|---------|---------|
+| 0 | 0 | 0000 |
+| 1 | 1 | 0001 |
+| 2 | 2 | 0010 |
+| 3 | 3 | 0011 |
+| 4 | 4 | 0100 |
+| 5 | 5 | 0101 |
+| 6 | 6 | 0110 |
+| 7 | 7 | 0111 |
+| 8 | 8 | 1000 |
+| 9 | 9 | 1001 |
+| A | 10 | 1010 |
+| B | 11 | 1011 |
+| C | 12 | 1100 |
+| D | 13 | 1101 |
+| E | 14 | 1110 |
+| F | 15 | 1111 |
 
-Quand tu écris :
+**Convertir binaire → hexa (le plus simple) :**
+```
+11001010
+│││││││└─ Groupe par 4 : 1100 | 1010
+                          ↓      ↓
+                          C      A    → 0xCA
+```
+
+**Convertir hexa → décimal :**
+```
+0xCA = (C × 16) + A = (12 × 16) + 10 = 192 + 10 = 202
+```
+
+**En C, préfixes :**
+```c
+int dec = 202;       // Décimal
+int hex = 0xCA;      // Hexa (préfixe 0x)
+int bin = 0b11001010; // Binaire (préfixe 0b, C99+)
+// Les trois valent 202
+```
+
+---
+
+### Bits, Bytes, Nibbles
+
+| Terme | Définition | Exemple |
+|-------|------------|---------|
+| **Bit** | 0 ou 1 | `1` |
+| **Nibble** | 4 bits | `1010` = 0xA |
+| **Byte** | 8 bits = 2 nibbles | `11001010` = 0xCA |
+| **Word** | 2 bytes (16 bits) | `0xCAFE` |
+| **DWORD** | 4 bytes (32 bits) | `0xDEADBEEF` |
+| **QWORD** | 8 bytes (64 bits) | `0xDEADBEEFCAFEBABE` |
+
+```
+1 byte = 8 bits = 2 chiffres hexa = valeurs 0-255 (0x00-0xFF)
+```
+
+**Valeurs limites à connaître :**
+```
+1 byte  : 0 - 255         (0x00 - 0xFF)
+2 bytes : 0 - 65535       (0x0000 - 0xFFFF)
+4 bytes : 0 - 4294967295  (0x00000000 - 0xFFFFFFFF)
+```
+
+---
+
+### ASCII : Bytes = Caractères
+
+> Chaque caractère est représenté par un byte (0-127 pour ASCII standard).
+
+**Valeurs à connaître par cœur :**
+
+| Char | Hexa | Décimal | Note |
+|------|------|---------|------|
+| `'A'` | 0x41 | 65 | Majuscules : 0x41-0x5A |
+| `'Z'` | 0x5A | 90 | |
+| `'a'` | 0x61 | 97 | Minuscules : 0x61-0x7A |
+| `'z'` | 0x7A | 122 | |
+| `'0'` | 0x30 | 48 | Chiffres : 0x30-0x39 |
+| `'9'` | 0x39 | 57 | |
+| `' '` | 0x20 | 32 | Espace |
+| `'\n'` | 0x0A | 10 | Newline |
+| `'\r'` | 0x0D | 13 | Carriage return |
+| `'\0'` | 0x00 | 0 | Null byte (fin de string) |
+
+**Astuce majuscule ↔ minuscule :**
+```
+'A' (0x41) + 0x20 = 'a' (0x61)
+'a' (0x61) - 0x20 = 'A' (0x41)
+'a' ^ 0x20 = 'A'   // XOR pour toggle
+```
+
+---
+
+### Lire un hexdump
+
+Tu verras souvent ce format en reverse/forensic :
+
+```
+00000000: 4865 6c6c 6f20 576f 726c 6421 0a00 0000  Hello World!....
+│         │                                        │
+Offset    Données en hexa                          ASCII (. = non-imprimable)
+```
+
+**Exercice mental :** Que dit ce hexdump ?
+```
+00000000: 5365 6372 6574                           Secret
+```
+→ `0x53` = 'S', `0x65` = 'e', `0x63` = 'c', `0x72` = 'r', `0x65` = 'e', `0x74` = 't'
+
+---
+
+### Endianness : Little vs Big
+
+> **Endianness** = ordre des bytes en mémoire.
+
+```
+Valeur : 0xDEADBEEF
+
+Big Endian (réseau, sparc) :
+Adresse :  0x00  0x01  0x02  0x03
+Bytes :    DE    AD    BE    EF    ← Ordre "naturel"
+
+Little Endian (x86, x64) :
+Adresse :  0x00  0x01  0x02  0x03
+Bytes :    EF    BE    AD    DE    ← Inversé !
+```
+
+**IMPORTANT pour l'exploitation :**
+```c
+// Tu veux écrire l'adresse 0x00401234 sur x86
+// En mémoire : 34 12 40 00 (little endian)
+
+unsigned char addr[] = {0x34, 0x12, 0x40, 0x00};
+```
+
+> **Règle :** x86/x64 = Little Endian. Les bytes sont "à l'envers" en mémoire.
+
+---
+
+### Valeurs magiques en sécu
+
+```
+0x90       = NOP (instruction qui ne fait rien)
+0xCC       = INT3 (breakpoint debugger)
+0xCD 0x80  = syscall Linux 32-bit
+0x0F 0x05  = syscall Linux 64-bit
+
+0x41414141 = "AAAA" (pattern overflow)
+0xDEADBEEF = Marqueur mémoire classique
+0xCAFEBABE = Magic Java .class
+0x7F454C46 = Magic ELF (`.ELF`)
+0x4D5A     = Magic PE/DOS (`MZ`)
+```
+
+---
+
+### En C : Afficher en différentes bases
+
+```c
+int val = 202;
+
+printf("Décimal : %d\n", val);    // 202
+printf("Hexa    : 0x%X\n", val);  // 0xCA
+printf("Hexa    : 0x%02X\n", val);// 0xCA (2 chiffres min)
+printf("Octal   : %o\n", val);    // 312
+
+// Afficher un byte array en hexa
+unsigned char buf[] = {0x48, 0x65, 0x6c, 0x6c, 0x6f};
+for (int i = 0; i < 5; i++) {
+    printf("%02X ", buf[i]);
+}
+// Output: 48 65 6C 6C 6F
+```
+
+---
+
+### Résumé des conversions
+
+```
+Décimal → Hexa   : 255 → FF (diviser par 16)
+Hexa → Décimal   : FF → (15×16)+15 = 255
+Binaire → Hexa   : 11111111 → 1111|1111 → F|F → FF
+Hexa → Binaire   : CA → C=1100, A=1010 → 11001010
+```
+
+**Raccourcis utiles :**
+```
+0xFF = 255 = 1 byte max
+0xFFFF = 65535 = 2 bytes max
+0x100 = 256
+0x1000 = 4096 (page size)
+```
+
+---
+
+## C'est quoi un programme ?
+
+### Ce que tu écris vs ce que le CPU voit
+
 ```c
 printf("Hello");
 ```
 
-Le processeur ne voit pas ça. Il voit quelque chose comme :
+↓ Compilation ↓
+
 ```
-48 89 e5 48 83 ec 10 48 8d 3d 00 00 00 00 e8 00 00 00 00 ...
+48 89 e5 48 83 ec 10 48 8d 3d 00 00 00 00 e8 00 00 00 00
 ```
 
-Ces octets hexadécimaux sont des **opcodes** - les instructions directes du processeur.
+> **Opcodes** = instructions machine en hexa. C'est ça que le processeur exécute vraiment.
 
 ### Pourquoi le C ?
 
-Le C est un langage **compilé** et **bas niveau** :
+| Langage | Runtime | Taille binaire | Contrôle mémoire | Usage offensif |
+|---------|---------|----------------|------------------|----------------|
+| Python | python.exe | Lourd | Non | Scripts, recon |
+| Go | Inclus | ~2MB+ | Non | Tools rapides |
+| **C** | **Aucun** | **3KB possible** | **Total** | **Implants, shellcode** |
+| ASM | Aucun | Minimal | Total | Shellcode pur |
 
-| Langage | Type | Niveau | Contrôle mémoire | Usage Red Team |
-|---------|------|--------|------------------|----------------|
-| Python | Interprété | Haut | Non | Scripts, automation |
-| Java | Compilé (bytecode) | Haut | Non | Rare |
-| C | Compilé (natif) | Bas | Oui | Malware, exploits, implants |
-| Assembly | Direct | Très bas | Total | Shellcode, exploits |
-
-**Le C te donne :**
-- Accès direct à la mémoire (pointeurs)
-- Contrôle total sur la structure du binaire
-- Binaires natifs sans dépendances runtime (pas de JVM, pas d'interpréteur)
-- Performance maximale
-
-**En contexte offensif, c'est crucial car :**
-- Tu contrôles exactement ce que fait ton binaire
-- Pas de runtime détectable (contrairement à Python → python.exe)
-- Binaires plus petits et autonomes
-- Accès aux APIs système bas niveau
+**C = le sweet spot** entre contrôle et productivité.
 
 ---
 
-## Partie 2 : La compilation en détail
-
-### Vue d'ensemble
+## La compilation (ce qui se passe vraiment)
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   hello.c   │────>│ Préprocesseur│────>│ Compilateur │────>│ Assembleur  │
-│   (source)  │     │   (cpp)     │     │   (cc1)     │     │   (as)      │
-└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-                                                                   │
-                                                                   v
-                                        ┌─────────────┐     ┌─────────────┐
-                                        │   hello     │<────│   Linker    │
-                                        │(exécutable) │     │   (ld)      │
-                                        └─────────────┘     └─────────────┘
+hello.c → [Préprocesseur] → [Compilateur] → [Assembleur] → [Linker] → hello
+            #include         C → ASM        ASM → .o       .o → EXE
 ```
 
-### Étape 1 : Le préprocesseur
+### Étape par étape
 
-Le préprocesseur traite toutes les lignes commençant par `#` :
-
-```c
-#include <stdio.h>   // Copie le contenu de stdio.h ici
-#define SIZE 100     // Remplace SIZE par 100 partout
-```
-
-**Ce qui se passe vraiment avec `#include <stdio.h>` :**
-
-Le préprocesseur va chercher le fichier `stdio.h` et copie TOUT son contenu dans ton fichier. Sur Linux, ce fichier fait environ 800 lignes et inclut lui-même d'autres fichiers.
-
-Tu peux voir le résultat :
+**1. Préprocesseur** - Traite les `#include`, `#define`
 ```bash
-gcc -E hello.c -o hello.i
-wc -l hello.i  # Souvent 500-1000+ lignes juste pour un printf !
+gcc -E hello.c -o hello.i    # Voir le résultat
+```
+> **Impact :** Chaque `#include` ajoute du code. `stdio.h` = ~800 lignes copiées.
+
+**2. Compilation** - C → Assembleur
+```bash
+gcc -S hello.c -o hello.s    # Voir l'ASM généré
+```
+> **Impact :** Ta string `"Hello"` apparaît ici en clair dans `.LC0`.
+
+**3. Assemblage** - ASM → Code objet
+```bash
+gcc -c hello.c -o hello.o    # Fichier objet
 ```
 
-**Implication Red Team :**
-Chaque `#include` ajoute potentiellement des informations dans ton binaire final. Plus tu inclus, plus ton binaire contient de références détectables.
+**4. Linking** - Résout les symboles, crée l'exécutable
+```bash
+gcc hello.o -o hello         # Exécutable final
+```
 
-### Étape 2 : La compilation
+### Linking : Dynamique vs Statique
 
-Le compilateur transforme le code C en assembleur :
+| Type | Commande | Taille | Dépendances | Usage |
+|------|----------|--------|-------------|-------|
+| Dynamique | `gcc hello.c -o hello` | ~8KB | libc.so | Standard |
+| Statique | `gcc hello.c -o hello -static` | ~800KB | Aucune | Portabilité |
 
 ```bash
-gcc -S hello.c -o hello.s
-```
-
-Résultat (simplifié) :
-```asm
-main:
-    push    rbp
-    mov     rbp, rsp
-    lea     rdi, [rip+.LC0]    ; Charge l'adresse de "Hello"
-    call    printf             ; Appelle printf
-    mov     eax, 0             ; Valeur de retour = 0
-    pop     rbp
-    ret
-.LC0:
-    .string "Hello World!"     ; Ta string est stockée ici !
-```
-
-**Implication Red Team :**
-Ta string `"Hello World!"` est visible en clair dans le binaire. C'est pourquoi les malwares chiffrent leurs strings.
-
-### Étape 3 : L'assemblage
-
-L'assembleur convertit l'assembleur en code objet (fichier `.o`) :
-
-```bash
-gcc -c hello.c -o hello.o
-```
-
-Le fichier `.o` contient du code machine, mais pas encore exécutable - il manque les adresses finales et les bibliothèques.
-
-### Étape 4 : Le linking (édition de liens)
-
-C'est ici que ça devient intéressant pour nous.
-
-Le linker :
-1. Résout les symboles (où est `printf` ?)
-2. Lie les bibliothèques nécessaires
-3. Crée l'exécutable final avec son format (ELF sur Linux, PE sur Windows)
-
-**Deux types de linking :**
-
-| Type | Description | Taille binaire | Dépendances | Usage Red Team |
-|------|-------------|----------------|-------------|----------------|
-| Dynamique | Lie à des .so/.dll externes | Petit (~8KB) | Oui | Standard |
-| Statique | Inclut tout dans le binaire | Gros (~800KB+) | Non | Portabilité |
-
-```bash
-# Linking dynamique (par défaut)
-gcc hello.c -o hello
-ldd hello  # Montre les dépendances
-
-# Linking statique
-gcc hello.c -o hello_static -static
+ldd hello         # Voir les dépendances
 ldd hello_static  # "not a dynamic executable"
 ```
 
+> **Statique** = tout est inclus. Plus gros mais fonctionne partout.
+
 ---
 
-## Partie 3 : La structure d'un programme C
+## Structure minimale d'un programme C
 
-### Le minimum vital
-
+### Le strict minimum
 ```c
 int main(void) {
     return 0;
 }
 ```
+C'est tout. Aucun `#include` nécessaire.
 
-C'est tout. Pas besoin de `#include` si tu n'utilises aucune fonction externe.
-
-### Avec affichage standard
-
+### Avec affichage
 ```c
 #include <stdio.h>
 
@@ -317,337 +357,241 @@ int main(void) {
 }
 ```
 
-### Explication détaillée
-
-#### `#include <stdio.h>` - Ce que ça fait vraiment
-
-`stdio.h` (Standard Input/Output Header) déclare des fonctions comme :
-- `printf()` - Afficher du texte formaté
-- `scanf()` - Lire une entrée
-- `fopen()`, `fclose()` - Manipuler des fichiers
-- Et bien d'autres...
-
-**Mais `stdio.h` ne contient PAS le code de printf !**
-
-Il contient seulement la **déclaration** (prototype) :
-```c
-int printf(const char *format, ...);
-```
-
-Le vrai code de `printf` est dans la **bibliothèque C** (libc.so sur Linux, msvcrt.dll sur Windows). Le linker fait le lien entre ton appel et le code réel.
-
-#### `int main(void)` - Le point d'entrée
-
-`main` est le point d'entrée **conventionnel** de ton programme. Quand le système lance ton exécutable :
-
-1. Le loader charge ton binaire en mémoire
-2. Il exécute du code d'initialisation (CRT - C Runtime)
-3. Ce code d'init appelle `main()`
-4. Ton code s'exécute
-5. `main()` retourne
-6. Le code de cleanup s'exécute
-7. Le processus se termine
+### Ce qui se passe vraiment
 
 ```
-Système ──> _start (CRT) ──> __libc_start_main ──> main() ──> exit()
+Système → _start (CRT) → __libc_start_main → main() → exit()
 ```
 
-**Implication Red Team :**
-Le vrai point d'entrée n'est PAS `main()` ! C'est `_start` ou équivalent. En analyse de malware, il faut chercher le vrai entry point dans le header PE/ELF.
+> **`_start`** = le VRAI point d'entrée. `main()` est appelé par le CRT (C Runtime).
+> En analyse de malware, cherche l'**entry point** dans le header PE/ELF, pas `main()`.
 
-#### `return 0` - Le code de sortie
-
-La convention :
-- `0` = Succès
-- `1-255` = Erreur (le numéro peut indiquer le type d'erreur)
+### Return code
 
 ```bash
-./mon_programme
-echo $?  # Affiche le code de retour (Linux)
-echo %ERRORLEVEL%  # Windows
+./programme
+echo $?    # Linux : affiche le code retour
 ```
 
-**Utilisation en scripting :**
+- `0` = succès
+- `1-255` = erreur
+
 ```bash
-./exploit && ./post_exploit  # post_exploit s'exécute seulement si exploit retourne 0
+./exploit && ./post_exploit   # post_exploit s'exécute SI exploit retourne 0
 ```
 
 ---
 
-## Partie 4 : printf() et ses implications
+## Strings : Le piège #1
 
-### Comment fonctionne printf
-
-```c
-printf("Age: %d ans\n", 25);
-```
-
-`printf` est une fonction **variadique** (nombre variable d'arguments) qui :
-1. Parse la format string (`"Age: %d ans\n"`)
-2. Remplace les spécificateurs (`%d`) par les arguments (25)
-3. Écrit le résultat sur stdout
-
-### Spécificateurs de format essentiels
-
-| Spécificateur | Type | Exemple | Résultat |
-|---------------|------|---------|----------|
-| `%d` ou `%i` | Entier signé | `printf("%d", -42)` | `-42` |
-| `%u` | Entier non signé | `printf("%u", 42)` | `42` |
-| `%x` | Hexa minuscule | `printf("%x", 255)` | `ff` |
-| `%X` | Hexa majuscule | `printf("%X", 255)` | `FF` |
-| `%p` | Pointeur | `printf("%p", ptr)` | `0x7fff5fbff8c0` |
-| `%s` | String | `printf("%s", "Hi")` | `Hi` |
-| `%c` | Caractère | `printf("%c", 65)` | `A` |
-| `%f` | Float/Double | `printf("%f", 3.14)` | `3.140000` |
-| `%%` | Littéral % | `printf("%%")` | `%` |
-
-### Formatage avancé
-
-```c
-printf("%08x", 255);      // "000000ff" - padding avec 0, largeur 8
-printf("%-10s", "Hi");    // "Hi        " - aligné à gauche, largeur 10
-printf("%5.2f", 3.14159); // " 3.14" - largeur 5, 2 décimales
-```
-
-### Les strings dans le binaire
-
-**C'est ici que beaucoup font l'erreur de compréhension.**
-
-Quand tu écris :
+### Le problème
 ```c
 printf("Connecting to C2 server...\n");
 ```
 
-Cette string est stockée en clair dans la section `.rodata` (read-only data) de ton binaire.
-
-**Vérification :**
 ```bash
-strings mon_binaire | grep "C2"
-# Résultat : "Connecting to C2 server..."
+$ strings malware.exe | grep C2
+Connecting to C2 server...    ← GRILLÉ
 ```
 
-Les analystes de malware utilisent `strings` comme première étape d'analyse. Toute string en clair est visible.
+> **`.rodata`** = section read-only où vont tes strings. Visible en clair dans le binaire.
 
-**Solutions offensives :**
+### Solutions rapides
 
-1. **Chiffrement au runtime :**
+**1. Stack strings**
 ```c
-// String chiffrée à la compilation
-unsigned char encrypted[] = {0x43, 0x6f, 0x6e, 0x6e, ...};
-
-// Déchiffrement au runtime
-char* decrypted = xor_decrypt(encrypted, key);
-printf("%s", decrypted);
+char msg[] = {'H','e','l','l','o','\0'};  // Construit au runtime
 ```
 
-2. **Construction caractère par caractère :**
+**2. XOR au runtime**
 ```c
-char msg[20];
-msg[0] = 'H'; msg[1] = 'e'; msg[2] = 'l'; // etc.
+unsigned char enc[] = {0x2A, 0x27, 0x38, 0x38, 0x3B};  // "hello" ^ 0x42
+for(int i=0; i<5; i++) enc[i] ^= 0x42;
 ```
 
-3. **Stack strings :**
-```c
-char msg[] = {'H', 'e', 'l', 'l', 'o', '\0'};
-```
-
-Nous verrons ces techniques en détail dans le module sur l'obfuscation (W33).
+→ Détails au **Module 08 (Strings)**
 
 ---
 
-## Partie 5 : Le CRT (C Runtime) - Mythes et réalités
+## CRT : Avec ou sans ?
 
-### C'est quoi le CRT ?
+> **CRT** (C Runtime Library) = code qui initialise ton programme avant `main()` et fournit printf, malloc, etc.
 
-Le CRT (C Runtime Library) est le code qui :
-- Initialise l'environnement avant `main()`
-- Fournit les fonctions standard (printf, malloc, etc.)
-- Nettoie après `main()`
+### Comparaison
 
-Sur Windows : `msvcrt.dll`, `ucrtbase.dll`, ou CRT statique
-Sur Linux : `libc.so.6` (glibc)
+| Aspect | Avec CRT | Sans CRT |
+|--------|----------|----------|
+| Taille | ~50-100KB | ~3-5KB |
+| Dépendances | msvcrt.dll / libc.so | Aucune |
+| Imports (IAT) | Nombreux | Minimal |
+| Facilité | Simple | Avancé |
 
-### Le mythe : "stdio.h fait cramer le malware"
+### Exemple Windows sans CRT
 
-**FAUX.** Utiliser `stdio.h` ou `printf` ne déclenche pas automatiquement une détection.
-
-**Ce qui compte pour la détection :**
-
-1. **Les imports suspects** - L'IAT (Import Address Table) liste toutes les fonctions importées. Un binaire qui importe `VirtualAllocEx`, `WriteProcessMemory`, `CreateRemoteThread` ensemble = suspect.
-
-2. **Les signatures** - Les antivirus cherchent des patterns de bytes connus, pas le fait que tu utilises printf.
-
-3. **Le comportement** - L'EDR surveille ce que ton programme FAIT, pas les headers inclus.
-
-4. **L'entropie** - Un binaire packé/chiffré a une entropie élevée = suspect.
-
-### Pourquoi éviter le CRT quand même ?
-
-| Avec CRT | Sans CRT |
-|----------|----------|
-| Binaire ~50-100KB minimum | Binaire ~3-5KB possible |
-| Dépendance à msvcrt.dll | Autonome |
-| Plus d'imports dans l'IAT | IAT minimal |
-| Code d'init/cleanup visible | Contrôle total |
-
-**Le vrai avantage de ne pas utiliser le CRT :**
-- Binaire plus petit (moins de surface d'analyse)
-- Moins d'imports (IAT plus discret)
-- Contrôle total sur le point d'entrée
-- Pas de code "parasite" du CRT
-
-### Exemple : Avec vs Sans CRT (Windows)
-
-**Avec CRT :**
-```c
-#include <stdio.h>
-
-int main(void) {
-    printf("Hello\n");
-    return 0;
-}
-// Binaire : ~60KB, importe KERNEL32.dll, msvcrt.dll
-```
-
-**Sans CRT :**
 ```c
 #include <windows.h>
 
 void _start(void) {
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hOut, "Hello\n", 6, NULL, NULL);
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    WriteConsoleA(h, "Hello\n", 6, NULL, NULL);
     ExitProcess(0);
 }
-// Binaire : ~3KB, importe seulement KERNEL32.dll
 ```
+Compilation : `cl /GS- /nologo hello.c /link /ENTRY:_start /NODEFAULTLIB kernel32.lib`
 
-**Encore plus bas niveau (syscall direct) :**
-```c
-// Appel direct au kernel, sans aucune DLL
-// (Technique avancée, voir modules WINDOWS)
-```
-
-### Conclusion sur le CRT
-
-- Utilise le CRT pour apprendre et pour les outils non critiques
-- Évite le CRT quand la taille et la discrétion comptent
-- Ce n'est pas une question de détection directe, mais d'optimisation globale
+> **Pourquoi sans CRT ?** Moins de surface d'analyse, IAT plus discret, contrôle total.
+> Pour apprendre : utilise le CRT. Pour les implants : évalue au cas par cas.
 
 ---
 
-## Partie 6 : Compilation - Options importantes
+## Options de compilation essentielles
 
 ### GCC (Linux/macOS)
 
 ```bash
-# Compilation basique
-gcc hello.c -o hello
-
-# Avec optimisations (binaire plus petit, plus rapide)
-gcc hello.c -o hello -O2
-
-# Sans symboles de debug (plus petit, plus dur à reverser)
-gcc hello.c -o hello -s
-
-# Statique (aucune dépendance externe)
-gcc hello.c -o hello -static
-
-# Tout combiné pour un binaire "propre"
-gcc hello.c -o hello -O2 -s -static
+gcc hello.c -o hello              # Basique
+gcc hello.c -o hello -O2          # Optimisé
+gcc hello.c -o hello -s           # Strip symboles
+gcc hello.c -o hello -static      # Pas de dépendances
+gcc hello.c -o hello -O2 -s       # Prod-ready
 ```
 
-### Options importantes pour la sécurité/reverse
+### Flags et leur impact
 
-| Option | Effet | Implication |
-|--------|-------|-------------|
-| `-g` | Ajoute symboles debug | Facile à reverser ! |
-| `-s` | Strip les symboles | Plus dur à reverser |
-| `-O0` à `-O3` | Niveau d'optimisation | -O0 facile à lire, -O3 optimisé |
-| `-static` | Linking statique | Pas de dépendances |
-| `-fPIC` | Position Independent Code | Requis pour les libs partagées |
+| Flag | Effet | OPSEC |
+|------|-------|-------|
+| `-g` | Symboles debug | Facile à reverser |
+| `-s` | Strip symboles | Plus dur à reverser |
+| `-O2`/`-O3` | Optimise | Code moins lisible |
+| `-static` | Tout inclus | Pas de deps externes |
+| `-fPIC` | Position Independent | Requis pour libs/shellcode |
 
-### Windows (MSVC)
-
-```cmd
-cl hello.c /Fe:hello.exe
-cl hello.c /Fe:hello.exe /O2       # Optimisé
-cl hello.c /Fe:hello.exe /MT       # CRT statique
-```
-
-### Windows (MinGW)
+### Cross-compilation Windows
 
 ```bash
-x86_64-w64-mingw32-gcc hello.c -o hello.exe
-x86_64-w64-mingw32-gcc hello.c -o hello.exe -s -O2  # Optimisé, strippé
+x86_64-w64-mingw32-gcc hello.c -o hello.exe -s -O2
 ```
 
 ---
 
-## Partie 7 : Analyse de ton binaire
+## Analyse de ton binaire
 
-Après compilation, analyse ce que tu as créé :
-
-### Sur Linux
+### Commandes Linux
 
 ```bash
-# Infos générales
-file hello
-
-# Dépendances
-ldd hello
-
-# Symboles
-nm hello
-
-# Strings
-strings hello
-
-# Headers ELF
-readelf -h hello
-
-# Désassemblage
-objdump -d hello
+file hello           # Type de fichier
+ldd hello            # Dépendances
+strings hello        # Strings visibles
+nm hello             # Symboles
+readelf -h hello     # Headers ELF
+objdump -d hello     # Désassemblage
 ```
 
-### Sur Windows
+### Commandes Windows
 
 ```cmd
-# Avec des outils comme PE-bear, CFF Explorer, ou dumpbin
-dumpbin /headers hello.exe
-dumpbin /imports hello.exe
-dumpbin /exports hello.exe
+dumpbin /headers hello.exe    # Headers PE
+dumpbin /imports hello.exe    # Imports (IAT)
+dumpbin /exports hello.exe    # Exports
 ```
 
-### Ce que tu dois vérifier
+### Checklist d'analyse
 
-1. **Strings visibles** - Y a-t-il des strings sensibles ?
-2. **Imports** - Quelles DLLs/fonctions sont importées ?
-3. **Taille** - Est-ce raisonnable ?
-4. **Sections** - Structure standard ou suspecte ?
-
----
-
-## Résumé
-
-| Concept | Ce qu'il faut retenir |
-|---------|----------------------|
-| Compilation | 4 étapes : préprocesseur → compilateur → assembleur → linker |
-| Point d'entrée | `main()` est appelé par le CRT, le vrai entry point est `_start` |
-| Strings | Visibles en clair avec `strings`, penser à l'obfuscation |
-| CRT | Pas de détection directe, mais impacte taille/imports |
-| Printf | Utile pour debug, mais les strings restent dans le binaire |
-| Return | 0 = succès, utilisé pour le chaînage de commandes |
+```
+□ Strings sensibles visibles ?     → strings binary | grep -i password
+□ Imports suspects ?               → Combo VirtualAlloc + WriteProcess + CreateThread
+□ Taille raisonnable ?             → Un hello world de 5MB = suspect
+□ Symboles présents ?              → nm binary (si oui → strip)
+```
 
 ---
 
 ## Exercices pratiques
 
-Voir [exercice.md](exercice.md)
+### Exo 1 : Compile et analyse (5 min)
 
-## Code exemple
+```c
+#include <stdio.h>
+int main(void) {
+    printf("Hello Offensive World!\n");
+    return 0;
+}
+```
 
-Voir [example.c](example.c)
+```bash
+gcc hello.c -o hello
+strings hello | grep Hello          # Visible ?
+gcc hello.c -o hello_stripped -s
+ls -la hello hello_stripped         # Compare les tailles
+```
+
+### Exo 2 : Avec et sans CRT (10 min - Windows)
+
+Compare la taille et les imports entre :
+- Version standard avec `printf`
+- Version sans CRT avec `WriteConsoleA`
+
+```bash
+dumpbin /imports version1.exe
+dumpbin /imports version2.exe
+```
+
+### Exo 3 : Cacher une string (5 min)
+
+Fais en sorte que `"secret_password"` n'apparaisse pas dans `strings` :
+
+```c
+int main(void) {
+    // TODO: Construis la string sans qu'elle soit en .rodata
+    char password[16];
+    // ...
+    return 0;
+}
+```
 
 ---
 
-**Module suivant** : [02 - Variables et Types](../02_variables_types/)
+## Checklist
+
+```
+□ Je comprends le binaire et sais convertir binaire ↔ décimal
+□ Je connais la table hexa (0-F) et sais convertir hexa ↔ binaire
+□ Je sais lire un hexdump et reconnaître des strings ASCII
+□ Je comprends le little endian et pourquoi 0x1234 = 34 12 en mémoire
+□ Je connais les magic bytes courants (NOP, MZ, ELF, etc.)
+□ Je comprends les 4 étapes de compilation
+□ Je sais ce qu'est le CRT et pourquoi l'éviter parfois
+□ Je sais analyser un binaire avec strings, nm, ldd
+□ Je connais les flags de compilation essentiels
+□ Je sais pourquoi mes strings sont visibles et comment les cacher
+```
+
+---
+
+## Glossaire express
+
+| Terme | Définition |
+|-------|------------|
+| **Bit** | 0 ou 1, unité minimale |
+| **Byte** | 8 bits, valeurs 0-255 |
+| **Nibble** | 4 bits = 1 chiffre hexa |
+| **Little Endian** | Bytes stockés du moins au plus significatif (x86) |
+| **Hexdump** | Affichage mémoire en hexa + ASCII |
+| **Opcode** | Instruction machine en hexa |
+| **CRT** | C Runtime - code d'init avant main() |
+| **ELF** | Format binaire Linux (Executable and Linkable Format) |
+| **PE** | Format binaire Windows (Portable Executable) |
+| **IAT** | Import Address Table - liste des fonctions importées |
+| **.rodata** | Section read-only contenant les strings |
+| **Strip** | Supprimer les symboles de debug |
+| **Entry point** | Vraie première instruction exécutée (_start, pas main) |
+
+---
+
+## Prochaine étape
+
+**Module suivant →** [02 - Variables et Types](../02_variables_types/)
+
+---
+
+**Temps lecture :** 15 min | **Pratique :** 30 min
