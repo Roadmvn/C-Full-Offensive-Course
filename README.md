@@ -24,70 +24,82 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-## Structure du cours (206 modules)
+## Structure du cours
 
-### 01_CORE - Fondamentaux C et Exploitation (31 modules)
+```
+C-Full-Offensive-Course/
+├── 00-Fondations/          # Fondamentaux C + Mémoire + ASM
+├── 01-Windows/             # Windows Offensive (API, Internals, Injection, Evasion, C2)
+├── 02-Linux/               # Linux Offensive (Syscalls, Rootkits, C2)
+├── 03-macOS/               # macOS Offensive (Mach-O, Injection, Evasion)
+├── 04-Advanced/            # Hyperviseur, Firmware, Hardware, Supply Chain, AI
+├── Labs/                   # Environnements de pratique
+└── Resources/              # Cheatsheets et templates
+```
 
-#### PHASE_01 : Fondamentaux C
-| Module | Sujet |
-|--------|-------|
-| 01-09 | Variables, types, opérateurs, conditions, boucles |
-| 10-14 | Fonctions, pointeurs, structures, préprocesseur, I/O |
+---
 
-#### PHASE_02 : Mémoire Avancée
-| Module | Sujet |
-|--------|-------|
-| 15-17 | Stack/Heap, Integer overflow, Compilation |
-| 18-21 | Buffer overflow, Format strings, Data structures |
+### 00-Fondations - Fondamentaux C et Exploitation
 
-#### PHASE_03 : Exploitation Basics
-| Module | Sujet |
-|--------|-------|
-| 22-23 | ARM64 architecture, Shellcode ARM64 |
-| 24-26 | Calling conventions, Shellcode basics, Reverse shell |
-| 27-31 | Stack overflow, ROP basics/ARM64, Heap exploitation |
+| Phase | Dossier | Modules | Contenu |
+|-------|---------|---------|---------|
+| **C Programming** | `01-C-Programmation/` | 12 | Variables, types, pointeurs, structures, fonctions |
+| **Mémoire Bas-Niveau** | `02-Memoire-Bas-Niveau/` | 12 | Stack/Heap, Buffer overflow, Format strings, Heap exploitation |
+| **Assembleur x64** | `03-ASM-x64/` | 5 | Registres, Calling conventions, Inline ASM, MASM/NASM |
 
-### 02_WINDOWS - Windows Offensive (82 modules)
+---
 
-| Phase | Modules | Sujets |
-|-------|---------|--------|
-| W01 | W01-W10 | Windows API, Processes, Memory, Services, WMI, Winsock |
-| W02 | W11-W22 | PE Format, PEB/TEB, NTDLL, Syscalls, ETW, Defender |
-| W03 | W23-W32 | DLL Injection, Process Hollowing, Shellcode, Hooking |
-| W04 | W33-W44 | String obfuscation, AMSI/ETW bypass, Anti-debug, Packers |
-| W05 | W45-W64 | Agent dev, HTTP/DNS C2, Beacon, Keylogger, Persistence |
-| W06 | W65-W70 | Token manipulation, Credentials, Pass-the-Hash, WMI lateral |
-| W07 | W71-W82 | Kernel drivers, DKOM, SSDT, Minifilters, BYOVD, PatchGuard |
+### 01-Windows - Windows Offensive
 
-### 03_LINUX - Linux Offensive (46 modules)
+| Phase | Dossier | Modules | Contenu |
+|-------|---------|---------|---------|
+| **Fondamentaux** | `01-Fondamentaux/` | 10 | Windows API, Processes, Memory, Services, WMI, Winsock, Tokens |
+| **Internals** | `02-Internals/` | 12 | PE Format, PEB/TEB, NTDLL, Syscalls, ETW, Defender Internals |
+| **Shellcoding** | `03-Shellcoding/` | 7 | Shellcode basics, PIC, Null-free, API hashing, Encoders, Crypters |
+| **Process Injection** | `04-Process-Injection/` | 10 | DLL Injection, Process Hollowing, Module Stomping, Hooking, Reflective DLL |
+| **Evasion** | `05-Evasion/` | 12 | String obfuscation, AMSI/ETW bypass, Direct Syscalls, Sleep obfuscation, Anti-debug |
+| **Credential Access** | `07-Credential-Access/` | 6 | Token manipulation, Pass-the-Hash, WMI lateral, DCOM |
+| **C2 Development** | `08-C2-Development/` | 21 | HTTP/DNS C2, Beacon, Keylogger, Screenshot, Persistence |
+| **Kernel** | `09-Kernel/` | 12 | Drivers, DKOM, SSDT, Minifilters, BYOVD |
 
-| Phase | Modules | Sujets |
-|-------|---------|--------|
-| L01 | L01-L08 | ELF, Syscalls, /proc, Shared libs, Permissions, Memory |
-| L02 | L09-L16 | Process injection, Syscall hooking, Anti-debug, PAM, Shellcode |
-| L03 | L17-L22 | Stack overflow, Format strings, UAF, Kernel exploits, Dirty Pipe |
-| L04 | L23-L32 | HTTP/DNS client, Beacon, Evasion, Keylogger, Lateral movement |
-| L05 | L33-L40 | LKM, Syscall hooks, Process/File hiding, Rootkits, eBPF |
-| L06 | L41-L46 | Containers, Docker/K8s exploitation, Namespace/Cgroup escape |
+---
 
-### 04_MACOS - macOS Offensive (25 modules)
+### 02-Linux - Linux Offensive
 
-| Phase | Modules | Sujets |
-|-------|---------|--------|
-| M01 | M01-M06 | Mach-O, Syscalls, Dylib, Mach ports, Codesigning, XPC |
-| M02 | M07-M12 | TCC, SIP, Gatekeeper, Endpoint Security, Kext, AMFI |
-| M03 | M13-M19 | HTTP client, Beacon, Dylib injection, Keychain, Screenshot |
-| M04 | M21-M25 | Sandbox detection, Anti-debug, Process injection, Lateral |
+| Phase | Dossier | Modules | Contenu |
+|-------|---------|---------|---------|
+| **Fondamentaux** | `01-Fondamentaux/` | 8 | Syscalls, ELF, Ptrace, /proc, Shared libs (LD_PRELOAD), Permissions |
+| **Internals** | `02-Internals/` | 8 | Process internals, Memory layout, Sandbox, Namespaces |
+| **Shellcoding** | `03-Shellcoding/` | 6 | Linux shellcode, Race conditions, Exploitation |
+| **Privilege Escalation** | `07-Privilege-Escalation/` | 5 | ROP, Kernel exploits, Docker exploitation |
+| **Rootkits** | `08-Rootkits/` | 8 | LKM, Syscall hooks, Process/File hiding, eBPF |
+| **C2 Development** | `09-C2-Development/` | 10 | Linux C2 agents, Evasion, Lateral movement |
 
-### 05_ADVANCED - Techniques Avancées (22 modules)
+---
 
-| Phase | Modules | Sujets |
-|-------|---------|--------|
-| A01 | A01-A05 | Virtualization, VM detection/escape, Hyperjacking, Cloud |
-| A02 | A06-A10 | UEFI, Secure Boot, SPI Flash, Bootkits, SMM |
-| A03 | A11-A14 | Side-channel, Spectre/Meltdown, Rowhammer, Hardware implants |
-| A04 | A15-A18 | Dependency confusion, Typosquatting, Build compromise |
-| A05 | A19-A22 | LLM attacks, Prompt injection, Model extraction, AI Red Team |
+### 03-macOS - macOS Offensive
+
+| Phase | Dossier | Modules | Contenu |
+|-------|---------|---------|---------|
+| **Fondamentaux** | `01-Fondamentaux/` | 6 | Mach-O, Syscalls, Dylib, Mach ports, Codesigning, XPC |
+| **Internals** | `02-Internals/` | 6 | TCC, SIP, Gatekeeper, Endpoint Security, AMFI |
+| **Injection** | `03-Injection/` | 9 | Dylib injection, Process injection |
+| **Evasion** | `04-Evasion/` | 5 | Sandbox detection, Anti-debug |
+| **Privilege Escalation** | `06-Privilege-Escalation/` | 1 | macOS privesc techniques |
+
+---
+
+### 04-Advanced - Techniques Avancées
+
+| Phase | Dossier | Modules | Contenu |
+|-------|---------|---------|---------|
+| **Hypervisor** | `01-Hypervisor/` | 5 | VM detection/escape, Hyperjacking |
+| **Firmware** | `02-Firmware/` | 5 | UEFI, Secure Boot, Bootkits |
+| **Hardware** | `03-Hardware/` | 4 | Side-channel, Spectre/Meltdown, Rowhammer |
+| **Supply Chain** | `04-Supply-Chain/` | 4 | Dependency confusion, Build compromise |
+| **AI Security** | `05-AI-Security/` | 4 | LLM attacks, Prompt injection |
+
+---
 
 ## Comment utiliser ce cours
 
@@ -95,7 +107,7 @@ Chaque module contient :
 - `Cours.md` - Théorie complète avec diagrammes ASCII
 - `example.c` - Code commenté fonctionnel
 - `exercice.md` - Exercices pratiques progressifs
-- `solution.md` - Solutions détaillées
+- `solution.md` ou `solution.c` - Solutions détaillées
 
 **Progression recommandée :**
 1. Lis le `Cours.md`
@@ -103,14 +115,20 @@ Chaque module contient :
 3. Fais les exercices
 4. Compare avec les solutions
 
-## Statistiques
+## Techniques clés couvertes
 
-| Type | Fichiers |
-|------|----------|
-| Cours | 206 |
-| Exercices | 206 |
-| Solutions | 129 |
-| **Total lignes** | ~91,000 |
+### Windows Evasion
+- **Syscall Evasion** : Hell's Gate, Halo's Gate, SysWhispers
+- **Sleep Obfuscation** : Ekko, Foliage, Memory encryption
+- **Unhooking** : Fresh NTDLL, Perun's Fart
+- **Callback Evasion** : Starving, Process Doppelganging
+
+### Linux Offensive
+- **LD_PRELOAD Hooking** : Function interception, Credential stealing
+- **Container Escapes** : Docker socket, Capabilities abuse, Cgroups
+- **eBPF Rootkits** : Syscall monitoring, Process hiding
+
+---
 
 ## Disclaimer
 
