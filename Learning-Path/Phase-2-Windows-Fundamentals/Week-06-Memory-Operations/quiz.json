@@ -1,0 +1,151 @@
+{
+  "quiz_title": "Week 6 - Memory Operations Quiz",
+  "description": "Test your understanding of VirtualAlloc, VirtualProtect, and shellcode execution",
+  "passing_score": 70,
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the difference between MEM_COMMIT and MEM_RESERVE?",
+      "type": "multiple_choice",
+      "options": [
+        "MEM_COMMIT allocates physical memory, MEM_RESERVE only reserves address space",
+        "MEM_RESERVE allocates physical memory, MEM_COMMIT only reserves address space",
+        "They are identical, just different names",
+        "MEM_COMMIT is for executable memory, MEM_RESERVE is for data"
+      ],
+      "correct_answer": 0,
+      "explanation": "MEM_COMMIT allocates physical memory (RAM) and commits it to the virtual address space. MEM_RESERVE only reserves a range of virtual addresses without allocating physical memory. You typically use both together: MEM_COMMIT | MEM_RESERVE."
+    },
+    {
+      "id": 2,
+      "question": "Why is the RW->RX pattern more stealthy than direct RWX allocation?",
+      "type": "multiple_choice",
+      "options": [
+        "It's faster to execute",
+        "Memory is never simultaneously writable AND executable",
+        "It uses less memory",
+        "Windows doesn't allow RWX allocations"
+      ],
+      "correct_answer": 1,
+      "explanation": "The RW->RX pattern is stealthier because the memory is NEVER simultaneously writable AND executable. Direct RWX allocation is a major red flag for EDR/AV because it allows self-modifying code and is a common malware indicator. The RW->RX pattern mimics legitimate behavior like JIT compilation."
+    },
+    {
+      "id": 3,
+      "question": "What does VirtualProtect return in the lpflOldProtect parameter?",
+      "type": "multiple_choice",
+      "options": [
+        "The new protection value",
+        "The previous protection value",
+        "The default protection value",
+        "An error code"
+      ],
+      "correct_answer": 1,
+      "explanation": "VirtualProtect returns the PREVIOUS protection value in the lpflOldProtect parameter. This allows you to restore the original protection later if needed. This parameter is required and cannot be NULL."
+    },
+    {
+      "id": 4,
+      "question": "Which protection flag allows code execution but NOT writing?",
+      "type": "multiple_choice",
+      "options": [
+        "PAGE_READWRITE",
+        "PAGE_EXECUTE_READWRITE",
+        "PAGE_EXECUTE_READ",
+        "PAGE_EXECUTE"
+      ],
+      "correct_answer": 2,
+      "explanation": "PAGE_EXECUTE_READ allows reading and executing but NOT writing. This is the recommended protection for shellcode after it has been copied to memory. It's more secure and less suspicious than PAGE_EXECUTE_READWRITE (RWX)."
+    },
+    {
+      "id": 5,
+      "question": "What is the correct VirtualFree parameter to release an entire allocation?",
+      "type": "multiple_choice",
+      "options": [
+        "MEM_RELEASE with dwSize = 0",
+        "MEM_DECOMMIT with actual size",
+        "MEM_FREE with dwSize = 0",
+        "MEM_RELEASE with actual size"
+      ],
+      "correct_answer": 0,
+      "explanation": "To release an entire VirtualAlloc allocation, use VirtualFree with MEM_RELEASE and dwSize = 0. When using MEM_RELEASE, the dwSize parameter MUST be 0, and the entire region allocated by VirtualAlloc is freed. MEM_DECOMMIT only decommits pages but keeps the address space reserved."
+    },
+    {
+      "id": 6,
+      "question": "What does VirtualQuery return information about?",
+      "type": "multiple_choice",
+      "options": [
+        "Process privileges",
+        "Memory region characteristics (protection, state, type)",
+        "Virtual memory available",
+        "Page file size"
+      ],
+      "correct_answer": 1,
+      "explanation": "VirtualQuery returns detailed information about a memory region including base address, size, protection flags, state (committed/reserved/free), and type (private/mapped/image). This is essential for memory analysis and debugging."
+    },
+    {
+      "id": 7,
+      "question": "In shellcode execution, why do we use CreateThread instead of direct function call?",
+      "type": "multiple_choice",
+      "options": [
+        "Direct function calls don't work with shellcode",
+        "CreateThread provides better control and allows waiting for completion",
+        "CreateThread is required by Windows",
+        "It's the only way to execute code"
+      ],
+      "correct_answer": 1,
+      "explanation": "CreateThread provides better control over shellcode execution. You can wait for completion with WaitForSingleObject, set thread priorities, suspend/resume, and get exit codes. Direct function calls work but execute in the current thread context. Both methods are valid."
+    },
+    {
+      "id": 8,
+      "question": "What is the purpose of PAGE_GUARD flag?",
+      "type": "multiple_choice",
+      "options": [
+        "Prevent all access to memory",
+        "Trigger one-time exception on first access, then remove guard",
+        "Make memory read-only permanently",
+        "Encrypt memory contents"
+      ],
+      "correct_answer": 1,
+      "explanation": "PAGE_GUARD causes a one-time STATUS_GUARD_PAGE_VIOLATION exception on the first access to the page, then automatically removes the guard flag. Used for anti-debugging, lazy initialization, and detecting memory inspection. After first access, the page reverts to its base protection."
+    },
+    {
+      "id": 9,
+      "question": "Which memory state means physical memory is allocated and accessible?",
+      "type": "multiple_choice",
+      "options": [
+        "MEM_FREE",
+        "MEM_RESERVE",
+        "MEM_COMMIT",
+        "MEM_ALLOCATED"
+      ],
+      "correct_answer": 2,
+      "explanation": "MEM_COMMIT means physical memory (RAM) has been allocated and is accessible. MEM_RESERVE means virtual address space is reserved but no physical memory allocated yet. MEM_FREE means the memory is not allocated or reserved. There is no MEM_ALLOCATED constant."
+    },
+    {
+      "id": 10,
+      "question": "What is position-independent code (PIC) in the context of shellcode?",
+      "type": "multiple_choice",
+      "options": [
+        "Code that only runs at a specific memory address",
+        "Code that works at any memory address without modification",
+        "Code that requires relocation tables",
+        "Code compiled with specific compiler flags"
+      ],
+      "correct_answer": 1,
+      "explanation": "Position-independent code (PIC) is code that works correctly regardless of where it's loaded in memory. Shellcode MUST be position-independent because you don't know where VirtualAlloc will place it. PIC uses relative addressing and runtime resolution of API addresses instead of hardcoded addresses."
+    }
+  ],
+  "practice_exercises": [
+    "Allocate 16KB buffer, fill with pattern, verify with VirtualQuery",
+    "Implement RW->RX->RW->RX cycle for self-modifying code",
+    "Execute NOP shellcode via 3 different methods (function pointer, CreateThread, callback)",
+    "Create XOR-encoded shellcode and decode at runtime",
+    "Implement PAGE_GUARD-based anti-debugging technique"
+  ],
+  "additional_resources": [
+    "Microsoft Docs: VirtualAlloc function",
+    "Microsoft Docs: VirtualProtect function",
+    "Microsoft Docs: Memory Protection Constants",
+    "Windows Internals: Memory Management",
+    "Malware Development: Shellcode Injection Techniques"
+  ]
+}

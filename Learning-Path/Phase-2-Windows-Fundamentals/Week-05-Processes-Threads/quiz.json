@@ -1,0 +1,147 @@
+{
+  "quiz_title": "Week 05 - Processes & Threads",
+  "quiz_description": "Test your knowledge on Windows process and thread management",
+  "passing_score": 70,
+  "questions": [
+    {
+      "id": 1,
+      "question": "Quelle fonction Windows est utilisée pour créer un nouveau processus ?",
+      "type": "multiple_choice",
+      "options": [
+        "CreateProcess",
+        "StartProcess",
+        "NewProcess",
+        "ProcessCreate"
+      ],
+      "correct_answer": 0,
+      "explanation": "CreateProcess est la fonction principale pour créer un nouveau processus sous Windows. Elle est plus puissante que system() du C standard et permet un contrôle total sur le processus créé.",
+      "points": 10
+    },
+    {
+      "id": 2,
+      "question": "Que contient la structure PROCESS_INFORMATION après un appel réussi à CreateProcess ?",
+      "type": "multiple_choice",
+      "options": [
+        "Le nom du processus et son chemin",
+        "Les handles du processus et du thread principal, ainsi que leurs IDs",
+        "La mémoire allouée au processus",
+        "Les variables d'environnement du processus"
+      ],
+      "correct_answer": 1,
+      "explanation": "PROCESS_INFORMATION contient hProcess (handle du processus), hThread (handle du thread principal), dwProcessId (PID) et dwThreadId (TID). Ces informations permettent de manipuler le processus créé.",
+      "points": 10
+    },
+    {
+      "id": 3,
+      "question": "Pourquoi doit-on toujours fermer les handles retournés par CreateProcess ?",
+      "type": "multiple_choice",
+      "options": [
+        "Pour terminer le processus",
+        "Pour libérer les ressources kernel et éviter les fuites de handles",
+        "Pour supprimer le processus de la liste",
+        "Ce n'est pas obligatoire"
+      ],
+      "correct_answer": 1,
+      "explanation": "Les handles sont des ressources kernel limitées. Ne pas les fermer avec CloseHandle() crée des fuites de handles qui peuvent épuiser les ressources système. Fermer un handle ne termine pas le processus.",
+      "points": 10
+    },
+    {
+      "id": 4,
+      "question": "Quelle fonction permet d'attendre qu'un processus se termine ?",
+      "type": "multiple_choice",
+      "options": [
+        "WaitProcess",
+        "WaitForSingleObject",
+        "ProcessWait",
+        "SleepUntilDone"
+      ],
+      "correct_answer": 1,
+      "explanation": "WaitForSingleObject bloque l'exécution jusqu'à ce que l'objet (processus, thread, etc.) soit signalé. Avec INFINITE comme timeout, elle attend indéfiniment la fin du processus.",
+      "points": 10
+    },
+    {
+      "id": 5,
+      "question": "Quelle fonction énumère tous les processus en cours d'exécution ?",
+      "type": "multiple_choice",
+      "options": [
+        "ListProcesses",
+        "GetAllProcesses",
+        "EnumProcesses",
+        "ProcessSnapshot"
+      ],
+      "correct_answer": 2,
+      "explanation": "EnumProcesses (de PSAPI) retourne un tableau de PIDs de tous les processus actifs. C'est la méthode standard pour énumérer les processus sous Windows.",
+      "points": 10
+    },
+    {
+      "id": 6,
+      "question": "Quels droits d'accès minimaux sont nécessaires pour obtenir le nom d'un processus avec GetModuleBaseName ?",
+      "type": "multiple_choice",
+      "options": [
+        "PROCESS_ALL_ACCESS",
+        "PROCESS_QUERY_INFORMATION | PROCESS_VM_READ",
+        "PROCESS_TERMINATE",
+        "PROCESS_READ_ONLY"
+      ],
+      "correct_answer": 1,
+      "explanation": "PROCESS_QUERY_INFORMATION permet d'interroger les informations basiques, et PROCESS_VM_READ permet de lire la mémoire du processus (nécessaire pour accéder aux modules). Ces deux droits combinés permettent GetModuleBaseName.",
+      "points": 10
+    },
+    {
+      "id": 7,
+      "question": "Quelle est la signature correcte d'une fonction thread Windows ?",
+      "type": "multiple_choice",
+      "options": [
+        "void* thread_func(void* param)",
+        "DWORD WINAPI thread_func(LPVOID lpParam)",
+        "int thread_func(int param)",
+        "HANDLE thread_func(LPARAM param)"
+      ],
+      "correct_answer": 1,
+      "explanation": "Les fonctions thread Windows doivent avoir la signature DWORD WINAPI func(LPVOID). WINAPI spécifie la convention d'appel __stdcall, et LPVOID permet de passer n'importe quel type de paramètre.",
+      "points": 10
+    },
+    {
+      "id": 8,
+      "question": "Qu'est-ce qu'une race condition dans le contexte des threads ?",
+      "type": "multiple_choice",
+      "options": [
+        "Quand un thread s'exécute plus vite qu'un autre",
+        "Quand plusieurs threads accèdent simultanément à une ressource partagée sans synchronisation",
+        "Quand un thread attend indéfiniment un autre thread",
+        "Quand un thread consomme trop de CPU"
+      ],
+      "correct_answer": 1,
+      "explanation": "Une race condition se produit quand plusieurs threads modifient une même donnée sans synchronisation, créant un comportement non déterministe. L'ordre d'exécution des threads influence le résultat final.",
+      "points": 10
+    },
+    {
+      "id": 9,
+      "question": "Quelle fonction attend la fin de plusieurs threads simultanément ?",
+      "type": "multiple_choice",
+      "options": [
+        "WaitForSingleObject",
+        "WaitForMultipleObjects",
+        "WaitAllThreads",
+        "ThreadWaitAll"
+      ],
+      "correct_answer": 1,
+      "explanation": "WaitForMultipleObjects attend plusieurs objets (threads, processus, events, etc.). Le paramètre bWaitAll détermine si on attend tous les objets (TRUE) ou juste le premier (FALSE).",
+      "points": 10
+    },
+    {
+      "id": 10,
+      "question": "Que retourne GetCurrentProcess() ?",
+      "type": "multiple_choice",
+      "options": [
+        "Le PID du processus actuel",
+        "Un pseudo-handle vers le processus actuel (pas besoin de CloseHandle)",
+        "Un handle réel qu'il faut fermer avec CloseHandle",
+        "Le nom du processus actuel"
+      ],
+      "correct_answer": 1,
+      "explanation": "GetCurrentProcess() retourne un pseudo-handle spécial (-1) qui pointe toujours vers le processus actuel. Contrairement aux handles normaux, il n'a pas besoin d'être fermé avec CloseHandle.",
+      "points": 10
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "title": "Week 12: Final Beacon - Quiz",
+  "description": "Test your knowledge of the complete beacon implementation",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": 1,
+      "question": "Why should strings be obfuscated at compile time?",
+      "options": [
+        "To make the code harder to read",
+        "To prevent static analysis from revealing sensitive data",
+        "To reduce binary size",
+        "To improve execution speed"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Compile-time string obfuscation prevents static analysis tools (like 'strings' command) from revealing sensitive data such as C2 URLs, API names, and commands in the binary."
+    },
+    {
+      "id": 2,
+      "question": "What is the purpose of jitter in beacon sleep?",
+      "options": [
+        "To save battery on laptops",
+        "To make the beacon check in faster",
+        "To prevent predictable network patterns",
+        "To reduce CPU usage"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Jitter randomizes the sleep interval to prevent predictable network patterns. Without jitter, regular check-ins (e.g., exactly every 5 seconds) create a detectable signature that network monitoring can identify."
+    },
+    {
+      "id": 3,
+      "question": "Which compilation flag optimizes for binary size?",
+      "options": [
+        "/O2",
+        "/Os",
+        "/Ot",
+        "/Od"
+      ],
+      "correctAnswer": 1,
+      "explanation": "/Os (optimize for size) tells the compiler to favor smaller code over faster code. This is important for beacons where size matters for delivery and stealth. /O2 optimizes for speed, /Ot favors fast code, /Od disables optimization."
+    },
+    {
+      "id": 4,
+      "question": "Why use GetProcAddress instead of direct API imports?",
+      "options": [
+        "It's faster than direct imports",
+        "It hides specific APIs from the Import Address Table",
+        "It's required for all Windows APIs",
+        "It reduces memory usage"
+      ],
+      "correctAnswer": 1,
+      "explanation": "GetProcAddress resolves APIs at runtime, so specific function names don't appear in the IAT (Import Address Table). This makes static analysis harder since the binary only imports GetProcAddress, not the actual APIs being used."
+    },
+    {
+      "id": 5,
+      "question": "What HTTP method should be used to send command output to C2?",
+      "options": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "correctAnswer": 1,
+      "explanation": "POST is used to send data (command output) to the server. GET is typically used to retrieve tasks from the server. POST allows sending arbitrary amounts of data in the request body."
+    },
+    {
+      "id": 6,
+      "question": "What is the purpose of a beacon ID?",
+      "options": [
+        "To encrypt communications",
+        "To uniquely identify the beacon session",
+        "To authenticate to the C2 server",
+        "To determine sleep time"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The beacon ID uniquely identifies each beacon session on the C2 server. It's typically generated from computer name, PID, and timestamp, allowing the C2 to track multiple beacons and route commands correctly."
+    },
+    {
+      "id": 7,
+      "question": "Why redirect stdout when executing commands?",
+      "options": [
+        "To hide windows from the user",
+        "To capture command output",
+        "To prevent errors",
+        "To speed up execution"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Redirecting stdout to a pipe allows the beacon to capture the command's output and send it back to the C2. Without redirection, the output would be lost or displayed to the user."
+    },
+    {
+      "id": 8,
+      "question": "What is the main disadvantage of XOR string obfuscation?",
+      "options": [
+        "It's slow to decrypt",
+        "It's easily reversed if key is found",
+        "It doesn't work on Windows",
+        "It increases binary size significantly"
+      ],
+      "correctAnswer": 1,
+      "explanation": "XOR obfuscation is symmetric and easily reversed once the key is identified. It's protection against casual static analysis, not cryptographic security. For critical data, stronger encryption like AES should be used."
+    },
+    {
+      "id": 9,
+      "question": "Which linker flag removes unreferenced functions?",
+      "options": [
+        "/LTCG",
+        "/OPT:REF",
+        "/OPT:ICF",
+        "/GL"
+      ],
+      "correctAnswer": 1,
+      "explanation": "/OPT:REF (optimize references) removes functions and data that are never referenced, reducing binary size. /LTCG is link-time code generation, /OPT:ICF folds identical functions, /GL enables whole program optimization."
+    },
+    {
+      "id": 10,
+      "question": "What should a beacon do when receiving an 'exit' command?",
+      "options": [
+        "Immediately terminate without cleanup",
+        "Send confirmation, cleanup handles, then exit gracefully",
+        "Ignore the command for security",
+        "Restart the beacon loop"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A well-designed beacon should send confirmation, close open handles, cleanup resources, and exit gracefully. This prevents leaving traces and ensures the C2 knows the beacon exited intentionally."
+    }
+  ]
+}

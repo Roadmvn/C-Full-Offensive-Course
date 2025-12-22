@@ -1,140 +1,173 @@
-# C Full Offensive Course
+# C Maldev Journey
 
-> **Formation complète en C pour Red Teamers et Malware Developers**
-> De "Hello World" au développement de C2 frameworks
+> Du printf() au beacon C2 fonctionnel en 12 semaines.
 
-## Objectif
+```
+    ╔═══════════════════════════════════════════════════════════════════════════╗
+    ║                                                                           ║
+    ║   ░█▀▀░░░░█▄█░█▀█░█░░░█▀▄░█▀▀░█░█░░░░░▀▀█░█▀█░█░█░█▀▄░█▀█░█▀▀░█░█       ║
+    ║   ░█░░░░░░█░█░█▀█░█░░░█░█░█▀▀░▀▄▀░░░░░░░█░█░█░█░█░█▀▄░█░█░█▀▀░░█░       ║
+    ║   ░▀▀▀░░░░▀░▀░▀░▀░▀▀▀░▀▀░░▀▀▀░░▀░░░░░░▀▀░░▀▀▀░▀▀▀░▀░▀░▀░▀░▀▀▀░░▀░       ║
+    ║                                                                           ║
+    ║               Apprends le C offensif de zero a beacon                     ║
+    ║                                                                           ║
+    ╚═══════════════════════════════════════════════════════════════════════════╝
+```
 
-Ce cours t'apprend le C depuis zéro avec un objectif clair : devenir Red Teamer / Malware Developer.
-Progression : bases → exploitation → évasion → post-exploitation.
+## Roadmap
 
-## Prérequis
+```
+SEMAINE     1    2    3    4    5    6    7    8    9   10   11   12
+            │    │    │    │    │    │    │    │    │    │    │    │
+            ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼
+         ┌─────────────────┐ ┌──────────────┐ ┌─────────┐ ┌────────────┐
+         │  PHASE 1        │ │  PHASE 2     │ │ PHASE 3 │ │  PHASE 4   │
+         │  C Foundations  │ │  Windows     │ │ Network │ │  Beacon    │
+         │                 │ │  Internals   │ │         │ │            │
+         │  - Variables    │ │  - Process   │ │ - TCP   │ │ - Arch     │
+         │  - Pointeurs    │ │  - Memory    │ │ - HTTP  │ │ - Commands │
+         │  - Structures   │ │  - DLLs      │ │         │ │ - Final    │
+         │  - WinAPI       │ │              │ │         │ │            │
+         └─────────────────┘ └──────────────┘ └─────────┘ └────────────┘
+                │                   │              │            │
+                ▼                   ▼              ▼            ▼
+         ┌──────────┐        ┌──────────┐   ┌──────────┐  ┌──────────┐
+         │ Compile  │        │ Shellcode│   │ Callback │  │  BEACON  │
+         │ ton 1er  │        │ runner   │   │ HTTP     │  │  COMPLET │
+         │ programme│        │ local    │   │ simple   │  │          │
+         └──────────┘        └──────────┘   └──────────┘  └──────────┘
+```
 
-- **Aucune connaissance en C requise**
-- Motivation pour l'offensive security
-- Machine virtuelle recommandée pour les phases d'exploitation
-- OS supportés : Linux, macOS, Windows
+## Quick Start
 
-## Installation rapide
-
+### 1. Clone le repo
 ```bash
-git clone https://github.com/roadmvn/C-Full-Offensive-Course.git
-cd C-Full-Offensive-Course
-chmod +x setup.sh
-./setup.sh
+git clone https://github.com/ton-user/C-Maldev-Journey.git
+cd C-Maldev-Journey
 ```
 
-## Structure du cours
-
-```
-C-Full-Offensive-Course/
-├── 00-Fondations/          # Fondamentaux C + Mémoire + ASM
-├── 01-Windows/             # Windows Offensive (API, Internals, Injection, Evasion, C2)
-├── 02-Linux/               # Linux Offensive (Syscalls, Rootkits, C2)
-├── 03-macOS/               # macOS Offensive (Mach-O, Injection, Evasion)
-├── 04-Advanced/            # Hyperviseur, Firmware, Hardware, Supply Chain, AI
-├── Labs/                   # Environnements de pratique
-└── Resources/              # Cheatsheets et templates
+### 2. Setup l'environnement (Windows)
+```powershell
+# Dans PowerShell en admin
+.\scripts\setup-windows.ps1
 ```
 
----
+### 3. Commence la Semaine 1
+```bash
+cd Learning-Path/Phase-1-Foundations/Week-01-C-Absolute-Basics
+```
 
-### 00-Fondations - Fondamentaux C et Exploitation
+### 4. Lis, compile, pratique !
+```batch
+REM Ouvre "Developer Command Prompt for VS"
+cl Lessons\01-hello-world.c
+01-hello-world.exe
+```
 
-| Phase | Dossier | Modules | Contenu |
-|-------|---------|---------|---------|
-| **C Programming** | `01-C-Programmation/` | 12 | Variables, types, pointeurs, structures, fonctions |
-| **Mémoire Bas-Niveau** | `02-Memoire-Bas-Niveau/` | 12 | Stack/Heap, Buffer overflow, Format strings, Heap exploitation |
-| **Assembleur x64** | `03-ASM-x64/` | 5 | Registres, Calling conventions, Inline ASM, MASM/NASM |
+## Structure du repo
 
----
+```
+C-Maldev-Journey/
+│
+├── Learning-Path/              <-- PARCOURS PRINCIPAL (commence ici)
+│   ├── Phase-1-Foundations/       Semaines 1-4: Bases C + WinAPI
+│   ├── Phase-2-Windows/           Semaines 5-7: Process, Memory, DLLs
+│   ├── Phase-3-Network/           Semaines 8-9: TCP, HTTP
+│   └── Phase-4-Beacon/            Semaines 10-12: Construction beacon
+│
+├── Reference-Code/             <-- Code avance (consulter apres)
+│   ├── 00-Fondations/             Fondamentaux C et memoire
+│   ├── 01-Windows/                Techniques Windows avancees
+│   ├── 02-Linux/                  Techniques Linux
+│   ├── 03-macOS/                  Techniques macOS
+│   └── 04-Advanced/               Hyperviseur, Firmware, etc.
+│
+├── scripts/                    <-- Outils
+│   ├── setup-windows.ps1          Setup environnement
+│   └── quiz-runner.py             Lance les quiz
+│
+├── Resources/                  <-- Documentation
+│   └── Cheatsheets/               Aide-memoire
+│
+├── PROGRESS.md                 <-- Suivi de progression
+└── README.md                   <-- Tu es ici
+```
 
-### 01-Windows - Windows Offensive
+## Planning semaine par semaine
 
-| Phase | Dossier | Modules | Contenu |
-|-------|---------|---------|---------|
-| **Fondamentaux** | `01-Fondamentaux/` | 10 | Windows API, Processes, Memory, Services, WMI, Winsock, Tokens |
-| **Internals** | `02-Internals/` | 12 | PE Format, PEB/TEB, NTDLL, Syscalls, ETW, Defender Internals |
-| **Shellcoding** | `03-Shellcoding/` | 7 | Shellcode basics, PIC, Null-free, API hashing, Encoders, Crypters |
-| **Process Injection** | `04-Process-Injection/` | 10 | DLL Injection, Process Hollowing, Module Stomping, Hooking, Reflective DLL |
-| **Evasion** | `05-Evasion/` | 12 | String obfuscation, AMSI/ETW bypass, Direct Syscalls, Sleep obfuscation, Anti-debug |
-| **Credential Access** | `07-Credential-Access/` | 6 | Token manipulation, Pass-the-Hash, WMI lateral, DCOM |
-| **C2 Development** | `08-C2-Development/` | 21 | HTTP/DNS C2, Beacon, Keylogger, Screenshot, Persistence |
-| **Kernel** | `09-Kernel/` | 12 | Drivers, DKOM, SSDT, Minifilters, BYOVD |
+| Sem | Phase | Focus | Livrable |
+|-----|-------|-------|----------|
+| 1 | Foundations | C Basics: variables, if, loops, functions | Calculatrice |
+| 2 | Foundations | Pointeurs, memoire, malloc/free | String reverser |
+| 3 | Foundations | Structures, fichiers binaires | Parser binaire |
+| 4 | Foundations | Premier WinAPI: MessageBox, handles | Hello WinAPI |
+| 5 | Windows | Processus, threads, enumeration | Process lister |
+| 6 | Windows | VirtualAlloc, VirtualProtect, RWX | Shellcode runner |
+| 7 | Windows | LoadLibrary, GetProcAddress, PEB | API resolver |
+| 8 | Network | Winsock, TCP client/server | Reverse shell TCP |
+| 9 | Network | WinHTTP, GET/POST, parsing | HTTP callback |
+| 10 | Beacon | Architecture, sleep, check-in | Beacon skeleton |
+| 11 | Beacon | Commands: whoami, ls, cat, cd | Beacon + 5 cmds |
+| 12 | Beacon | Obfuscation, compilation, test | **BEACON FINAL** |
 
----
+## Comment valider une semaine
 
-### 02-Linux - Linux Offensive
+1. **Lis les lessons** dans l'ordre (01, 02, 03...)
+2. **Compile chaque fichier** pour verifier que tu comprends
+3. **Fais les exercices** (sans regarder les solutions !)
+4. **Passe le quiz** avec >= 8/10
+5. **Commit ta progression**:
+```bash
+git add .
+git commit -m "feat: semaine X complete"
+git tag week-X-complete
+```
 
-| Phase | Dossier | Modules | Contenu |
-|-------|---------|---------|---------|
-| **Fondamentaux** | `01-Fondamentaux/` | 8 | Syscalls, ELF, Ptrace, /proc, Shared libs (LD_PRELOAD), Permissions |
-| **Internals** | `02-Internals/` | 8 | Process internals, Memory layout, Sandbox, Namespaces |
-| **Shellcoding** | `03-Shellcoding/` | 6 | Linux shellcode, Race conditions, Exploitation |
-| **Privilege Escalation** | `07-Privilege-Escalation/` | 5 | ROP, Kernel exploits, Docker exploitation |
-| **Rootkits** | `08-Rootkits/` | 8 | LKM, Syscall hooks, Process/File hiding, eBPF |
-| **C2 Development** | `09-C2-Development/` | 10 | Linux C2 agents, Evasion, Lateral movement |
+## Philosophie du cours
 
----
+### Ce qu'on fait
+- Explications niveau debutant (analogies simples)
+- Code commente ligne par ligne
+- Progression tres graduelle
+- Exercices pratiques a chaque etape
+- Quiz pour valider la comprehension
 
-### 03-macOS - macOS Offensive
+### Ce qu'on ne fait PAS
+- Copier-coller sans comprendre
+- Sauter des etapes
+- Utiliser le code en production (cours educatif uniquement)
 
-| Phase | Dossier | Modules | Contenu |
-|-------|---------|---------|---------|
-| **Fondamentaux** | `01-Fondamentaux/` | 6 | Mach-O, Syscalls, Dylib, Mach ports, Codesigning, XPC |
-| **Internals** | `02-Internals/` | 6 | TCC, SIP, Gatekeeper, Endpoint Security, AMFI |
-| **Injection** | `03-Injection/` | 9 | Dylib injection, Process injection |
-| **Evasion** | `04-Evasion/` | 5 | Sandbox detection, Anti-debug |
-| **Privilege Escalation** | `06-Privilege-Escalation/` | 1 | macOS privesc techniques |
+## Reference-Code : Contenu avance
 
----
+Le dossier `Reference-Code/` contient le code avance original, a consulter **apres** avoir termine le Learning Path :
 
-### 04-Advanced - Techniques Avancées
-
-| Phase | Dossier | Modules | Contenu |
-|-------|---------|---------|---------|
-| **Hypervisor** | `01-Hypervisor/` | 5 | VM detection/escape, Hyperjacking |
-| **Firmware** | `02-Firmware/` | 5 | UEFI, Secure Boot, Bootkits |
-| **Hardware** | `03-Hardware/` | 4 | Side-channel, Spectre/Meltdown, Rowhammer |
-| **Supply Chain** | `04-Supply-Chain/` | 4 | Dependency confusion, Build compromise |
-| **AI Security** | `05-AI-Security/` | 4 | LLM attacks, Prompt injection |
-
----
-
-## Comment utiliser ce cours
-
-Chaque module contient :
-- `Cours.md` - Théorie complète avec diagrammes ASCII
-- `example.c` - Code commenté fonctionnel
-- `exercice.md` - Exercices pratiques progressifs
-- `solution.md` ou `solution.c` - Solutions détaillées
-
-**Progression recommandée :**
-1. Lis le `Cours.md`
-2. Analyse `example.c`
-3. Fais les exercices
-4. Compare avec les solutions
-
-## Techniques clés couvertes
-
-### Windows Evasion
-- **Syscall Evasion** : Hell's Gate, Halo's Gate, SysWhispers
-- **Sleep Obfuscation** : Ekko, Foliage, Memory encryption
-- **Unhooking** : Fresh NTDLL, Perun's Fart
-- **Callback Evasion** : Starving, Process Doppelganging
-
-### Linux Offensive
-- **LD_PRELOAD Hooking** : Function interception, Credential stealing
-- **Container Escapes** : Docker socket, Capabilities abuse, Cgroups
-- **eBPF Rootkits** : Syscall monitoring, Process hiding
-
----
+| Dossier | Contenu |
+|---------|---------|
+| `00-Fondations/` | C avance, memoire, ASM |
+| `01-Windows/` | PE, Injection, Evasion, C2, Kernel |
+| `02-Linux/` | Syscalls, ELF, Rootkits |
+| `03-macOS/` | Mach-O, Injection |
+| `04-Advanced/` | Hyperviseur, Firmware |
 
 ## Disclaimer
 
-**Ce cours est à but éducatif uniquement.**
-L'utilisation de ces techniques sur des systèmes sans autorisation explicite est **illégale**.
-Utilise ces connaissances de manière éthique et responsable.
+Ce cours est a but **educatif uniquement**.
+
+Le code produit est destine a comprendre les techniques utilisees par les malwares, pas a les deployer. Utilise ces connaissances de maniere ethique et legale:
+- Tests d'intrusion autorises
+- CTF et challenges
+- Recherche en securite
+- Red team avec autorisation ecrite
+
+## Ressources complementaires
+
+### Cours recommandes
+- [MalDev Academy](https://maldevacademy.com/) - Cours structure similaire
+- [Sektor7 RED TEAM Operator](https://institute.sektor7.net/) - Techniques avancees
+
+### Documentation
+- [MSDN Windows API](https://learn.microsoft.com/en-us/windows/win32/api/)
+- [PE Format](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)
 
 ## Licence
 
@@ -142,4 +175,14 @@ MIT License - Voir [LICENCE](LICENCE)
 
 ---
 
-**Happy Hacking!**
+**Pret a commencer ?**
+
+```
+cd Learning-Path/Phase-1-Foundations/Week-01-C-Absolute-Basics
+```
+
+---
+
+```
+                           Made with mass tea for aspiring red teamers
+```

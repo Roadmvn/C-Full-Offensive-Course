@@ -1,0 +1,137 @@
+{
+  "week": 1,
+  "title": "C Absolute Basics",
+  "passing_score": 8,
+  "questions": [
+    {
+      "id": 1,
+      "type": "multiple_choice",
+      "question": "Que fait ce code ?\n\nint x = 5;\nprintf(\"%d\", x);",
+      "options": [
+        "Affiche le texte 'x'",
+        "Affiche le nombre 5",
+        "Affiche '%d'",
+        "Erreur de compilation"
+      ],
+      "answer": 1,
+      "explanation": "printf avec %d affiche un entier. x vaut 5, donc affiche 5."
+    },
+    {
+      "id": 2,
+      "type": "multiple_choice",
+      "question": "Quel type utiliser pour stocker 3.14 ?",
+      "options": [
+        "int",
+        "char",
+        "float",
+        "void"
+      ],
+      "answer": 2,
+      "explanation": "float (ou double) pour les nombres a virgule. int = entiers seulement."
+    },
+    {
+      "id": 3,
+      "type": "find_error",
+      "question": "Trouve l'erreur :\n\nint main() {\n    printf(\"Hello\")\n    return 0;\n}",
+      "options": [
+        "Il manque #include <stdio.h>",
+        "Il manque un point-virgule apres printf",
+        "Les deux reponses ci-dessus",
+        "Pas d'erreur"
+      ],
+      "answer": 2,
+      "explanation": "Il faut #include <stdio.h> pour printf ET un ; apres chaque instruction."
+    },
+    {
+      "id": 4,
+      "type": "multiple_choice",
+      "question": "Que vaut x apres ce code ?\n\nint x = 10;\nif (x > 5) {\n    x = x + 1;\n}",
+      "options": [
+        "10",
+        "11",
+        "5",
+        "Erreur"
+      ],
+      "answer": 1,
+      "explanation": "10 > 5 est vrai, donc on execute x = x + 1, donc x devient 11."
+    },
+    {
+      "id": 5,
+      "type": "multiple_choice",
+      "question": "Combien de fois s'affiche 'X' ?\n\nfor(int i = 0; i < 3; i++) {\n    printf(\"X\");\n}",
+      "options": [
+        "0 fois",
+        "2 fois",
+        "3 fois",
+        "4 fois"
+      ],
+      "answer": 2,
+      "explanation": "i = 0, 1, 2 (tant que i < 3). Donc 3 iterations = 3 fois 'X'."
+    },
+    {
+      "id": 6,
+      "type": "complete_code",
+      "question": "Complete pour afficher 'Pair' si n est pair :\n\nint n = 4;\nif (n ___ 2 == 0) {\n    printf(\"Pair\");\n}",
+      "options": [
+        "/",
+        "*",
+        "%",
+        "+"
+      ],
+      "answer": 2,
+      "explanation": "% = modulo (reste de division). n % 2 == 0 signifie 'n divisible par 2'."
+    },
+    {
+      "id": 7,
+      "type": "multiple_choice",
+      "question": "Que retourne cette fonction ?\n\nint add(int a, int b) {\n    return a + b;\n}\n\nint result = add(3, 4);",
+      "options": [
+        "3",
+        "4",
+        "7",
+        "Rien"
+      ],
+      "answer": 2,
+      "explanation": "add(3, 4) retourne 3 + 4 = 7."
+    },
+    {
+      "id": 8,
+      "type": "find_error",
+      "question": "Trouve l'erreur :\n\nint count = 0;\nwhile (count < 5)\n    printf(\"%d \", count);",
+      "options": [
+        "Il manque des accolades {}",
+        "count n'est jamais incremente = boucle infinie",
+        "printf est mal utilise",
+        "Pas d'erreur"
+      ],
+      "answer": 1,
+      "explanation": "count reste toujours 0, donc count < 5 est toujours vrai = boucle infinie. Il faut count++ dans la boucle."
+    },
+    {
+      "id": 9,
+      "type": "multiple_choice",
+      "question": "Quelle est la valeur de 'c' ?\n\nchar c = 'A';",
+      "options": [
+        "Le texte 'A'",
+        "Le nombre 65 (code ASCII de A)",
+        "1",
+        "Erreur"
+      ],
+      "answer": 1,
+      "explanation": "Un char stocke un caractere, mais en memoire c'est son code ASCII. 'A' = 65."
+    },
+    {
+      "id": 10,
+      "type": "complete_code",
+      "question": "Complete pour que la fonction retourne le double de n :\n\nint double_it(int n) {\n    _______ n * 2;\n}",
+      "options": [
+        "printf",
+        "return",
+        "int",
+        "void"
+      ],
+      "answer": 1,
+      "explanation": "return renvoie une valeur depuis une fonction. Ici on retourne n * 2."
+    }
+  ]
+}

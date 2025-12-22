@@ -1,0 +1,129 @@
+{
+  "title": "Week 09: HTTP/WinHTTP - Quiz",
+  "description": "Test your knowledge of WinHTTP API and HTTP-based C2 communication",
+  "difficulty": "intermediate",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Why is WinHTTP preferred over WinINet for malware/C2 development?",
+      "options": [
+        "WinHTTP is easier to use",
+        "WinHTTP doesn't depend on Internet Explorer settings and is more stable for automated background operations",
+        "WinHTTP supports more protocols",
+        "WinHTTP is faster"
+      ],
+      "correct": 1,
+      "explanation": "WinHTTP is designed for server-side applications and background services. It doesn't depend on IE settings, cookies, or cache, making it more stable and predictable for C2 communications. WinINet is designed for browser-like applications with user interaction."
+    },
+    {
+      "id": 2,
+      "question": "What is the correct order of WinHTTP function calls for a basic HTTP request?",
+      "options": [
+        "WinHttpConnect → WinHttpOpen → WinHttpOpenRequest → WinHttpSendRequest",
+        "WinHttpOpen → WinHttpConnect → WinHttpOpenRequest → WinHttpSendRequest → WinHttpReceiveResponse",
+        "WinHttpOpen → WinHttpOpenRequest → WinHttpSendRequest → WinHttpReceiveResponse",
+        "WinHttpConnect → WinHttpOpenRequest → WinHttpReceiveResponse"
+      ],
+      "correct": 1,
+      "explanation": "The correct flow is: 1) WinHttpOpen (initialize session), 2) WinHttpConnect (connect to server), 3) WinHttpOpenRequest (create request), 4) WinHttpSendRequest (send it), 5) WinHttpReceiveResponse (wait for response). This is the standard WinHTTP workflow."
+    },
+    {
+      "id": 3,
+      "question": "Which Content-Type header should be used when POSTing JSON data?",
+      "options": [
+        "Content-Type: text/plain",
+        "Content-Type: application/x-www-form-urlencoded",
+        "Content-Type: application/json",
+        "Content-Type: application/octet-stream"
+      ],
+      "correct": 2,
+      "explanation": "application/json is the standard Content-Type for JSON data. application/x-www-form-urlencoded is for HTML form data, application/octet-stream is for binary data, and text/plain is for plain text."
+    },
+    {
+      "id": 4,
+      "question": "In a beacon check-in pattern, what is the typical flow?",
+      "options": [
+        "POST results → GET tasks → Execute → Sleep",
+        "GET tasks → Execute → POST results → Sleep",
+        "Execute → POST results → GET tasks → Sleep",
+        "Sleep → GET tasks → POST results → Execute"
+      ],
+      "correct": 1,
+      "explanation": "The standard beacon pattern is: 1) GET tasks from C2 server, 2) Execute the task/command, 3) POST results back to server, 4) Sleep with interval/jitter before repeating. This is the foundation of HTTP-based C2 frameworks."
+    },
+    {
+      "id": 5,
+      "question": "What function is used to check how much data is available to read in a WinHTTP response?",
+      "options": [
+        "WinHttpCheckData()",
+        "WinHttpQueryDataAvailable()",
+        "WinHttpGetDataSize()",
+        "WinHttpAvailableBytes()"
+      ],
+      "correct": 1,
+      "explanation": "WinHttpQueryDataAvailable() is used to determine how many bytes are available to read from the response. This is typically used in a loop before calling WinHttpReadData() to read the actual data."
+    },
+    {
+      "id": 6,
+      "question": "Which HTTP method is typically used to fetch tasks from a C2 server?",
+      "options": [
+        "POST - because you're requesting data",
+        "GET - because you're retrieving data from the server",
+        "PUT - because you're updating your status",
+        "DELETE - because you're removing completed tasks"
+      ],
+      "correct": 1,
+      "explanation": "GET is used to retrieve/fetch data from the server. In C2 context, the implant uses GET to fetch pending tasks or commands. POST is used to send data (like command results) back to the server."
+    },
+    {
+      "id": 7,
+      "question": "What is the purpose of adding jitter to beacon intervals?",
+      "options": [
+        "To make the code more complex",
+        "To randomize check-in times and avoid predictable patterns that could be detected",
+        "To slow down the beacon for performance reasons",
+        "To sync multiple beacons"
+      ],
+      "correct": 1,
+      "explanation": "Jitter adds randomness to beacon intervals (e.g., ±20%) to avoid predictable timing patterns. Regular, fixed intervals are easier to detect through network monitoring. Jitter makes the traffic appear more organic and harder to fingerprint."
+    },
+    {
+      "id": 8,
+      "question": "When sending a POST request with WinHttpSendRequest(), what parameter contains the request body?",
+      "options": [
+        "The lpszHeaders parameter",
+        "The lpOptional parameter",
+        "The dwContext parameter",
+        "Request body must be sent separately with WinHttpWriteData()"
+      ],
+      "correct": 1,
+      "explanation": "The lpOptional parameter contains the request body data for POST requests. The dwOptionalLength parameter specifies its size. For GET requests, lpOptional is typically WINHTTP_NO_REQUEST_DATA."
+    },
+    {
+      "id": 9,
+      "question": "What flag should be added to WinHttpOpenRequest() for HTTPS connections?",
+      "options": [
+        "WINHTTP_FLAG_HTTPS",
+        "WINHTTP_FLAG_SECURE",
+        "WINHTTP_FLAG_SSL",
+        "WINHTTP_FLAG_ENCRYPTED"
+      ],
+      "correct": 1,
+      "explanation": "WINHTTP_FLAG_SECURE is used to indicate an HTTPS connection. This tells WinHTTP to use SSL/TLS encryption. You also need to use INTERNET_DEFAULT_HTTPS_PORT (443) instead of HTTP port 80."
+    },
+    {
+      "id": 10,
+      "question": "What WinHTTP function is used to query HTTP response headers?",
+      "options": [
+        "WinHttpGetHeaders()",
+        "WinHttpQueryHeaders()",
+        "WinHttpReadHeaders()",
+        "WinHttpFetchHeaders()"
+      ],
+      "correct": 1,
+      "explanation": "WinHttpQueryHeaders() is used to retrieve HTTP response headers. You can query specific headers (like Content-Type, Status Code) or retrieve all headers. It supports both string and numeric queries (e.g., WINHTTP_QUERY_FLAG_NUMBER for status code)."
+    }
+  ],
+  "passing_score": 70,
+  "time_limit_minutes": 15
+}
