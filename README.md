@@ -58,8 +58,6 @@ cd Learning-Path/Phase-1-Foundations/Week-01-C-Absolute-Basics
 ### 4. Compile et pratique
 ```batch
 REM Ouvre "Developer Command Prompt for VS"
-build.bat
-REM Ou manuellement:
 cl Lessons\01-hello-world.c
 01-hello-world.exe
 ```
@@ -112,9 +110,7 @@ Week-XX/
 ├── Lessons/          4-5 fichiers .c commentes
 ├── Exercises/        3 exercices pratiques
 ├── Solutions/        Solutions des exercices
-├── README.md         Objectifs et concepts
-├── quiz.json         Quiz de validation
-└── build.bat         Script de compilation
+└── README.md         Objectifs et concepts
 ```
 
 ## Comment valider une semaine
