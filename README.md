@@ -14,44 +14,75 @@
     ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
+## Philosophie Pedagogique
+
+Ce cours est concu pour emmener quelqu'un qui n'a **aucune connaissance prealable** jusqu'a la capacite d'ecrire des outils offensifs de niveau professionnel.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          PYRAMIDE D'APPRENTISSAGE                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│                              ┌───────────┐                                  │
+│                              │  PROJETS  │  ← Outils offensifs complets     │
+│                              │ INTEGRES  │    (Phase 4: Beacon)             │
+│                            ┌─┴───────────┴─┐                                │
+│                            │   RESEAU &    │  ← TCP, HTTP, Callbacks        │
+│                            │ COMMUNICATION │    (Phase 3)                   │
+│                          ┌─┴───────────────┴─┐                              │
+│                          │    WINDOWS        │  ← Process, Memory, DLLs     │
+│                          │   INTERNALS       │    (Phase 2)                 │
+│                        ┌─┴───────────────────┴─┐                            │
+│                        │   FONDAMENTAUX C &     │  ← Pointeurs, Structs,    │
+│                        │      WINAPI            │    WinAPI (Phase 1)       │
+│                      ┌─┴───────────────────────┴─┐                          │
+│                      │  PREREQUIS INFORMATIQUES   │  ← Binaire, CPU, Memoire│
+│                      │  (Bits, Memoire, CPU, OS)  │    (Phase 0)            │
+│                      └────────────────────────────┘                         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+> **Voir [LEARNING_METHODOLOGY.md](LEARNING_METHODOLOGY.md) pour la methodologie complete.**
+
 ## Roadmap
 
 ```
-SEMAINE     1    2    3    4    5    6    7    8    9   10   11   12
-            │    │    │    │    │    │    │    │    │    │    │    │
-            ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼
-         ┌─────────────────┐ ┌──────────────┐ ┌─────────┐ ┌────────────┐
-         │  PHASE 1        │ │  PHASE 2     │ │ PHASE 3 │ │  PHASE 4   │
-         │  C Foundations  │ │  Windows     │ │ Network │ │  Beacon    │
-         │                 │ │  Internals   │ │         │ │            │
-         │  - Variables    │ │  - Process   │ │ - TCP   │ │ - Arch     │
-         │  - Pointeurs    │ │  - Memory    │ │ - HTTP  │ │ - Commands │
-         │  - Structures   │ │  - DLLs      │ │         │ │ - Final    │
-         │  - WinAPI       │ │              │ │         │ │            │
-         └─────────────────┘ └──────────────┘ └─────────┘ └────────────┘
-                │                   │              │            │
-                ▼                   ▼              ▼            ▼
-         ┌──────────┐        ┌──────────┐   ┌──────────┐  ┌──────────┐
-         │ Compile  │        │ Shellcode│   │ Callback │  │  BEACON  │
-         │ ton 1er  │        │ runner   │   │ HTTP     │  │  COMPLET │
-         │ programme│        │ local    │   │ simple   │  │          │
-         └──────────┘        └──────────┘   └──────────┘  └──────────┘
+          PHASE 0       PHASE 1         PHASE 2          PHASE 3       PHASE 4
+         Prerequis     Foundations      Windows          Network       Beacon
+            │              │              │                │             │
+            ▼              ▼              ▼                ▼             ▼
+        ┌────────┐  ┌─────────────┐ ┌──────────────┐ ┌─────────┐ ┌────────────┐
+        │Binaire │  │ Variables   │ │  Process     │ │  TCP    │ │ Arch       │
+        │CPU     │  │ Pointeurs   │ │  Memory      │ │  HTTP   │ │ Commands   │
+        │Memoire │  │ Structures  │ │  DLLs        │ │         │ │ Final      │
+        │OS      │  │ WinAPI      │ │              │ │         │ │            │
+        └────────┘  └─────────────┘ └──────────────┘ └─────────┘ └────────────┘
+            │              │              │                │             │
+            ▼              ▼              ▼                ▼             ▼
+       Comprendre     Compiler       Shellcode        Callback      BEACON
+       la machine     ton 1er        runner           HTTP          COMPLET
+                      programme      local            simple
 ```
 
 ## Quick Start
 
 ### 1. Clone le repo
 ```bash
-git clone https://github.com/ton-user/C-Maldev-Journey.git
-cd C-Maldev-Journey
+git clone https://github.com/Roadmvn/C-Full-Offensive-Course.git
+cd C-Full-Offensive-Course
 ```
 
 ### 2. Installe Visual Studio Build Tools
 - Telecharge [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)
 - Installe "Desktop development with C++"
 
-### 3. Commence la Semaine 1
+### 3. Commence par les Prerequis (recommande) ou Phase 1
 ```bash
+# Pour les debutants absolus :
+cd Learning-Path/Phase-0-Prerequisites
+
+# Si tu connais deja les bases informatiques :
 cd Learning-Path/Phase-1-Foundations/Week-01-C-Absolute-Basics
 ```
 
@@ -65,43 +96,122 @@ cl Lessons\01-hello-world.c
 ## Structure du repo
 
 ```
-C-Maldev-Journey/
+C-Full-Offensive-Course/
 │
-├── Learning-Path/              <-- PARCOURS PRINCIPAL (commence ici)
-│   ├── Phase-1-Foundations/       Semaines 1-4: Bases C + WinAPI
-│   ├── Phase-2-Windows-Fundamentals/  Semaines 5-7: Process, Memory, DLLs
-│   ├── Phase-3-Network-Communication/ Semaines 8-9: TCP, HTTP
-│   └── Phase-4-Beacon-Assembly/   Semaines 10-12: Construction beacon
+├── Learning-Path/                    <-- PARCOURS PRINCIPAL (commence ici)
+│   ├── Phase-0-Prerequisites/           Fondamentaux: Binaire, CPU, Memoire
+│   ├── Phase-1-Foundations/             Semaines 1-4: Bases C + WinAPI
+│   ├── Phase-2-Windows-Fundamentals/    Semaines 5-7: Process, Memory, DLLs
+│   ├── Phase-3-Network-Communication/   Semaines 8-9: TCP, HTTP
+│   └── Phase-4-Beacon-Assembly/         Semaines 10-12: Construction beacon
 │
-├── Reference-Code/             <-- Code avance (consulter apres)
-│   ├── 00-Fondations/             Fondamentaux C et memoire
-│   ├── 01-Windows/                Techniques Windows avancees
-│   ├── 02-Linux/                  Techniques Linux
-│   ├── 03-macOS/                  Techniques macOS
-│   └── 04-Advanced/               Hyperviseur, Firmware, etc.
+├── Reference-Code/                   <-- Code avance (consulter apres)
+│   ├── 00-Fondations/                   Fondamentaux C et memoire
+│   ├── 01-Windows/                      Techniques Windows avancees
+│   ├── 02-Linux/                        Techniques Linux
+│   ├── 03-macOS/                        Techniques macOS
+│   └── 04-Advanced/                     Hyperviseur, Firmware, etc.
 │
 ├── Resources/
-│   └── Cheatsheets/            <-- Aide-memoire
+│   └── Cheatsheets/                  <-- Aide-memoire
 │
-└── README.md                   <-- Tu es ici
+├── LEARNING_METHODOLOGY.md           <-- Methodologie complete
+└── README.md                         <-- Tu es ici
 ```
+
+## Cycle d'Apprentissage
+
+Pour chaque module, suis ce cycle :
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CYCLE D'APPRENTISSAGE                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│     ┌──────────────┐                                            │
+│     │   1. LIRE    │  Etudier les cours dans l'ordre            │
+│     │   le cours   │  Prendre des notes                         │
+│     └──────┬───────┘                                            │
+│            │                                                    │
+│            ▼                                                    │
+│     ┌──────────────┐                                            │
+│     │  2. ETUDIER  │  Lire et comprendre chaque ligne           │
+│     │   le code    │  Modifier et experimenter                  │
+│     └──────┬───────┘                                            │
+│            │                                                    │
+│            ▼                                                    │
+│     ┌──────────────┐                                            │
+│     │  3. FAIRE    │  Sans regarder les solutions               │
+│     │ les exercices│  Echouer est normal et utile               │
+│     └──────┬───────┘                                            │
+│            │                                                    │
+│            ▼                                                    │
+│     ┌──────────────┐                                            │
+│     │ 4. COMPARER  │  Comprendre les differences                │
+│     │ aux solutions│  Noter les ameliorations                   │
+│     └──────┬───────┘                                            │
+│            │                                                    │
+│            ▼                                                    │
+│     ┌──────────────┐                                            │
+│     │  5. PASSER   │  Seulement quand tout est clair            │
+│     │   au suivant │  Pas de precipitation                      │
+│     └──────────────┘                                            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Regles d'Or
+
+1. **Ne sautez pas de modules** - Meme si vous pensez connaitre, revisez
+2. **Tapez le code vous-meme** - Ne copiez-collez pas, meme pour les exemples
+3. **Echouez d'abord** - Essayez les exercices avant de voir les solutions
+4. **Experimentez** - Modifiez le code pour voir ce qui se passe
+5. **Prenez votre temps** - La maitrise vaut mieux que la vitesse
 
 ## Planning semaine par semaine
 
-| Sem | Phase | Focus | Livrable |
-|-----|-------|-------|----------|
-| 1 | Foundations | C Basics: variables, if, loops, functions | Calculatrice |
-| 2 | Foundations | Pointeurs, memoire, malloc/free | XOR buffer |
-| 3 | Foundations | Structures, fichiers binaires | Parser binaire |
-| 4 | Foundations | Premier WinAPI: MessageBox, handles | Hello WinAPI |
-| 5 | Windows | Processus, threads, enumeration | Process lister |
-| 6 | Windows | VirtualAlloc, VirtualProtect, RWX | Shellcode runner |
-| 7 | Windows | LoadLibrary, GetProcAddress, PEB | API resolver |
-| 8 | Network | Winsock, TCP client/server | Reverse shell TCP |
-| 9 | Network | WinHTTP, GET/POST, parsing | HTTP callback |
-| 10 | Beacon | Architecture, sleep, check-in | Beacon skeleton |
-| 11 | Beacon | Commands: whoami, ls, cat, cd | Beacon + 5 cmds |
-| 12 | Beacon | Obfuscation, compilation, test | **BEACON FINAL** |
+| Phase | Sem | Focus | Livrable |
+|-------|-----|-------|----------|
+| 0 | - | Binaire, CPU, Memoire, OS | Comprehension machine |
+| 1 | 1 | C Basics: variables, if, loops, functions | Calculatrice |
+| 1 | 2 | Pointeurs, memoire, malloc/free | XOR buffer |
+| 1 | 3 | Structures, fichiers binaires | Parser binaire |
+| 1 | 4 | Premier WinAPI: MessageBox, handles | Hello WinAPI |
+| 2 | 5 | Processus, threads, enumeration | Process lister |
+| 2 | 6 | VirtualAlloc, VirtualProtect, RWX | Shellcode runner |
+| 2 | 7 | LoadLibrary, GetProcAddress, PEB | API resolver |
+| 3 | 8 | Winsock, TCP client/server | Reverse shell TCP |
+| 3 | 9 | WinHTTP, GET/POST, parsing | HTTP callback |
+| 4 | 10 | Architecture, sleep, check-in | Beacon skeleton |
+| 4 | 11 | Commands: whoami, ls, cat, cd | Beacon + 5 cmds |
+| 4 | 12 | Obfuscation, compilation, test | **BEACON FINAL** |
+
+## Validation des Competences
+
+### Apres Phase 0 (Prerequis)
+- [ ] Convertir entre binaire, decimal et hexadecimal
+- [ ] Expliquer les bases de l'architecture CPU
+- [ ] Decrire l'organisation de la memoire (stack, heap)
+
+### Apres Phase 1 (Foundations)
+- [ ] Lire et ecrire des programmes C basiques
+- [ ] Manipuler pointeurs et allocation dynamique
+- [ ] Utiliser les bases de l'API Windows
+
+### Apres Phase 2 (Windows)
+- [ ] Manipuler la memoire avec VirtualAlloc/VirtualProtect
+- [ ] Creer et enumerer des processus
+- [ ] Executer du shellcode en memoire locale
+
+### Apres Phase 3 (Network)
+- [ ] Programmer des communications TCP
+- [ ] Implementer des requetes HTTP
+- [ ] Creer un reverse shell fonctionnel
+
+### Apres Phase 4 (Beacon)
+- [ ] Concevoir l'architecture d'un implant
+- [ ] Implementer des commandes basiques
+- [ ] Appliquer des techniques d'obfuscation
 
 ## Chaque semaine contient
 
@@ -112,27 +222,6 @@ Week-XX/
 ├── Solutions/        Solutions des exercices
 └── README.md         Objectifs et concepts
 ```
-
-## Comment valider une semaine
-
-1. **Lis les lessons** dans l'ordre (01, 02, 03...)
-2. **Compile chaque fichier** pour verifier que tu comprends
-3. **Fais les exercices** (sans regarder les solutions !)
-4. **Compare avec les solutions**
-5. **Passe au suivant**
-
-## Philosophie du cours
-
-### Ce qu'on fait
-- Explications niveau debutant (analogies simples)
-- Code commente ligne par ligne
-- Progression tres graduelle
-- Exercices pratiques a chaque etape
-
-### Ce qu'on ne fait PAS
-- Copier-coller sans comprendre
-- Sauter des etapes
-- Utiliser le code en production (cours educatif uniquement)
 
 ## Reference-Code : Contenu avance
 
@@ -171,6 +260,10 @@ MIT License - Voir [LICENCE](LICENCE)
 
 **Pret a commencer ?**
 
-```
+```bash
+# Debutant absolu ? Commence par les fondamentaux :
+cd Learning-Path/Phase-0-Prerequisites
+
+# Tu connais deja les bases ? Va directement au C :
 cd Learning-Path/Phase-1-Foundations/Week-01-C-Absolute-Basics
 ```
