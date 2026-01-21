@@ -77,19 +77,19 @@ cd C-Full-Offensive-Course
 - Telecharge [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)
 - Installe "Desktop development with C++"
 
-### 3. Commence par les Prerequis (recommande) ou Phase 1
+### 3. Commence par les Prerequis (recommande) ou les bases C
 ```bash
 # Pour les debutants absolus :
-cd Learning-Path/Phase-0-Prerequisites
+cd Course/00-prerequisites
 
 # Si tu connais deja les bases informatiques :
-cd Learning-Path/Phase-1-Foundations/Week-01-C-Absolute-Basics
+cd Course/01-c-fundamentals
 ```
 
 ### 4. Compile et pratique
 ```batch
 REM Ouvre "Developer Command Prompt for VS"
-cl Lessons\01-hello-world.c
+cl lessons\01-hello-world.c
 01-hello-world.exe
 ```
 
@@ -98,25 +98,36 @@ cl Lessons\01-hello-world.c
 ```
 C-Full-Offensive-Course/
 │
-├── Learning-Path/                    <-- PARCOURS PRINCIPAL (commence ici)
-│   ├── Phase-0-Prerequisites/           Fondamentaux: Binaire, CPU, Memoire
-│   ├── Phase-1-Foundations/             Semaines 1-4: Bases C + WinAPI
-│   ├── Phase-2-Windows-Fundamentals/    Semaines 5-7: Process, Memory, DLLs
-│   ├── Phase-3-Network-Communication/   Semaines 8-9: TCP, HTTP
-│   └── Phase-4-Beacon-Assembly/         Semaines 10-12: Construction beacon
-│
-├── Reference-Code/                   <-- Code avance (consulter apres)
-│   ├── 00-Fondations/                   Fondamentaux C et memoire
-│   ├── 01-Windows/                      Techniques Windows avancees
-│   ├── 02-Linux/                        Techniques Linux
-│   ├── 03-macOS/                        Techniques macOS
-│   └── 04-Advanced/                     Hyperviseur, Firmware, etc.
+├── Course/                           <-- PARCOURS UNIFIE
+│   ├── 00-prerequisites/                Binaire, CPU, Memoire, OS
+│   ├── 01-c-fundamentals/               Bases C: variables, pointeurs, fonctions
+│   ├── 02-memory-pointers/              Memoire avancee, malloc, heap
+│   ├── 03-asm-x64/                      Assembly x64, registres, calling conventions
+│   ├── 04-windows-fundamentals/         WinAPI, Process, Threads, Memory
+│   ├── 05-windows-advanced/             Shellcode, Injection, Evasion, C2, Kernel
+│   ├── 06-network/                      TCP, HTTP, Winsock
+│   ├── 07-beacon-dev/                   Architecture beacon, commands, final
+│   ├── 08-linux/                        Syscalls, ELF, Rootkits, eBPF
+│   ├── 09-macos/                        Mach-O, TCC, Dylib, ARM64
+│   └── 10-advanced/                     Hyperviseur, Firmware, Hardware, AI
 │
 ├── Resources/
 │   └── Cheatsheets/                  <-- Aide-memoire
 │
 ├── LEARNING_METHODOLOGY.md           <-- Methodologie complete
 └── README.md                         <-- Tu es ici
+```
+
+### Structure de chaque module
+
+```
+XX-module-name/
+├── README.md           # Objectifs et concepts
+├── CHECKPOINT.md       # Questions de validation (si applicable)
+├── lessons/            # Fichiers .c commentes + cours
+├── exercises/          # Exercices pratiques
+├── solutions/          # Solutions
+└── topics/             # Sous-modules avances (Reference-Code integre)
 ```
 
 ## Cycle d'Apprentissage
@@ -213,27 +224,21 @@ Pour chaque module, suis ce cycle :
 - [ ] Implementer des commandes basiques
 - [ ] Appliquer des techniques d'obfuscation
 
-## Chaque semaine contient
+## Contenu par section
 
-```
-Week-XX/
-├── Lessons/          4-5 fichiers .c commentes
-├── Exercises/        3 exercices pratiques
-├── Solutions/        Solutions des exercices
-└── README.md         Objectifs et concepts
-```
-
-## Reference-Code : Contenu avance
-
-Le dossier `Reference-Code/` contient le code avance original, a consulter **apres** avoir termine le Learning Path :
-
-| Dossier | Contenu |
-|---------|---------|
-| `00-Fondations/` | C avance, memoire, ASM |
-| `01-Windows/` | PE, Injection, Evasion, C2, Kernel |
-| `02-Linux/` | Syscalls, ELF, Rootkits |
-| `03-macOS/` | Mach-O, Injection |
-| `04-Advanced/` | Hyperviseur, Firmware |
+| Section | Modules | Contenu |
+|---------|---------|---------|
+| `00-prerequisites` | 5 | Binaire, CPU, Memoire, OS |
+| `01-c-fundamentals` | 11+ | Variables, types, pointeurs, fonctions |
+| `02-memory-pointers` | 12+ | Stack, heap, buffer overflow, format strings |
+| `03-asm-x64` | 5 | Registres, calling conventions, inline ASM |
+| `04-windows-fundamentals` | 21+ | WinAPI, Process, Threads, Memory, Internals |
+| `05-windows-advanced` | 65+ | Shellcode, Injection, Evasion, C2, Kernel |
+| `06-network` | 8+ | TCP, HTTP, Winsock, WinHTTP |
+| `07-beacon-dev` | 12+ | Architecture, commands, obfuscation |
+| `08-linux` | 47 | Syscalls, ELF, Rootkits, eBPF, Containers |
+| `09-macos` | 28 | Mach-O, TCC, SIP, Dylib, ARM64 |
+| `10-advanced` | 18 | Hyperviseur, Firmware, Hardware, AI Security |
 
 ## Disclaimer
 
@@ -262,8 +267,8 @@ MIT License - Voir [LICENCE](LICENCE)
 
 ```bash
 # Debutant absolu ? Commence par les fondamentaux :
-cd Learning-Path/Phase-0-Prerequisites
+cd Course/00-prerequisites
 
 # Tu connais deja les bases ? Va directement au C :
-cd Learning-Path/Phase-1-Foundations/Week-01-C-Absolute-Basics
+cd Course/01-c-fundamentals
 ```
