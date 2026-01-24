@@ -80,10 +80,10 @@ cd C-Full-Offensive-Course
 ### 3. Commence par les Prerequis (recommande) ou les bases C
 ```bash
 # Pour les debutants absolus :
-cd Course/00-prerequisites
+cd 00-prerequisites
 
 # Si tu connais deja les bases informatiques :
-cd Course/01-c-fundamentals
+cd 01-c-fundamentals
 ```
 
 ### 4. Compile et pratique
@@ -98,24 +98,23 @@ cl lessons\01-hello-world.c
 ```
 C-Full-Offensive-Course/
 │
-├── Course/                           <-- PARCOURS UNIFIE
-│   ├── 00-prerequisites/                Binaire, CPU, Memoire, OS
-│   ├── 01-c-fundamentals/               Bases C: variables, pointeurs, fonctions
-│   ├── 02-memory-pointers/              Memoire avancee, malloc, heap
-│   ├── 03-asm-x64/                      Assembly x64, registres, calling conventions
-│   ├── 04-windows-fundamentals/         WinAPI, Process, Threads, Memory
-│   ├── 05-windows-advanced/             Shellcode, Injection, Evasion, C2, Kernel
-│   ├── 06-network/                      TCP, HTTP, Winsock
-│   ├── 07-beacon-dev/                   Architecture beacon, commands, final
-│   ├── 08-linux/                        Syscalls, ELF, Rootkits, eBPF
-│   ├── 09-macos/                        Mach-O, TCC, Dylib, ARM64
-│   └── 10-advanced/                     Hyperviseur, Firmware, Hardware, AI
+├── 00-prerequisites/             Binaire, CPU, Memoire, OS
+├── 01-c-fundamentals/            Bases C: variables, pointeurs, fonctions
+├── 02-memory-pointers/           Memoire avancee, malloc, heap
+├── 03-asm-x64/                   Assembly x64, registres, calling conventions
+├── 04-windows-fundamentals/      WinAPI, Process, Threads, Memory
+├── 05-windows-advanced/          Shellcode, Injection, Evasion, C2, Kernel
+├── 06-network/                   TCP, HTTP, Winsock
+├── 07-beacon-dev/                Architecture beacon, commands, final
+├── 08-linux/                     Syscalls, ELF, Rootkits, eBPF
+├── 09-macos/                     Mach-O, TCC, Dylib, ARM64
+├── 10-advanced/                  Hyperviseur, Firmware, Hardware, AI
 │
 ├── Resources/
-│   └── Cheatsheets/                  <-- Aide-memoire
+│   └── Cheatsheets/              Aide-memoire
 │
-├── LEARNING_METHODOLOGY.md           <-- Methodologie complete
-└── README.md                         <-- Tu es ici
+├── LEARNING_METHODOLOGY.md       Methodologie complete
+└── README.md                     Tu es ici
 ```
 
 ### Structure de chaque module
@@ -267,8 +266,8 @@ MIT License - Voir [LICENCE](LICENCE)
 
 ```bash
 # Debutant absolu ? Commence par les fondamentaux :
-cd Course/00-prerequisites
+cd 00-prerequisites
 
 # Tu connais deja les bases ? Va directement au C :
-cd Course/01-c-fundamentals
+cd 01-c-fundamentals
 ```
