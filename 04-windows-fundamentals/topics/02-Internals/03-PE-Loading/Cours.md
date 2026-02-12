@@ -756,5 +756,5 @@ ALTERNATIVES PLUS FURTIVES :
 ---
 
 **Navigation**
-- [Module précédent](../W12_pe_parsing/)
-- [Module suivant](../W14_peb_teb/)
+- [Module précédent](../02-PE-Parsing/)
+- [Module suivant](../04-PEB-TEB-Structures/)

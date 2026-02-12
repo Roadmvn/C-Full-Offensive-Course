@@ -593,5 +593,5 @@ Voir [exercice.md](exercice.md) pour :
 ---
 
 **Navigation**
-- [Module précédent : W30 Inline Hooking](../W30_inline_hooking/)
-- [Module suivant : W32 Reflective DLL](../W32_reflective_dll/)
+- [Module précédent : Inline Hooking](../08-Inline-Hooking/)
+- [Module suivant : Reflective DLL](../10-Reflective-DLL/)

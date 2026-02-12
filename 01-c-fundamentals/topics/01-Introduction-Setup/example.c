@@ -5,7 +5,7 @@
  *
  * PRÉREQUIS POUR COMPRENDRE CE CODE :
  * -----------------------------------
- * Si tu ne connais pas ces concepts, lis d'abord la Partie 0 de Cours.md !
+ * Si tu ne connais pas ces concepts, lis d'abord la Partie 0 de cours.md !
  *
  * - BINAIRE : Système à 2 chiffres (0,1). L'ordinateur ne comprend que ça.
  *   Exemple : 5 en binaire = 101

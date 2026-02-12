@@ -43,7 +43,7 @@ Ce cours est concu pour emmener quelqu'un qui n'a **aucune connaissance prealabl
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-> **Voir [LEARNING_METHODOLOGY.md](LEARNING_METHODOLOGY.md) pour la methodologie complete.**
+> **Voir [LEARNING_METHODOLOGY.md](docs/LEARNING_METHODOLOGY.md) pour la methodologie complete.**
 
 ## Roadmap
 
@@ -113,7 +113,8 @@ C-Full-Offensive-Course/
 ├── Resources/
 │   └── Cheatsheets/              Aide-memoire
 │
-├── LEARNING_METHODOLOGY.md       Methodologie complete
+├── docs/
+│   └── LEARNING_METHODOLOGY.md   Methodologie complete
 └── README.md                     Tu es ici
 ```
 
@@ -129,54 +130,9 @@ XX-module-name/
 └── topics/             # Sous-modules avances (Reference-Code integre)
 ```
 
-## Cycle d'Apprentissage
+## Methodologie
 
-Pour chaque module, suis ce cycle :
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    CYCLE D'APPRENTISSAGE                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│     ┌──────────────┐                                            │
-│     │   1. LIRE    │  Etudier les cours dans l'ordre            │
-│     │   le cours   │  Prendre des notes                         │
-│     └──────┬───────┘                                            │
-│            │                                                    │
-│            ▼                                                    │
-│     ┌──────────────┐                                            │
-│     │  2. ETUDIER  │  Lire et comprendre chaque ligne           │
-│     │   le code    │  Modifier et experimenter                  │
-│     └──────┬───────┘                                            │
-│            │                                                    │
-│            ▼                                                    │
-│     ┌──────────────┐                                            │
-│     │  3. FAIRE    │  Sans regarder les solutions               │
-│     │ les exercices│  Echouer est normal et utile               │
-│     └──────┬───────┘                                            │
-│            │                                                    │
-│            ▼                                                    │
-│     ┌──────────────┐                                            │
-│     │ 4. COMPARER  │  Comprendre les differences                │
-│     │ aux solutions│  Noter les ameliorations                   │
-│     └──────┬───────┘                                            │
-│            │                                                    │
-│            ▼                                                    │
-│     ┌──────────────┐                                            │
-│     │  5. PASSER   │  Seulement quand tout est clair            │
-│     │   au suivant │  Pas de precipitation                      │
-│     └──────────────┘                                            │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Regles d'Or
-
-1. **Ne sautez pas de modules** - Meme si vous pensez connaitre, revisez
-2. **Tapez le code vous-meme** - Ne copiez-collez pas, meme pour les exemples
-3. **Echouez d'abord** - Essayez les exercices avant de voir les solutions
-4. **Experimentez** - Modifiez le code pour voir ce qui se passe
-5. **Prenez votre temps** - La maitrise vaut mieux que la vitesse
+Cycle d'apprentissage, regles d'or et validation des competences : voir **[LEARNING_METHODOLOGY.md](docs/LEARNING_METHODOLOGY.md)**.
 
 ## Planning semaine par semaine
 
@@ -196,33 +152,6 @@ Pour chaque module, suis ce cycle :
 | 4 | 11 | Commands: whoami, ls, cat, cd | Beacon + 5 cmds |
 | 4 | 12 | Obfuscation, compilation, test | **BEACON FINAL** |
 
-## Validation des Competences
-
-### Apres Phase 0 (Prerequis)
-- [ ] Convertir entre binaire, decimal et hexadecimal
-- [ ] Expliquer les bases de l'architecture CPU
-- [ ] Decrire l'organisation de la memoire (stack, heap)
-
-### Apres Phase 1 (Foundations)
-- [ ] Lire et ecrire des programmes C basiques
-- [ ] Manipuler pointeurs et allocation dynamique
-- [ ] Utiliser les bases de l'API Windows
-
-### Apres Phase 2 (Windows)
-- [ ] Manipuler la memoire avec VirtualAlloc/VirtualProtect
-- [ ] Creer et enumerer des processus
-- [ ] Executer du shellcode en memoire locale
-
-### Apres Phase 3 (Network)
-- [ ] Programmer des communications TCP
-- [ ] Implementer des requetes HTTP
-- [ ] Creer un reverse shell fonctionnel
-
-### Apres Phase 4 (Beacon)
-- [ ] Concevoir l'architecture d'un implant
-- [ ] Implementer des commandes basiques
-- [ ] Appliquer des techniques d'obfuscation
-
 ## Contenu par section
 
 | Section | Modules | Contenu |
@@ -241,20 +170,7 @@ Pour chaque module, suis ce cycle :
 
 ## Disclaimer
 
-Ce cours est a but **educatif uniquement**.
-
-Le code produit est destine a comprendre les techniques utilisees par les malwares, pas a les deployer. Utilise ces connaissances de maniere ethique et legale:
-- Tests d'intrusion autorises
-- CTF et challenges
-- Recherche en securite
-- Red team avec autorisation ecrite
-
-## Ressources complementaires
-
-- [MalDev Academy](https://maldevacademy.com/)
-- [Sektor7 RED TEAM Operator](https://institute.sektor7.net/)
-- [MSDN Windows API](https://learn.microsoft.com/en-us/windows/win32/api/)
-- [PE Format](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)
+Ce cours est a but **educatif uniquement**. Voir [LEARNING_METHODOLOGY.md](docs/LEARNING_METHODOLOGY.md#avertissement-legal) pour les details.
 
 ## Licence
 

@@ -287,5 +287,5 @@ Sleep(60000 + (rand() % 30000));  // Varier intervalle
 ---
 
 **Navigation**
-- [Module précédent](../W49_dns_communication/)
-- [Module suivant](../W51_proxy_awareness/)
+- [Module précédent](../05-DNS-Communication/)
+- [Module suivant](../07-Proxy-Awareness/)

@@ -580,5 +580,5 @@ DÉTECTIONS & MITIGATIONS
 ---
 
 **Navigation**
-- [Module précédent](../W16_ntdll_internals/)
-- [Module suivant](../W18_security_model/)
+- [Module précédent](../06-NTDLL-Internals/)
+- [Module suivant](../08-Security-Model/)

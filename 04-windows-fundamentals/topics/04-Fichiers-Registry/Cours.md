@@ -684,5 +684,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module précédent](../W03_memory_windows/)
-- [Module suivant](../W05_registry/)
+- [Module précédent](../03-Gestion-Memoire/)
+- [Module suivant](../04b-Registry/)

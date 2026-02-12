@@ -349,5 +349,5 @@ CommandError SafeDispatch(const char* jsonCmd) {
 ---
 
 **Navigation**
-- [Pr\u00e9c\u00e9dent](../W56_staged_vs_stageless/)
-- [Suivant](../W58_output_capture/)
+- [Pr\u00e9c\u00e9dent](../12-Staged-vs-Stageless/)
+- [Suivant](../14-Output-Capture/)

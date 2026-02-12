@@ -84,4 +84,4 @@ uint8_t read_kernel_byte(uint64_t kernel_addr) {
 
 ---
 
-**Module suivant** : [A13 - Rowhammer](../A13_rowhammer/)
+**Module suivant** : [Rowhammer](../03-Rowhammer/)

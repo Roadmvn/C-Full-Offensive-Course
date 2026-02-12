@@ -504,5 +504,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module precedent](../W64_service_hijacking/)
-- [Module suivant](../W66_credential_access/)
+- [Module precedent](../../05-Evasion/12-PE-Packer/)
+- [Module suivant](../02-Credential-Access/)

@@ -1,48 +1,48 @@
 /*
- * =============================================================================
- * Domain Fronting
- * =============================================================================
- * 
- * Description : Technique de domain fronting pour masquer le trafic C2
- * 
- * Compilation :
- *   cl example.c /Fe:example.exe
- * 
- * Usage :
- *   ./example
- * 
- * =============================================================================
+ * OBJECTIF  : Comprendre le Domain Fronting pour masquer le trafic C2
+ * PREREQUIS : HTTPS, CDN, DNS
+ * COMPILE   : cl example.c /Fe:example.exe /link winhttp.lib
+ *
+ * Le Domain Fronting utilise les CDN pour masquer la destination reelle.
+ * Le SNI (visible) pointe vers un domaine legitime, mais le Host header
+ * (chiffre dans TLS) pointe vers le serveur C2.
  */
 
-// On inclut stdio.h pour pouvoir utiliser printf()
-// printf() permet d'afficher du texte dans la console
+#include <windows.h>
+#include <winhttp.h>
 #include <stdio.h>
 
-// On inclut stdlib.h pour les fonctions utilitaires standard
-// Notamment malloc(), free(), exit(), etc.
-#include <stdlib.h>
+#pragma comment(lib, "winhttp.lib")
 
-/*
- * Fonction principale - Point d'entrée du programme
- * 
- * argc : Nombre d'arguments passés au programme (toujours >= 1)
- * argv : Tableau de chaînes contenant les arguments
- *        argv[0] est toujours le nom du programme
- */
-int main(int argc, char *argv[]) {
-    
-    // Affiche un message d'en-tête pour identifier le module
-    // Le [*] est une convention pour indiquer une information
-    printf("[*] Module : Domain Fronting\n");
+void demo_concept(void) {
+    printf("[1] Domain Fronting - Concept\n\n");
+    printf("    SNI (visible)     : cdn.microsoft.com\n");
+    printf("    Host (chiffre)    : evil-c2.azureedge.net\n\n");
+    printf("    Le firewall/proxy voit une connexion vers cdn.microsoft.com\n");
+    printf("    Le CDN route le trafic vers evil-c2.azureedge.net\n\n");
+    printf("    Code WinHTTP :\n");
+    printf("    WinHttpConnect(hSession, L\"cdn.microsoft.com\", 443, 0);\n");
+    printf("    WinHttpOpenRequest(hConnect, L\"GET\", L\"/\", ...);\n");
+    printf("    WinHttpAddRequestHeaders(hReq,\n");
+    printf("        L\"Host: evil-c2.azureedge.net\", -1, WINHTTP_ADDREQ_FLAG_REPLACE);\n\n");
+}
+
+void demo_detection(void) {
+    printf("[2] Detection et etat actuel\n\n");
+    printf("    CDN ayant bloque le Domain Fronting :\n");
+    printf("    - Amazon CloudFront (2018)\n");
+    printf("    - Google Cloud (2018)\n");
+    printf("    - Azure CDN (partiellement)\n\n");
+    printf("    Detection :\n");
+    printf("    - Comparer SNI et Host header (proxy TLS)\n");
+    printf("    - Verifier la coherence domaine/CDN\n\n");
+}
+
+int main(void) {
+    printf("[*] Demo : Domain Fronting\n");
     printf("[*] ==========================================\n\n");
-    
-    // TODO: Implémenter le code exemple
-    // Le code sera ajouté ici avec des commentaires détaillés
-    // expliquant chaque étape pour les débutants
-    
-    printf("[+] Exemple terminé avec succès\n");
-    
-    // Retourne 0 pour indiquer que le programme s'est terminé sans erreur
-    // Par convention : 0 = succès, autre valeur = erreur
+    demo_concept();
+    demo_detection();
+    printf("[+] Exemple termine avec succes\n");
     return 0;
 }

@@ -862,5 +862,5 @@ Voir [exercice.md](exercice.md) pour :
 ---
 
 **Navigation**
-- [Module précédent : W23 DLL Injection Basics](../W23_dll_injection_basics/)
-- [Module suivant : W25 Process Hollowing](../W25_process_hollowing/)
+- [Module précédent : DLL Injection Basics](../01-DLL-Injection-Basics/)
+- [Module suivant : Process Hollowing](../03-Process-Hollowing/)

@@ -1,48 +1,70 @@
 /*
- * =============================================================================
- * SMB Communication
- * =============================================================================
- * 
- * Description : Communication via SMB : named pipes, lateral movement preparation
- * 
- * Compilation :
- *   cl example.c /Fe:example.exe
- * 
- * Usage :
- *   ./example
- * 
- * =============================================================================
+ * OBJECTIF  : Communication C2 via SMB Named Pipes
+ * PREREQUIS : Named Pipes, SMB
+ * COMPILE   : cl example.c /Fe:example.exe
+ *
+ * Les named pipes permettent la communication inter-processus via SMB.
+ * Ideal pour le mouvement lateral : les beacons internes communiquent
+ * via pipes, seul le beacon principal sort sur Internet.
  */
 
-// On inclut stdio.h pour pouvoir utiliser printf()
-// printf() permet d'afficher du texte dans la console
+#include <windows.h>
 #include <stdio.h>
 
-// On inclut stdlib.h pour les fonctions utilitaires standard
-// Notamment malloc(), free(), exit(), etc.
-#include <stdlib.h>
+void demo_smb_pipe_server(void) {
+    printf("[1] Serveur SMB Pipe (beacon listener)\n\n");
 
-/*
- * Fonction principale - Point d'entrée du programme
- * 
- * argc : Nombre d'arguments passés au programme (toujours >= 1)
- * argv : Tableau de chaînes contenant les arguments
- *        argv[0] est toujours le nom du programme
- */
-int main(int argc, char *argv[]) {
-    
-    // Affiche un message d'en-tête pour identifier le module
-    // Le [*] est une convention pour indiquer une information
-    printf("[*] Module : SMB Communication\n");
+    const char* pipe_name = "\\\\.\\pipe\\C2DemoPipe";
+    HANDLE hPipe = CreateNamedPipeA(pipe_name,
+        PIPE_ACCESS_DUPLEX,
+        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_NOWAIT,
+        1, 4096, 4096, 0, NULL);
+
+    if (hPipe == INVALID_HANDLE_VALUE) {
+        printf("    [-] CreateNamedPipe echoue\n\n");
+        return;
+    }
+    printf("    [+] Pipe cree : %s\n", pipe_name);
+
+    /* Simuler un client */
+    HANDLE hClient = CreateFileA(pipe_name, GENERIC_READ | GENERIC_WRITE,
+                                  0, NULL, OPEN_EXISTING, 0, NULL);
+    if (hClient != INVALID_HANDLE_VALUE) {
+        const char* cmd = "{\"cmd\":\"whoami\"}";
+        DWORD written;
+        WriteFile(hClient, cmd, (DWORD)strlen(cmd), &written, NULL);
+        printf("    [+] Client envoie : %s\n", cmd);
+
+        ConnectNamedPipe(hPipe, NULL);
+        char buf[4096] = {0};
+        DWORD bytesRead;
+        ReadFile(hPipe, buf, sizeof(buf) - 1, &bytesRead, NULL);
+        if (bytesRead > 0)
+            printf("    [+] Serveur recoit : %s\n", buf);
+
+        CloseHandle(hClient);
+    }
+    CloseHandle(hPipe);
+    printf("\n");
+}
+
+void demo_architecture(void) {
+    printf("[2] Architecture C2 SMB\n\n");
+    printf("    Internet <- HTTPS -> Beacon Principal (pivot)\n");
+    printf("                              |\n");
+    printf("                         SMB pipe\n");
+    printf("                              |\n");
+    printf("                    Beacon Secondaire 1\n");
+    printf("                    Beacon Secondaire 2\n\n");
+    printf("    Avantage : les beacons internes ne font AUCUN trafic externe\n");
+    printf("    Detection : Sysmon Event ID 17/18 (Pipe Created/Connected)\n\n");
+}
+
+int main(void) {
+    printf("[*] Demo : SMB Communication C2\n");
     printf("[*] ==========================================\n\n");
-    
-    // TODO: Implémenter le code exemple
-    // Le code sera ajouté ici avec des commentaires détaillés
-    // expliquant chaque étape pour les débutants
-    
-    printf("[+] Exemple terminé avec succès\n");
-    
-    // Retourne 0 pour indiquer que le programme s'est terminé sans erreur
-    // Par convention : 0 = succès, autre valeur = erreur
+    demo_smb_pipe_server();
+    demo_architecture();
+    printf("[+] Exemple termine avec succes\n");
     return 0;
 }

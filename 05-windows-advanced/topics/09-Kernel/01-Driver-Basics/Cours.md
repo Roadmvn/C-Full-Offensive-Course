@@ -593,5 +593,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module precedent](../../PHASE_W06_LATERAL/W70_dcom_lateral/)
-- [Module suivant](../W72_kernel_memory/)
+- [Module precedent](../../07-Credential-Access/06-DCOM-Lateral/)
+- [Module suivant](../02-Kernel-Memory/)

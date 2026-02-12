@@ -85,4 +85,4 @@ npm config set registry https://private-registry.company.com
 
 ---
 
-**Module suivant** : [A16 - Typosquatting](../A16_typosquatting/)
+**Module suivant** : [Typosquatting](../02-Typosquatting/)

@@ -906,5 +906,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module precedent](../W71_driver_basics/)
-- [Module suivant](../W73_ioctl_communication/)
+- [Module precedent](../01-Driver-Basics/)
+- [Module suivant](../03-IOCTL-Communication/)

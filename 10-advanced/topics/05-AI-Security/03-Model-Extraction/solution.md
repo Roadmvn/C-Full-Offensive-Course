@@ -934,4 +934,4 @@ Avant de passer au module suivant, vérifiez que vous pouvez :
 - [x] Identifier les défenses contre l'extraction de modèles
 - [x] Analyser les implications économiques du vol de modèles
 
-**Module suivant** : [A22 - AI Red Team Prep](../A22_ai_red_team_prep/)
+**Module suivant** : [AI Red Team Prep](../04-AI-Red-Team-Prep/)

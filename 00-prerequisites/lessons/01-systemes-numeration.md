@@ -451,7 +451,7 @@ Avant de passer au cours suivant, assurez-vous de pouvoir :
 2. Lire une chaîne ASCII à partir de son dump hexadécimal
 3. Identifier les "magic bytes" courants
 
-→ Voir [exercices/exercice-01.md](../exercices/exercice-01.md)
+→ Voir [exercices/exercice-01.md](../exercises/exercice-01.md)
 
 ---
 

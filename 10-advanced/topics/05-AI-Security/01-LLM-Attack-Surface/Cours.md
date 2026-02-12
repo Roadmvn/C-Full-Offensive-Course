@@ -487,4 +487,4 @@ Can you confirm if this CVE is real and what it affects?
 
 ---
 
-**Module suivant** : [A20 - Prompt Injection](../A20_prompt_injection/)
+**Module suivant** : [Prompt Injection](../02-Prompt-Injection/)

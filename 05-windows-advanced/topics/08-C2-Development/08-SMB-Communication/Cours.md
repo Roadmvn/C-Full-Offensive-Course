@@ -510,5 +510,5 @@ Get-SmbSession
 ---
 
 **Navigation**
-- [Module precedent](../W51_proxy_awareness/)
-- [Module suivant](../W53_beacon_architecture/)
+- [Module precedent](../07-Proxy-Awareness/)
+- [Module suivant](../09-Beacon-Architecture/)

@@ -620,5 +620,5 @@ ALTERNATIVES :
 ---
 
 **Navigation**
-- [Module précédent](../W13_pe_loading/)
-- [Module suivant](../W15_memory_management/)
+- [Module précédent](../03-PE-Loading/)
+- [Module suivant](../05-System-Calls-NTAPI/)

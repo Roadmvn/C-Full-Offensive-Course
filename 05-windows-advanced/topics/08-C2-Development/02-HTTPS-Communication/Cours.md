@@ -894,5 +894,5 @@ Voir [exercice.md](exercice.md) pour :
 ---
 
 **Navigation**
-- [Module précédent](../W45_http_client_winhttp/)
-- [Module suivant](../W47_wininet_client/)
+- [Module précédent](../01-HTTP-Client-WinHTTP/)
+- [Module suivant](../03-WinInet-Client/)

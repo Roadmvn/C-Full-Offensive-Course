@@ -908,5 +908,5 @@ BONNES PRATIQUES :
 ---
 
 **Navigation**
-- [Module précédent](../W11_pe_format/)
-- [Module suivant](../W13_pe_loading/)
+- [Module précédent](../01-PE-Format/)
+- [Module suivant](../03-PE-Loading/)

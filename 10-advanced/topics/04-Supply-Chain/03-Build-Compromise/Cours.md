@@ -109,4 +109,4 @@ find .github/workflows -name "*.yml" -exec grep -H "secrets\." {} \;
 
 ---
 
-**Module suivant** : [A18 - Signed Malware](../A18_signed_malware/)
+**Module suivant** : [Signed Malware](../04-Signed-Malware/)

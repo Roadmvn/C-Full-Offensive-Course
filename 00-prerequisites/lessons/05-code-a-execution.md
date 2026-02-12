@@ -596,4 +596,4 @@ gcc -m32 hello.c -o hello
 
 | Précédent | Suivant |
 |-----------|---------|
-| [04 - Le Système d'Exploitation](04-systeme-exploitation.md) | [Exercices](../exercices/exercice-01.md) |
+| [04 - Le Système d'Exploitation](04-systeme-exploitation.md) | [Exercices](../exercises/exercice-01.md) |

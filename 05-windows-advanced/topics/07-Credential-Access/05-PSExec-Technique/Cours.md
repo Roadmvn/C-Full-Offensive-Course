@@ -730,5 +730,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module precedent](../W68_wmi_lateral/)
-- [Module suivant](../W70_dcom_lateral/)
+- [Module precedent](../04-WMI-Lateral/)
+- [Module suivant](../06-DCOM-Lateral/)

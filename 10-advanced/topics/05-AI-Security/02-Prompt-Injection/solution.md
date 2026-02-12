@@ -900,4 +900,4 @@ Avant de passer au module suivant, vérifiez que vous pouvez :
 - [x] Analyser et défendre contre les attaques multi-tours
 - [x] Calculer des scores de risque pour classifier les prompts
 
-**Module suivant** : [A21 - Model Extraction](../A21_model_extraction/)
+**Module suivant** : [Model Extraction](../03-Model-Extraction/)

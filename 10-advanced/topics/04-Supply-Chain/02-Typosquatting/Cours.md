@@ -85,4 +85,4 @@ npm view <package> downloads
 
 ---
 
-**Module suivant** : [A17 - Build Compromise](../A17_build_compromise/)
+**Module suivant** : [Build Compromise](../03-Build-Compromise/)

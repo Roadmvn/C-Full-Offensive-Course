@@ -559,5 +559,5 @@ Voir `exercice.md` pour les défis pratiques :
 ---
 
 **Navigation**
-- [Module précédent : VM Detection](../A02_vm_detection/)
-- [Module suivant : Hyperjacking Theory](../A04_hyperjacking_theory/)
+- [Module précédent : VM Detection](../02-VM-Detection/)
+- [Module suivant : Hyperjacking Theory](../04-Hyperjacking-Theory/)

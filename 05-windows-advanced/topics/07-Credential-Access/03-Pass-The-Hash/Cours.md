@@ -654,5 +654,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module precedent](../W66_credential_access/)
-- [Module suivant](../W68_wmi_lateral/)
+- [Module precedent](../02-Credential-Access/)
+- [Module suivant](../04-WMI-Lateral/)

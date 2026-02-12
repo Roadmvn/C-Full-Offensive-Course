@@ -488,5 +488,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module précédent](../W05_registry/)
-- [Module suivant](../W07_wmi_basics/)
+- [Module précédent](../04b-Registry/)
+- [Module suivant](../06-WMI-Basics/)

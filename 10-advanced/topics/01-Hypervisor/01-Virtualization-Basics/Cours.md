@@ -527,4 +527,4 @@ Voir `exercice.md` pour les défis pratiques :
 
 **Navigation**
 - [Retour au sommaire HYPERVISOR](../)
-- [Module suivant : VM Detection](../A02_vm_detection/)
+- [Module suivant : VM Detection](../02-VM-Detection/)

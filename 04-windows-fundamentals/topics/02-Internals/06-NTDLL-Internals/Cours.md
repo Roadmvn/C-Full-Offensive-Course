@@ -619,5 +619,5 @@ ALTERNATIVES :
 ---
 
 **Navigation**
-- [Module précédent](../W15_syscalls_windows/)
-- [Module suivant](../W17_object_manager/)
+- [Module précédent](../05-System-Calls-NTAPI/)
+- [Module suivant](../07-Object-Manager/)

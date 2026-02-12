@@ -563,5 +563,5 @@ int main() {
 ---
 
 **Navigation**
-- [Module précédent](../W47_wininet_client/)
-- [Module suivant](../W49_dns_communication/)
+- [Module précédent](../03-WinInet-Client/)
+- [Module suivant](../05-DNS-Communication/)

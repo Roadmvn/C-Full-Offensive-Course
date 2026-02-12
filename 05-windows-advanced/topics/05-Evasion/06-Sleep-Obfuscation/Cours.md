@@ -311,5 +311,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module précédent : W37 ETW Bypass](../W37_etw_bypass/)
-- [Module suivant : W39 Memory Evasion](../W39_memory_evasion/)
+- [Module précédent : ETW Patching](../05-ETW-Patching/)
+- [Module suivant : Memory Evasion](../07-Memory-Evasion/)

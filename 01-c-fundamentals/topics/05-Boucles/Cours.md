@@ -1,6 +1,6 @@
 # Module 05 - Boucles (Patterns Avancés)
 
-> **Note :** Les fondamentaux des boucles (for, while, do-while, break, continue) sont couverts dans le **[Module 04 - Control Flow](../04_conditionals/Cours.md)**.
+> **Note :** Les fondamentaux des boucles (for, while, do-while, break, continue) sont couverts dans le **[Module 04 - Control Flow](../04_conditionals/cours.md)**.
 >
 > Ce module contient uniquement des patterns avancés complémentaires.
 

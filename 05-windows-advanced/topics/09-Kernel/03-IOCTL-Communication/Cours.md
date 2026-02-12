@@ -820,5 +820,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module precedent](../W72_kernel_memory/)
-- [Module suivant](../W74_kernel_callbacks/)
+- [Module precedent](../02-Kernel-Memory/)
+- [Module suivant](../04-Callbacks/)

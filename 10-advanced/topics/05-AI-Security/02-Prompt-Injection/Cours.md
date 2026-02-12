@@ -383,4 +383,4 @@ print(f"Optimal jailbreak suffix: {optimal_suffix}")
 
 ---
 
-**Module suivant** : [A21 - Model Extraction](../A21_model_extraction/)
+**Module suivant** : [Model Extraction](../03-Model-Extraction/)

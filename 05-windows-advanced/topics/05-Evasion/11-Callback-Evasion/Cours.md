@@ -344,5 +344,5 @@ Voir [exercice.md](exercice.md) pour :
 ---
 
 **Navigation**
-- [Module précédent : W42 PPID Spoofing](../W42_ppid_spoofing/)
-- [Module suivant : W44 PE Packer](../W44_pe_packer/)
+- [Module précédent : PPID Spoofing](../10-PPID-Spoofing/)
+- [Module suivant : PE Packer](../12-PE-Packer/)

@@ -673,5 +673,5 @@ Voir `exercice.md` pour les défis pratiques :
 ---
 
 **Navigation**
-- [Module précédent : Virtualization Basics](../A01_virtualization_basics/)
-- [Module suivant : VM Escape Concepts](../A03_vm_escape_concepts/)
+- [Module précédent : Virtualization Basics](../01-Virtualization-Basics/)
+- [Module suivant : VM Escape Concepts](../03-VM-Escape-Concepts/)

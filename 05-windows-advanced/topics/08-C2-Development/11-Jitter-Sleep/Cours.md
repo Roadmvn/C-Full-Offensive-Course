@@ -234,5 +234,5 @@ if std_dev < 1:  # Pattern suspect!
 ---
 
 **Navigation**
-- [Précédent](../W54_session_management/)
-- [Suivant](../W56_staged_vs_stageless/)
+- [Précédent](../10-Session-Management/)
+- [Suivant](../12-Staged-vs-Stageless/)

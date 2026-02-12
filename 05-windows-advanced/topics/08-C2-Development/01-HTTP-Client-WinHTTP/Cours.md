@@ -911,5 +911,5 @@ Voir [exercice.md](exercice.md) pour :
 ---
 
 **Navigation**
-- [Module précédent](../W44_socket_programming/)
-- [Module suivant](../W46_https_communication/)
+- [Module précédent](../00-Reverse-Shell/)
+- [Module suivant](../02-HTTPS-Communication/)

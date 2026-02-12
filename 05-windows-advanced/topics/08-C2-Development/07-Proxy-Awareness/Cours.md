@@ -168,5 +168,5 @@ WinHttpSetOption(hRequest,
 ---
 
 **Navigation**
-- [Pr\u00e9c\u00e9dent](../W50_domain_fronting/)
-- [Suivant](../W52_smb_communication/)
+- [Pr\u00e9c\u00e9dent](../06-Domain-Fronting/)
+- [Suivant](../08-SMB-Communication/)

@@ -679,5 +679,5 @@ Voir [exercice.md](exercice.md) pour :
 ---
 
 **Navigation**
-- [Module précédent : W26 Process Doppelganging](../W26_process_doppelganging/)
-- [Module suivant : W28 Shellcode Injection](../W28_shellcode_injection/)
+- [Module précédent : Process Doppelganging](../04-Process-Doppelganging/)
+- [Module suivant : Shellcode Injection](../06-Shellcode-Injection/)

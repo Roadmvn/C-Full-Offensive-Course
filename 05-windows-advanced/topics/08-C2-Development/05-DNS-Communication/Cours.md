@@ -386,5 +386,5 @@ const char* domains[] = {
 ---
 
 **Navigation**
-- [Module précédent](../W48_json_parsing/)
-- [Module suivant](../W50_domain_fronting/)
+- [Module précédent](../04-JSON-Parsing/)
+- [Module suivant](../06-Domain-Fronting/)

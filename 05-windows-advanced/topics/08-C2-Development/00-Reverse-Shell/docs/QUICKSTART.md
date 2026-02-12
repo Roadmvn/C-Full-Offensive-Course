@@ -78,7 +78,7 @@ Vous venez de :
 
 ## 📚 Prochaines Étapes
 
-1. **Lire le Cours.md** - Théorie complète
+1. **Lire le cours.md** - Théorie complète
 2. **Faire les Exercices** - Exercice.md
 3. **Tester examples/** - Exemples avancés
 4. **Modifier le code** - Ajouter fonctionnalités

@@ -794,7 +794,7 @@ Avant de passer au module suivant, vérifie que tu peux :
 - [x] Vérifier les mitigations actives (KPTI, Retpoline, IBRS)
 - [x] Analyser l'impact performance des mitigations
 
-**Module suivant** : [A13 - Rowhammer](../A13_rowhammer/)
+**Module suivant** : [Rowhammer](../03-Rowhammer/)
 
 ---
 

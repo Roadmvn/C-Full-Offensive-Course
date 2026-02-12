@@ -508,5 +508,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module précédent : W34 API Hashing](../W34_api_hashing/)
-- [Module suivant : W36 AMSI Bypass](../W36_amsi_bypass/)
+- [Module précédent : API Hashing](../02-API-Hashing/)
+- [Module suivant : AMSI Bypass](../04-AMSI-Bypass/)

@@ -441,4 +441,4 @@ xxd -s 510 -l 2 mbr.bin
 
 ---
 
-**Module suivant** : [A10 - SMM Basics](../A10_smm_basics/)
+**Module suivant** : [SMM Basics](../05-SMM-Basics/)

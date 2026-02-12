@@ -269,4 +269,4 @@ EBP = 0xffffd108
 
 | Retour | Exercice suivant |
 |--------|------------------|
-| [Exercice 03](../exercices/exercice-03.md) | [Exercice 04 - Quiz](../exercices/exercice-04.md) |
+| [Exercice 03](../exercises/exercice-03.md) | [Exercice 04 - Quiz](../exercises/exercice-04.md) |

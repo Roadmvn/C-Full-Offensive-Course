@@ -616,4 +616,4 @@ Avant de passer au module suivant, vérifie que tu peux :
 - [x] Comprendre les attaques réelles (BlackLotus, BootHole)
 - [x] Appliquer les mitigations (dbx updates, UEFI password, TPM)
 
-**Module suivant** : [A08 - SPI Flash](../A08_spi_flash/)
+**Module suivant** : [SPI Flash](../03-SPI-Flash/)

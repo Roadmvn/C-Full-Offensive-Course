@@ -336,5 +336,5 @@ int main() {
 ---
 
 **Navigation**
-- [Module précédent](../W46_https_communication/)
-- [Module suivant](../W48_json_parsing/)
+- [Module précédent](../02-HTTPS-Communication/)
+- [Module suivant](../04-JSON-Parsing/)

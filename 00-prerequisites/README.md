@@ -45,20 +45,20 @@ A la fin de cette phase, vous serez capable de :
 
 | # | Cours | Duree | Description |
 |---|-------|-------|-------------|
-| 01 | [Systemes de Numeration](cours/01-systemes-numeration.md) | 45 min | Binaire, decimal, hexadecimal |
-| 02 | [Le Processeur (CPU)](cours/02-processeur.md) | 60 min | Architecture, registres, cycle d'execution |
-| 03 | [La Memoire](cours/03-memoire.md) | 60 min | RAM, stack, heap, segments |
-| 04 | [Le Systeme d'Exploitation](cours/04-systeme-exploitation.md) | 45 min | Role, processus, appels systeme |
-| 05 | [Du Code Source a l'Execution](cours/05-code-a-execution.md) | 30 min | Compilation, chargement, execution |
+| 01 | [Systemes de Numeration](lessons/01-systemes-numeration.md) | 45 min | Binaire, decimal, hexadecimal |
+| 02 | [Le Processeur (CPU)](lessons/02-processeur.md) | 60 min | Architecture, registres, cycle d'execution |
+| 03 | [La Memoire](lessons/03-memoire.md) | 60 min | RAM, stack, heap, segments |
+| 04 | [Le Systeme d'Exploitation](lessons/04-systeme-exploitation.md) | 45 min | Role, processus, appels systeme |
+| 05 | [Du Code Source a l'Execution](lessons/05-code-a-execution.md) | 30 min | Compilation, chargement, execution |
 
 ### Exercices Pratiques
 
 | # | Exercice | Difficulte | Concepts |
 |---|----------|------------|----------|
-| 01 | [Conversions Numeriques](exercices/exercice-01.md) | * | Binaire, hexa, decimal |
-| 02 | [Lecture Hexadecimale](exercices/exercice-02.md) | ** | Interpretation de dumps |
-| 03 | [Analyse de Stack](exercices/exercice-03.md) | ** | Comprendre la pile |
-| 04 | [Quiz Complet](exercices/exercice-04.md) | *** | Tous les concepts |
+| 01 | [Conversions Numeriques](exercises/exercice-01.md) | * | Binaire, hexa, decimal |
+| 02 | [Lecture Hexadecimale](exercises/exercice-02.md) | ** | Interpretation de dumps |
+| 03 | [Analyse de Stack](exercises/exercice-03.md) | ** | Comprendre la pile |
+| 04 | [Quiz Complet](exercises/exercice-04.md) | *** | Tous les concepts |
 
 ## Prerequis
 
@@ -113,13 +113,13 @@ A la fin de cette phase, vous serez capable de :
 
 | Precedent | Suivant |
 |-----------|---------|
-| - | [Phase 1 : Foundations](../Phase-1-Foundations/) |
+| - | [Phase 1 : Foundations](../01-c-fundamentals/) |
 
 ---
 
 ```
    ┌────────────────────────────────────────────┐
    │  Pret ? Commencez par les nombres...       │
-   │  → cours/01-systemes-numeration.md         │
+   │  → lessons/01-systemes-numeration.md        │
    └────────────────────────────────────────────┘
 ```

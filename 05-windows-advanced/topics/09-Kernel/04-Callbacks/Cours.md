@@ -620,5 +620,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module precedent](../W73_ioctl_communication/)
-- [Module suivant](../W75_dkom/)
+- [Module precedent](../03-IOCTL-Communication/)
+- [Module suivant](../05-DKOM/)

@@ -927,5 +927,5 @@ cl.exe wmi_exec.c /link ole32.lib oleaut32.lib wbemuuid.lib
 ---
 
 **Navigation**
-- [Module précédent](../W06_services/)
-- [Module suivant](../W08_networking_winsock/)
+- [Module précédent](../05-Services/)
+- [Module suivant](../07-Reseau-Winsock/)

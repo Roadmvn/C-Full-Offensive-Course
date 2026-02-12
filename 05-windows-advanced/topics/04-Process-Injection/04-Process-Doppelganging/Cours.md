@@ -845,5 +845,5 @@ Voir [exercice.md](exercice.md) pour :
 ---
 
 **Navigation**
-- [Module précédent : W25 Process Hollowing](../W25_process_hollowing/)
-- [Module suivant : W27 Module Stomping](../W27_module_stomping/)
+- [Module précédent : Process Hollowing](../03-Process-Hollowing/)
+- [Module suivant : Module Stomping](../05-Module-Stomping/)

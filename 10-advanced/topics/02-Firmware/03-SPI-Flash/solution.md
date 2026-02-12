@@ -775,4 +775,4 @@ Avant de passer au module suivant, vérifie que tu peux :
 - [x] Comprendre le concept d'injection DXE
 - [x] Identifier les protections hardware (BIOS_WE, PR, SMRR)
 
-**Module suivant** : [A09 - Bootkit Concepts](../A09_bootkit_concepts/)
+**Module suivant** : [Bootkit Concepts](../04-Bootkit-Concepts/)

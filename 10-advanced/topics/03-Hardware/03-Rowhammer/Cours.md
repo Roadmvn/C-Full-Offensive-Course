@@ -88,4 +88,4 @@ int main() {
 
 ---
 
-**Module suivant** : [A14 - Hardware Implants](../A14_hardware_implants/)
+**Module suivant** : [Hardware Implants](../04-Hardware-Implants/)

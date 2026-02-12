@@ -652,5 +652,5 @@ BONNES PRATIQUES :
 ---
 
 **Navigation**
-- [Module précédent](../W10_tokens_privileges/)
-- [Module suivant](../W12_pe_parsing/)
+- [Module précédent](../../09-Tokens-Privileges/)
+- [Module suivant](../02-PE-Parsing/)

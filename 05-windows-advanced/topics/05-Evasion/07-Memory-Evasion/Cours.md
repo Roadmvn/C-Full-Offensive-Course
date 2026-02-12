@@ -336,5 +336,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module précédent : W38 Sleep Obfuscation](../W38_sleep_obfuscation/)
-- [Module suivant : W40 Sandbox Detection](../W40_sandbox_detection/)
+- [Module précédent : Sleep Obfuscation](../06-Sleep-Obfuscation/)
+- [Module suivant : Sandbox Detection](../08-Sandbox-Detection/)

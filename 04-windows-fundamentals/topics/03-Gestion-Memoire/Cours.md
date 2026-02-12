@@ -567,5 +567,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module précédent](../W02_processes_threads/)
-- [Module suivant](../W04_file_operations/)
+- [Module précédent](../02-Processus-Threads/)
+- [Module suivant](../04-Fichiers-Registry/)

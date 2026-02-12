@@ -615,4 +615,4 @@ mpz_mul(signature, signature, r_inv);  // signature = (m * r^e)^d * r^-1 = m^d
 
 ---
 
-**Module suivant** : [A12 - Spectre & Meltdown](../A12_spectre_meltdown/)
+**Module suivant** : [Spectre & Meltdown](../02-Spectre-Meltdown/)

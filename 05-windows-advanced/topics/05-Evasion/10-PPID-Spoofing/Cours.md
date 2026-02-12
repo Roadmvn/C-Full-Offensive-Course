@@ -363,5 +363,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module précédent : W41 Anti-Debug](../W41_anti_debug/)
-- [Module suivant : W43 Callback Evasion](../W43_callback_evasion/)
+- [Module précédent : Anti-Debug](../09-Anti-Debug/)
+- [Module suivant : Callback Evasion](../11-Callback-Evasion/)

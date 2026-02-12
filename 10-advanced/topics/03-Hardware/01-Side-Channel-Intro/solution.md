@@ -664,4 +664,4 @@ Avant de passer au module suivant, vérifie que tu peux :
 - [x] Comprendre les attaques sur AES (T-tables)
 - [x] Appliquer les contre-mesures (constant-time, AES-NI)
 
-**Module suivant** : [A12 - Spectre & Meltdown](../A12_spectre_meltdown/)
+**Module suivant** : [Spectre & Meltdown](../02-Spectre-Meltdown/)

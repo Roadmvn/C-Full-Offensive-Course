@@ -679,5 +679,5 @@ Voir [exercice.md](exercice.md)
 ---
 
 **Navigation**
-- [Module precedent](../W69_psexec_technique/)
-- [Module suivant](../../PHASE_W07_KERNEL/W71_driver_basics/)
+- [Module precedent](../05-PSExec-Technique/)
+- [Module suivant](../../09-Kernel/01-Driver-Basics/)

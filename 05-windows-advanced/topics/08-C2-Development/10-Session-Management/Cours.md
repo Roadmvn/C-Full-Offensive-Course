@@ -534,5 +534,5 @@ BOOL IsWorkingHours() {
 ---
 
 **Navigation**
-- [Module precedent](../W53_beacon_architecture/)
-- [Module suivant](../W55_jitter_sleep/)
+- [Module precedent](../09-Beacon-Architecture/)
+- [Module suivant](../11-Jitter-Sleep/)

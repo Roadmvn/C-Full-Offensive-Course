@@ -794,4 +794,4 @@ Avant de passer au module suivant, vérifie que tu peux :
 - [x] Comprendre la différence MBR/VBR/UEFI bootkits
 - [x] Créer un bootloader UEFI qui hook le boot process
 
-**Module suivant** : [A10 - SMM Basics](../A10_smm_basics/)
+**Module suivant** : [SMM Basics](../05-SMM-Basics/)

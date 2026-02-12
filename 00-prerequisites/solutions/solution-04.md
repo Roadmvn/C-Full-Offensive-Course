@@ -247,4 +247,4 @@
 
 | Retour | Module suivant |
 |--------|----------------|
-| [Exercice 04](../exercices/exercice-04.md) | [Module 01](../../module-01-premier-contact/) |
+| [Exercice 04](../exercises/exercice-04.md) | [Module 01](../../module-01-premier-contact/) |

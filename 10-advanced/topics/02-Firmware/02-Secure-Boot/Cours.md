@@ -894,4 +894,4 @@ ausearch -k uefi_changes
 
 ---
 
-**Module suivant** : [A08 - SPI Flash & BIOS Attacks](../A08_spi_flash/)
+**Module suivant** : [SPI Flash & BIOS Attacks](../03-SPI-Flash/)

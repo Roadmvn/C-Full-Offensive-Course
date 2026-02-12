@@ -5,7 +5,7 @@
 ```
 03_reverse_shell/
 ├── PROJECT_STRUCTURE.md     ← Ce fichier (architecture)
-├── Cours.md                 ← Théorie du reverse shell
+├── cours.md                 ← Théorie du reverse shell
 ├── Exercice.md              ← Exercices progressifs
 ├── Solution.md              ← Solutions des exercices
 ├── README.md                ← Guide de démarrage rapide

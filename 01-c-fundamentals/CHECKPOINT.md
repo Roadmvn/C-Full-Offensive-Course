@@ -58,4 +58,4 @@ git commit -m "feat: semaine 1 completee"
 git tag week-01-complete
 ```
 
-➡️ Passe a `Week-02-Memory-Pointers/` !
+➡️ Passe a `../02-memory-pointers/` !

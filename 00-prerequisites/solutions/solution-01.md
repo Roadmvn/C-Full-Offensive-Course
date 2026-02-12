@@ -192,4 +192,4 @@ Ce tableau doit être mémorisé !
 
 | Retour | Exercice suivant |
 |--------|------------------|
-| [Exercice 01](../exercices/exercice-01.md) | [Exercice 02](../exercices/exercice-02.md) |
+| [Exercice 01](../exercises/exercice-01.md) | [Exercice 02](../exercises/exercice-02.md) |

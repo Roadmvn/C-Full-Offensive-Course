@@ -1304,5 +1304,5 @@ cl.exe mini_c2.c /link ws2_32.lib /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup
 ---
 
 **Navigation**
-- [Module précédent](../W07_wmi_basics/)
-- [Module suivant](../W09_pipes/)
+- [Module précédent](../06-WMI-Basics/)
+- [Module suivant](../08-Pipes/)

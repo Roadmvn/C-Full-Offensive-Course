@@ -638,5 +638,5 @@ sprintf(pipeName, "\\\\.\\pipe\\{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02
 ---
 
 **Navigation**
-- [Module précédent](../W08_networking_winsock/)
-- [Module suivant](../W10_tokens_privileges/)
+- [Module précédent](../07-Reseau-Winsock/)
+- [Module suivant](../09-Tokens-Privileges/)

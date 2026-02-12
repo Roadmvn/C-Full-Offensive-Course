@@ -220,4 +220,4 @@ EBX → │    "/bin"       │
 
 | Retour | Exercice suivant |
 |--------|------------------|
-| [Exercice 02](../exercices/exercice-02.md) | [Exercice 03](../exercices/exercice-03.md) |
+| [Exercice 02](../exercises/exercice-02.md) | [Exercice 03](../exercises/exercice-03.md) |

@@ -199,14 +199,30 @@ sudo pacman -S base-devel gdb git
 
 ## Structure d'un Module Type
 
-Chaque semaine/module contient :
+Deux patterns coexistent selon les modules :
+
+### Pattern A : lessons/exercises/solutions (modules 00-04, 06-07)
 
 ```
-Week-XX/
-├── Lessons/          4-5 fichiers .c commentes
-├── Exercises/        3 exercices pratiques
-├── Solutions/        Solutions des exercices
-└── README.md         Objectifs et concepts
+XX-module-name/
+├── README.md           Objectifs et concepts
+├── CHECKPOINT.md       Questions de validation (si applicable)
+├── lessons/            Fichiers .c commentes + cours
+├── exercises/          Exercices pratiques
+└── solutions/          Solutions des exercices
+```
+
+### Pattern B : topics (modules 05, 08-10)
+
+```
+XX-module-name/
+└── topics/
+    └── XX-Category/
+        └── XX-Topic/
+            ├── cours.md        Theorie du sujet
+            ├── example.c       Code d'exemple commente
+            ├── exercice.md     Enonce de l'exercice
+            └── solution.md     Solution de l'exercice (ou solution.c)
 ```
 
 ### Approche Recommandee

@@ -724,4 +724,4 @@ Avant de passer au module suivant, vérifiez que vous pouvez :
 - [x] Comprendre le fonctionnement des attaques RAG Context Poisoning
 - [x] Écrire du code C pour simuler des scénarios d'attaque LLM
 
-**Module suivant** : [A20 - Prompt Injection](../A20_prompt_injection/)
+**Module suivant** : [Prompt Injection](../02-Prompt-Injection/)

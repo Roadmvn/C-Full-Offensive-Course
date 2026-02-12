@@ -650,5 +650,5 @@ Voir `exercice.md` pour les défis pratiques :
 ---
 
 **Navigation**
-- [Module précédent : VM Escape Concepts](../A03_vm_escape_concepts/)
-- [Module suivant : Cloud Hypervisors](../A05_cloud_hypervisors/)
+- [Module précédent : VM Escape Concepts](../03-VM-Escape-Concepts/)
+- [Module suivant : Cloud Hypervisors](../05-Cloud-Hypervisors/)

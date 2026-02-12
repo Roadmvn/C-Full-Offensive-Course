@@ -665,4 +665,4 @@ flashrom -p ch341a_spi -w bios_clean.bin
 
 ---
 
-**Module suivant** : [A09 - Bootkit Concepts](../A09_bootkit_concepts/)
+**Module suivant** : [Bootkit Concepts](../04-Bootkit-Concepts/)

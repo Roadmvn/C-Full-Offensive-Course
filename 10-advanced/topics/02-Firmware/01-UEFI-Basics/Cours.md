@@ -648,4 +648,4 @@ Voir `exercice.md` pour les défis pratiques.
 
 **Navigation**
 - [Retour au sommaire FIRMWARE](../)
-- [Module suivant : Secure Boot](../A07_secure_boot/)
+- [Module suivant : Secure Boot](../02-Secure-Boot/)
