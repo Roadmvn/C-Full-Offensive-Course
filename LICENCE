@@ -19,25 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-DISCLAIMER / AVERTISSEMENT LÉGAL
-
-Ce cours et les techniques présentées sont fournis à des fins ÉDUCATIVES UNIQUEMENT.
-
-L'utilisation de ces techniques sur des systèmes informatiques sans autorisation
-explicite et écrite de leur propriétaire est ILLÉGALE et passible de poursuites
-pénales dans la plupart des juridictions.
-
-Les auteurs et contributeurs de ce cours ne peuvent être tenus responsables de
-toute utilisation abusive, illégale ou non éthique du contenu fourni.
-
-En utilisant ce cours, vous acceptez de respecter toutes les lois applicables
-et de n'utiliser ces connaissances que dans un cadre légal et éthique :
-- Pentest autorisé avec contrat signé
-- CTF et environnements de formation
-- Recherche en sécurité responsable
-- Analyse de malware dans un environnement contrôlé
-
-Toute autre utilisation est de votre seule responsabilité.

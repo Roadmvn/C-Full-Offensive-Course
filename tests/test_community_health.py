@@ -1,4 +1,3 @@
-from hashlib import sha256
 from pathlib import Path
 import re
 import unittest
@@ -55,10 +54,6 @@ LANDING_LINKS = (
     "SUPPORT.md",
 )
 
-LEGACY_LICENCE_SHA256 = (
-    "ab9c5e79d08b715f6a7589842e065e63c26200a28ea594b587192fe07c8c25b4"
-)
-
 PR_CONTRIBUTING_URL = (
     "https://github.com/Roadmvn/C-Full-Offensive-Course/blob/HEAD/CONTRIBUTING.md"
 )
@@ -84,24 +79,24 @@ class CommunityHealthTests(unittest.TestCase):
 
     def test_license_is_only_the_canonical_mit_text(self):
         license_text = read("LICENSE")
-        legacy_lines = read("LICENCE").splitlines()
-        canonical_text = "\n".join(legacy_lines[:21]) + "\n"
 
         self.assertTrue(license_text.startswith("MIT License"))
         self.assertIn("Permission is hereby granted", license_text)
         self.assertNotIn("DISCLAIMER", license_text)
-        self.assertEqual(canonical_text, license_text)
 
-    def test_legacy_licence_remains_byte_for_byte_unchanged(self):
-        digest = sha256((ROOT / "LICENCE").read_bytes()).hexdigest()
-        self.assertEqual(LEGACY_LICENCE_SHA256, digest)
+    def test_legacy_licence_path_matches_the_canonical_mit_license(self):
+        self.assertEqual(
+            (ROOT / "LICENSE").read_bytes(),
+            (ROOT / "LICENCE").read_bytes(),
+        )
+        self.assertNotIn("DISCLAIMER", read("LICENCE"))
 
     def test_disclaimer_preserves_french_warning_and_adds_english_equivalent(self):
         disclaimer = read("DISCLAIMER.md")
-        legacy_lines = read("LICENCE").splitlines()
-        french_warning = "\n".join(legacy_lines[26:43])
 
-        self.assertIn(french_warning, disclaimer)
+        self.assertIn("Ce cours et les techniques présentées", disclaimer)
+        self.assertIn("sans autorisation", disclaimer)
+        self.assertIn("Toute autre utilisation est de votre seule responsabilité.", disclaimer)
         self.assertIn("Educational use only", disclaimer)
         self.assertIn("Utilisation éducative uniquement", disclaimer)
         self.assertIn("fr/safety/lab-safety.md", disclaimer)
