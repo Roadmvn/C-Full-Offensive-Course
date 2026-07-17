@@ -1,0 +1,83 @@
+name: "Problème de compilation / Build problem"
+description: "Signaler un échec de compilation reproductible / Report a reproducible compilation failure"
+title: "[Build]: "
+labels: []
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Reproduisez le problème dans un laboratoire autorisé et retirez tous les secrets des diagnostics.
+        Reproduce the problem in an authorized lab and remove all secrets from diagnostics.
+  - type: dropdown
+    id: language
+    attributes:
+      label: "Langue / Language"
+      description: "Quelle version du cours utilisez-vous ? / Which course version are you using?"
+      options:
+        - "Français / French"
+        - "English / Anglais"
+        - "Les deux / Both"
+    validations:
+      required: true
+  - type: input
+    id: affected-path
+    attributes:
+      label: "Chemin exact / Exact path"
+      description: "Chemin du fichier compilé dans le dépôt / Repository-relative path of the compiled file"
+      placeholder: "01-c-fundamentals/lessons/01-hello-world.c"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environnement / Environment"
+      description: "Système, architecture, terminal et outils pertinents / Relevant OS, architecture, shell, and tools"
+    validations:
+      required: true
+  - type: input
+    id: compiler
+    attributes:
+      label: "Compilateur / Compiler"
+      description: "Nom, version et commande exacte / Name, version, and exact command"
+      placeholder: "gcc 15.1.0 — gcc lessons/01-hello-world.c -o hello-world"
+    validations:
+      required: true
+  - type: textarea
+    id: full-diagnostics
+    attributes:
+      label: "Diagnostics complets / Full diagnostics"
+      description: "Collez la sortie complète après avoir retiré secrets et données privées / Paste the complete output after removing secrets and private data"
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected-result
+    attributes:
+      label: "Résultat attendu / Expected result"
+      description: "Que devait faire la commande ? / What should the command have done?"
+    validations:
+      required: true
+  - type: textarea
+    id: actual-result
+    attributes:
+      label: "Résultat obtenu / Actual result"
+      description: "Que s'est-il réellement passé ? / What actually happened?"
+    validations:
+      required: true
+  - type: checkboxes
+    id: authorization-confirmation
+    attributes:
+      label: "Autorisation / Authorization"
+      options:
+        - label: "J'ai travaillé uniquement sur un système que je possède ou que je suis explicitement autorisé à tester. / I worked only on a system I own or am explicitly authorized to test."
+    validations:
+      required: true
+  - type: checkboxes
+    id: code-of-conduct
+    attributes:
+      label: "Code de conduite / Code of Conduct"
+      options:
+        - label: "J'accepte de respecter le Code de conduite du dépôt. / I agree to follow the repository Code of Conduct."
+    validations:
+      required: true

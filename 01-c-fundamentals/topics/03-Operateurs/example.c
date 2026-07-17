@@ -87,10 +87,13 @@ void demo_arithmetic(void) {
     int x = 5;
 
     printf("x initial = %d\n", x);
-    printf("++x (pré)  = %d, x après = %d\n", ++x, x);  // x devient 6, retourne 6
+    ++x;
+    printf("++x (pré)  = %d, x après = %d\n", x, x);  // x devient 6, retourne 6
 
     x = 5;  // Reset
-    printf("x++ (post) = %d, x après = %d\n", x++, x);  // Retourne 5, puis x devient 6
+    int valeur_avant = x;
+    x++;
+    printf("x++ (post) = %d, x après = %d\n", valeur_avant, x);  // Retourne 5, puis x devient 6
 }
 
 /* =============================================================================
@@ -131,7 +134,8 @@ void demo_comparison(void) {
     // if (x == 5) { }
 
     printf("x = %d\n", x);
-    printf("(x = 5) retourne %d et modifie x à %d (DANGEREUX !)\n", (x = 5), x);
+    int assignment_result = (x = 5);
+    printf("(x = 5) retourne %d et modifie x à %d (DANGEREUX !)\n", assignment_result, x);
 
     x = 0;  // Reset
     printf("(x == 5) retourne %d et x reste à %d (CORRECT)\n", (x == 5), x);

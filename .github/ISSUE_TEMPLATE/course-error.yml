@@ -1,0 +1,74 @@
+name: "Erreur de cours / Course error"
+description: "Signaler une explication incorrecte ou ambiguë / Report an incorrect or ambiguous explanation"
+title: "[Course error]: "
+labels: []
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de ne partager ni secret, ni donnée personnelle, ni détail d'exploitation sensible.
+        Do not share secrets, personal data, or sensitive exploit details.
+  - type: dropdown
+    id: language
+    attributes:
+      label: "Langue / Language"
+      description: "Quelle version est concernée ? / Which version is affected?"
+      options:
+        - "Français / French"
+        - "English / Anglais"
+        - "Les deux / Both"
+    validations:
+      required: true
+  - type: input
+    id: affected-path
+    attributes:
+      label: "Chemin exact / Exact path"
+      description: "Chemin du fichier dans le dépôt / Repository-relative file path"
+      placeholder: "fr/start-here.md"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environnement / Environment"
+      description: "Système, architecture, outils et versions pertinents / Relevant OS, architecture, tools, and versions"
+    validations:
+      required: true
+  - type: textarea
+    id: disputed-explanation
+    attributes:
+      label: "Explication contestée / Disputed explanation"
+      description: "Citez le passage court ou décrivez précisément l'explication concernée / Quote the short passage or identify the explanation precisely"
+    validations:
+      required: true
+  - type: textarea
+    id: expected-result
+    attributes:
+      label: "Résultat attendu / Expected result"
+      description: "Que devrait expliquer ou produire le cours ? / What should the course explain or produce?"
+    validations:
+      required: true
+  - type: textarea
+    id: actual-result
+    attributes:
+      label: "Résultat obtenu / Actual result"
+      description: "Qu'explique ou produit actuellement le cours ? / What does the course currently explain or produce?"
+    validations:
+      required: true
+  - type: checkboxes
+    id: authorization-confirmation
+    attributes:
+      label: "Autorisation / Authorization"
+      options:
+        - label: "J'ai travaillé uniquement sur un système que je possède ou que je suis explicitement autorisé à tester. / I worked only on a system I own or am explicitly authorized to test."
+    validations:
+      required: true
+  - type: checkboxes
+    id: code-of-conduct
+    attributes:
+      label: "Code de conduite / Code of Conduct"
+      options:
+        - label: "J'accepte de respecter le Code de conduite du dépôt. / I agree to follow the repository Code of Conduct."
+    validations:
+      required: true

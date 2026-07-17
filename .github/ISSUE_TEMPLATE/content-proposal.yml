@@ -1,0 +1,95 @@
+name: "Proposition de contenu / Content proposal"
+description: "Proposer un ajout pédagogique sûr et bilingue / Propose a safe bilingual learning addition"
+title: "[Content]: "
+labels: []
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Décrivez le besoin avant d'écrire un changement important. N'incluez aucune donnée de cible réelle.
+        Describe the need before writing a substantial change. Include no real-target data.
+  - type: dropdown
+    id: language
+    attributes:
+      label: "Langue / Language"
+      description: "Dans quelle langue soumettez-vous cette proposition ? / Which language are you using for this proposal?"
+      options:
+        - "Français / French"
+        - "English / Anglais"
+        - "Les deux / Both"
+    validations:
+      required: true
+  - type: input
+    id: affected-path
+    attributes:
+      label: "Chemin exact / Exact path"
+      description: "Chemin existant ou nouveau chemin proposé / Existing path or proposed new repository path"
+      placeholder: "fr/paths.md et en/paths.md / fr/paths.md and en/paths.md"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environnement / Environment"
+      description: "Systèmes, architectures et outils visés ; écrivez N/A si le contenu est conceptuel / Target OSes, architectures, and tools; write N/A for conceptual content"
+    validations:
+      required: true
+  - type: textarea
+    id: audience
+    attributes:
+      label: "Public / Audience"
+      description: "Prérequis et niveau des apprenants concernés / Prerequisites and learner level"
+    validations:
+      required: true
+  - type: textarea
+    id: learning-outcome
+    attributes:
+      label: "Objectif pédagogique / Learning outcome"
+      description: "Capacité observable que l'apprenant doit acquérir / Observable capability the learner should gain"
+    validations:
+      required: true
+  - type: textarea
+    id: safety-boundary
+    attributes:
+      label: "Limite de sécurité / Safety boundary"
+      description: "Autorisation, isolation, données synthétiques, conditions d'arrêt et nettoyage / Authorization, isolation, synthetic data, stop conditions, and cleanup"
+    validations:
+      required: true
+  - type: textarea
+    id: fr-en-plan
+    attributes:
+      label: "Plan FR/EN / FR/EN plan"
+      description: "Comment assurerez-vous la parité des deux langues sans copier le code C ? / How will both languages stay equivalent without copying C code?"
+    validations:
+      required: true
+  - type: textarea
+    id: expected-result
+    attributes:
+      label: "Résultat attendu / Expected result"
+      description: "Quelle amélioration devrait être visible après ce changement ? / What improvement should be visible after the change?"
+    validations:
+      required: true
+  - type: textarea
+    id: actual-result
+    attributes:
+      label: "Résultat actuel / Actual result"
+      description: "Quelle lacune existe aujourd'hui ? / What gap exists today?"
+    validations:
+      required: true
+  - type: checkboxes
+    id: authorization-confirmation
+    attributes:
+      label: "Autorisation / Authorization"
+      options:
+        - label: "Je construirai et testerai ce contenu uniquement sur des systèmes possédés ou explicitement autorisés. / I will build and test this content only on owned or explicitly authorized systems."
+    validations:
+      required: true
+  - type: checkboxes
+    id: code-of-conduct
+    attributes:
+      label: "Code de conduite / Code of Conduct"
+      options:
+        - label: "J'accepte de respecter le Code de conduite du dépôt. / I agree to follow the repository Code of Conduct."
+    validations:
+      required: true

@@ -12,19 +12,20 @@ A la fin de cette semaine, tu sauras :
 ## Prerequis
 
 - Un editeur de texte (VS Code recommande)
-- Visual Studio Build Tools installe (voir setup.ps1)
+- Une chaine d'outils C installee avec le guide correspondant :
+  [Windows avec MSVC](../fr/setup/windows.md),
+  [Linux avec GCC ou Clang](../fr/setup/linux.md) ou
+  [macOS avec Clang](../fr/setup/macos.md)
 - Savoir ouvrir un terminal
 
 ## Comment travailler
 
-```
-1. Lis le fichier Lessons/01-hello-world.c
-2. Compile-le : cl 01-hello-world.c
-3. Execute-le : 01-hello-world.exe
-4. Passe au fichier suivant
-5. Quand tu as fini les lessons, fais les exercices
-6. Termine par le quiz !
-```
+1. Ouvre [`lessons/01-hello-world.c`](lessons/01-hello-world.c).
+2. Compile-le avec la commande MSVC, GCC ou Clang ci-dessous.
+3. Execute le programme genere et compare sa sortie aux commentaires du fichier.
+4. Recommence avec chacune des quatre lessons suivantes, dans l'ordre.
+5. Quand les cinq lessons compilent, fais les trois exercices.
+6. Termine avec l'[auto-evaluation `CHECKPOINT.md`](CHECKPOINT.md).
 
 ## Contenu
 
@@ -48,27 +49,68 @@ A la fin de cette semaine, tu sauras :
 
 ### Solutions
 
-Dans le dossier `Solutions/` - ne regarde qu'apres avoir essaye !
+Dans le dossier `solutions/` - ne regarde qu'apres avoir essaye !
 
 ## Compilation rapide
 
-```batch
-REM Compiler un seul fichier
-cl nom_du_fichier.c
-
-REM Compiler tout
-build.bat
-```
-
-## Quiz de validation
-
-Quand tu as fini lessons + exercices :
+Depuis la racine du depot, entre d'abord dans le module :
 
 ```bash
-python ../../scripts/quiz-runner.py quiz.json
+cd 01-c-fundamentals
 ```
 
-Score minimum : **8/10** pour valider la semaine.
+Compile un fichier avec **une seule** des trois commandes suivantes.
+
+**MSVC**, dans le Developer Command Prompt for Visual Studio :
+
+```batch
+cl /nologo /std:c11 /W4 lessons\01-hello-world.c /Fe:01-hello-world.exe
+01-hello-world.exe
+```
+
+**GCC**, dans un shell Linux ou macOS :
+
+```bash
+gcc -std=c11 -Wall -Wextra lessons/01-hello-world.c -o 01-hello-world
+./01-hello-world
+```
+
+**Clang**, dans un shell Linux ou macOS :
+
+```bash
+clang -std=c11 -Wall -Wextra lessons/01-hello-world.c -o 01-hello-world
+./01-hello-world
+```
+
+Pour compiler les cinq lessons, execute uniquement la boucle de ton compilateur.
+
+**MSVC / Developer Command Prompt :**
+
+```batch
+for %f in (lessons\01-hello-world.c lessons\02-variables.c lessons\03-if-else.c lessons\04-loops.c lessons\05-functions.c) do cl /nologo /std:c11 /W4 "%f"
+```
+
+**GCC / shell POSIX :**
+
+```bash
+for source in lessons/01-hello-world.c lessons/02-variables.c lessons/03-if-else.c lessons/04-loops.c lessons/05-functions.c; do
+  gcc -std=c11 -Wall -Wextra "$source" -o "$(basename "${source%.c}")" || break
+done
+```
+
+**Clang / shell POSIX :**
+
+```bash
+for source in lessons/01-hello-world.c lessons/02-variables.c lessons/03-if-else.c lessons/04-loops.c lessons/05-functions.c; do
+  clang -std=c11 -Wall -Wextra "$source" -o "$(basename "${source%.c}")" || break
+done
+```
+
+## Auto-evaluation de validation
+
+Quand tu as fini les lessons et les exercices, ouvre
+[`CHECKPOINT.md`](CHECKPOINT.md). La validation repose sur la compilation des
+cinq lessons et la reussite des trois exercices presents dans ce depot.
 
 ## Checklist de validation
 
@@ -76,7 +118,7 @@ Score minimum : **8/10** pour valider la semaine.
 - [ ] J'ai fait l'exercice calculatrice
 - [ ] J'ai fait l'exercice FizzBuzz
 - [ ] J'ai fait l'exercice string reverse
-- [ ] J'ai obtenu 8/10 ou plus au quiz
+- [ ] J'ai complete l'auto-evaluation de `CHECKPOINT.md`
 - [ ] Je comprends la difference entre int, float, char
 - [ ] Je sais utiliser if/else et les boucles
 - [ ] Je sais creer une fonction
@@ -109,4 +151,4 @@ Pourquoi ces bases sont importantes ?
 
 Temps estime : **4-6 heures**
 
-Quand tu as valide le quiz, passe a la **Semaine 2** !
+Quand tu as valide le checkpoint, passe a la **Semaine 2** !

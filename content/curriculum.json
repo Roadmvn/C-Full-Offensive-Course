@@ -1,0 +1,2459 @@
+{
+  "schema_version": 1,
+  "generated_from": "Cours.md files under sections 00- through 10-",
+  "unit_count": 216,
+  "status_counts": {
+    "draft": 216,
+    "reference": 0,
+    "ready": 0
+  },
+  "units": [
+    {
+      "id": "01-c-fundamentals/topics/01-Introduction-Setup",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/01-Introduction-Setup/Cours.md",
+      "example": "01-c-fundamentals/topics/01-Introduction-Setup/example.c",
+      "exercise": "01-c-fundamentals/topics/01-Introduction-Setup/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/01-Introduction-Setup/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/02-Variables-Types",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/02-Variables-Types/Cours.md",
+      "example": "01-c-fundamentals/topics/02-Variables-Types/example.c",
+      "exercise": "01-c-fundamentals/topics/02-Variables-Types/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/02-Variables-Types/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/03-Operateurs",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/03-Operateurs/Cours.md",
+      "example": "01-c-fundamentals/topics/03-Operateurs/example.c",
+      "exercise": "01-c-fundamentals/topics/03-Operateurs/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/03-Operateurs/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/04-Conditions",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/04-Conditions/Cours.md",
+      "example": "01-c-fundamentals/topics/04-Conditions/example.c",
+      "exercise": "01-c-fundamentals/topics/04-Conditions/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/04-Conditions/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/05-Boucles",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/05-Boucles/Cours.md",
+      "example": "01-c-fundamentals/topics/05-Boucles/example.c",
+      "exercise": "01-c-fundamentals/topics/05-Boucles/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/05-Boucles/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/06-Fonctions",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/06-Fonctions/Cours.md",
+      "example": "01-c-fundamentals/topics/06-Fonctions/example.c",
+      "exercise": "01-c-fundamentals/topics/06-Fonctions/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/06-Fonctions/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/07-Tableaux",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/07-Tableaux/Cours.md",
+      "example": "01-c-fundamentals/topics/07-Tableaux/example.c",
+      "exercise": "01-c-fundamentals/topics/07-Tableaux/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/07-Tableaux/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/07bis-Chaines",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/07bis-Chaines/Cours.md",
+      "example": "01-c-fundamentals/topics/07bis-Chaines/example.c",
+      "exercise": "01-c-fundamentals/topics/07bis-Chaines/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/07bis-Chaines/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/08-Pointeurs-Bases",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/08-Pointeurs-Bases/Cours.md",
+      "example": "01-c-fundamentals/topics/08-Pointeurs-Bases/example.c",
+      "exercise": "01-c-fundamentals/topics/08-Pointeurs-Bases/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/08-Pointeurs-Bases/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/09-Pointeurs-Avances",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/09-Pointeurs-Avances/Cours.md",
+      "example": "01-c-fundamentals/topics/09-Pointeurs-Avances/example.c",
+      "exercise": "01-c-fundamentals/topics/09-Pointeurs-Avances/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/09-Pointeurs-Avances/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/10-Structs-Unions-Enums",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/10-Structs-Unions-Enums/Cours.md",
+      "example": "01-c-fundamentals/topics/10-Structs-Unions-Enums/example.c",
+      "exercise": "01-c-fundamentals/topics/10-Structs-Unions-Enums/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/10-Structs-Unions-Enums/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "01-c-fundamentals/topics/11-Unions-Enums",
+      "section": "01-c-fundamentals",
+      "course": "01-c-fundamentals/topics/11-Unions-Enums/Cours.md",
+      "example": "01-c-fundamentals/topics/11-Unions-Enums/example.c",
+      "exercise": "01-c-fundamentals/topics/11-Unions-Enums/exercice.md",
+      "solutions": [
+        "01-c-fundamentals/topics/11-Unions-Enums/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/01-Stack-Heap",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/01-Stack-Heap/Cours.md",
+      "example": "02-memory-pointers/topics/01-Stack-Heap/example.c",
+      "exercise": "02-memory-pointers/topics/01-Stack-Heap/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/01-Stack-Heap/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/02-Allocation-Dynamique",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/02-Allocation-Dynamique/Cours.md",
+      "example": "02-memory-pointers/topics/02-Allocation-Dynamique/example.c",
+      "exercise": "02-memory-pointers/topics/02-Allocation-Dynamique/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/02-Allocation-Dynamique/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/03-Preprocesseur",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/03-Preprocesseur/Cours.md",
+      "example": "02-memory-pointers/topics/03-Preprocesseur/example.c",
+      "exercise": "02-memory-pointers/topics/03-Preprocesseur/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/03-Preprocesseur/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/04-Compilation-Linking",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/04-Compilation-Linking/Cours.md",
+      "example": "02-memory-pointers/topics/04-Compilation-Linking/example.c",
+      "exercise": "02-memory-pointers/topics/04-Compilation-Linking/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/04-Compilation-Linking/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/05-Buffer-Overflow-Intro",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/05-Buffer-Overflow-Intro/Cours.md",
+      "example": "02-memory-pointers/topics/05-Buffer-Overflow-Intro/example.c",
+      "exercise": "02-memory-pointers/topics/05-Buffer-Overflow-Intro/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/05-Buffer-Overflow-Intro/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/06-Format-Strings",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/06-Format-Strings/Cours.md",
+      "example": "02-memory-pointers/topics/06-Format-Strings/example.c",
+      "exercise": "02-memory-pointers/topics/06-Format-Strings/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/06-Format-Strings/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/07-Bitwise-Operations",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/07-Bitwise-Operations/Cours.md",
+      "example": "02-memory-pointers/topics/07-Bitwise-Operations/example.c",
+      "exercise": "02-memory-pointers/topics/07-Bitwise-Operations/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/07-Bitwise-Operations/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/08-Data-Structures",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/08-Data-Structures/Cours.md",
+      "example": "02-memory-pointers/topics/08-Data-Structures/example.c",
+      "exercise": "02-memory-pointers/topics/08-Data-Structures/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/08-Data-Structures/solution.md",
+        "02-memory-pointers/topics/08-Data-Structures/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/09-Stack-Overflow-Exploit",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/09-Stack-Overflow-Exploit/Cours.md",
+      "example": "02-memory-pointers/topics/09-Stack-Overflow-Exploit/example.c",
+      "exercise": "02-memory-pointers/topics/09-Stack-Overflow-Exploit/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/09-Stack-Overflow-Exploit/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/10-Heap-Basics",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/10-Heap-Basics/Cours.md",
+      "example": "02-memory-pointers/topics/10-Heap-Basics/example.c",
+      "exercise": "02-memory-pointers/topics/10-Heap-Basics/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/10-Heap-Basics/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/11-Heap-Exploitation",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/11-Heap-Exploitation/Cours.md",
+      "example": "02-memory-pointers/topics/11-Heap-Exploitation/example.c",
+      "exercise": "02-memory-pointers/topics/11-Heap-Exploitation/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/11-Heap-Exploitation/solution.md",
+        "02-memory-pointers/topics/11-Heap-Exploitation/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "02-memory-pointers/topics/12-File-IO",
+      "section": "02-memory-pointers",
+      "course": "02-memory-pointers/topics/12-File-IO/Cours.md",
+      "example": "02-memory-pointers/topics/12-File-IO/example.c",
+      "exercise": "02-memory-pointers/topics/12-File-IO/exercice.md",
+      "solutions": [
+        "02-memory-pointers/topics/12-File-IO/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "03-asm-x64/lessons/01-Registres-Instructions",
+      "section": "03-asm-x64",
+      "course": "03-asm-x64/lessons/01-Registres-Instructions/Cours.md",
+      "example": "03-asm-x64/lessons/01-Registres-Instructions/example.c",
+      "exercise": "03-asm-x64/lessons/01-Registres-Instructions/exercice.md",
+      "solutions": [
+        "03-asm-x64/lessons/01-Registres-Instructions/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "03-asm-x64/lessons/02-Calling-Conventions",
+      "section": "03-asm-x64",
+      "course": "03-asm-x64/lessons/02-Calling-Conventions/Cours.md",
+      "example": "03-asm-x64/lessons/02-Calling-Conventions/example.c",
+      "exercise": "03-asm-x64/lessons/02-Calling-Conventions/exercice.md",
+      "solutions": [
+        "03-asm-x64/lessons/02-Calling-Conventions/solution.md",
+        "03-asm-x64/lessons/02-Calling-Conventions/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "03-asm-x64/lessons/03-Stack-Operations",
+      "section": "03-asm-x64",
+      "course": "03-asm-x64/lessons/03-Stack-Operations/Cours.md",
+      "example": "03-asm-x64/lessons/03-Stack-Operations/example.c",
+      "exercise": "03-asm-x64/lessons/03-Stack-Operations/exercice.md",
+      "solutions": [
+        "03-asm-x64/lessons/03-Stack-Operations/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "03-asm-x64/lessons/04-Inline-ASM",
+      "section": "03-asm-x64",
+      "course": "03-asm-x64/lessons/04-Inline-ASM/Cours.md",
+      "example": "03-asm-x64/lessons/04-Inline-ASM/example.c",
+      "exercise": "03-asm-x64/lessons/04-Inline-ASM/exercice.md",
+      "solutions": [
+        "03-asm-x64/lessons/04-Inline-ASM/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "03-asm-x64/lessons/05-MASM-NASM",
+      "section": "03-asm-x64",
+      "course": "03-asm-x64/lessons/05-MASM-NASM/Cours.md",
+      "example": "03-asm-x64/lessons/05-MASM-NASM/example.c",
+      "exercise": "03-asm-x64/lessons/05-MASM-NASM/exercice.md",
+      "solutions": [
+        "03-asm-x64/lessons/05-MASM-NASM/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/01-Windows-API-Intro",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/01-Windows-API-Intro/Cours.md",
+      "example": "04-windows-fundamentals/topics/01-Windows-API-Intro/example.c",
+      "exercise": "04-windows-fundamentals/topics/01-Windows-API-Intro/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/01-Windows-API-Intro/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/01-PE-Format",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/01-PE-Format/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/01-PE-Format/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/01-PE-Format/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/01-PE-Format/solution.md",
+        "04-windows-fundamentals/topics/02-Internals/01-PE-Format/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/02-PE-Parsing",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/02-PE-Parsing/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/02-PE-Parsing/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/02-PE-Parsing/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/02-PE-Parsing/solution.md",
+        "04-windows-fundamentals/topics/02-Internals/02-PE-Parsing/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/03-PE-Loading",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/03-PE-Loading/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/03-PE-Loading/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/03-PE-Loading/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/03-PE-Loading/solution.md",
+        "04-windows-fundamentals/topics/02-Internals/03-PE-Loading/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/04-PEB-TEB-Structures",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/04-PEB-TEB-Structures/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/04-PEB-TEB-Structures/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/04-PEB-TEB-Structures/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/04-PEB-TEB-Structures/solution.md",
+        "04-windows-fundamentals/topics/02-Internals/04-PEB-TEB-Structures/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/05-System-Calls-NTAPI",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/05-System-Calls-NTAPI/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/05-System-Calls-NTAPI/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/05-System-Calls-NTAPI/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/05-System-Calls-NTAPI/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/06-NTDLL-Internals",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/06-NTDLL-Internals/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/06-NTDLL-Internals/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/06-NTDLL-Internals/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/06-NTDLL-Internals/solution.md",
+        "04-windows-fundamentals/topics/02-Internals/06-NTDLL-Internals/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/07-Object-Manager",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/07-Object-Manager/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/07-Object-Manager/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/07-Object-Manager/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/07-Object-Manager/solution.md",
+        "04-windows-fundamentals/topics/02-Internals/07-Object-Manager/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/08-Security-Model",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/08-Security-Model/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/08-Security-Model/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/08-Security-Model/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/08-Security-Model/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/09-ETW-Basics",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/09-ETW-Basics/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/09-ETW-Basics/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/09-ETW-Basics/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/09-ETW-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/10-Debugging-API",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/10-Debugging-API/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/10-Debugging-API/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/10-Debugging-API/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/10-Debugging-API/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/11-Exception-Handling",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/11-Exception-Handling/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/11-Exception-Handling/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/11-Exception-Handling/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/11-Exception-Handling/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Internals/12-Windows-Defender-Internals",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Internals/12-Windows-Defender-Internals/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Internals/12-Windows-Defender-Internals/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Internals/12-Windows-Defender-Internals/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Internals/12-Windows-Defender-Internals/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/02-Processus-Threads",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/02-Processus-Threads/Cours.md",
+      "example": "04-windows-fundamentals/topics/02-Processus-Threads/example.c",
+      "exercise": "04-windows-fundamentals/topics/02-Processus-Threads/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/02-Processus-Threads/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/03-Gestion-Memoire",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/03-Gestion-Memoire/Cours.md",
+      "example": "04-windows-fundamentals/topics/03-Gestion-Memoire/example.c",
+      "exercise": "04-windows-fundamentals/topics/03-Gestion-Memoire/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/03-Gestion-Memoire/solution.md",
+        "04-windows-fundamentals/topics/03-Gestion-Memoire/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/04-Fichiers-Registry",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/04-Fichiers-Registry/Cours.md",
+      "example": "04-windows-fundamentals/topics/04-Fichiers-Registry/example.c",
+      "exercise": "04-windows-fundamentals/topics/04-Fichiers-Registry/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/04-Fichiers-Registry/solution.md",
+        "04-windows-fundamentals/topics/04-Fichiers-Registry/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/04b-Registry",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/04b-Registry/Cours.md",
+      "example": "04-windows-fundamentals/topics/04b-Registry/example.c",
+      "exercise": "04-windows-fundamentals/topics/04b-Registry/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/04b-Registry/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/05-Services",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/05-Services/Cours.md",
+      "example": "04-windows-fundamentals/topics/05-Services/example.c",
+      "exercise": "04-windows-fundamentals/topics/05-Services/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/05-Services/solution.md",
+        "04-windows-fundamentals/topics/05-Services/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/06-WMI-Basics",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/06-WMI-Basics/Cours.md",
+      "example": "04-windows-fundamentals/topics/06-WMI-Basics/example.c",
+      "exercise": "04-windows-fundamentals/topics/06-WMI-Basics/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/06-WMI-Basics/solution.md",
+        "04-windows-fundamentals/topics/06-WMI-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/07-Reseau-Winsock",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/07-Reseau-Winsock/Cours.md",
+      "example": "04-windows-fundamentals/topics/07-Reseau-Winsock/example.c",
+      "exercise": "04-windows-fundamentals/topics/07-Reseau-Winsock/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/07-Reseau-Winsock/solution.md",
+        "04-windows-fundamentals/topics/07-Reseau-Winsock/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/08-Pipes",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/08-Pipes/Cours.md",
+      "example": "04-windows-fundamentals/topics/08-Pipes/example.c",
+      "exercise": "04-windows-fundamentals/topics/08-Pipes/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/08-Pipes/solution.md",
+        "04-windows-fundamentals/topics/08-Pipes/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "04-windows-fundamentals/topics/09-Tokens-Privileges",
+      "section": "04-windows-fundamentals",
+      "course": "04-windows-fundamentals/topics/09-Tokens-Privileges/Cours.md",
+      "example": "04-windows-fundamentals/topics/09-Tokens-Privileges/example.c",
+      "exercise": "04-windows-fundamentals/topics/09-Tokens-Privileges/exercice.md",
+      "solutions": [
+        "04-windows-fundamentals/topics/09-Tokens-Privileges/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/03-Shellcoding/01-Shellcode-Basics",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/03-Shellcoding/01-Shellcode-Basics/Cours.md",
+      "example": "05-windows-advanced/topics/03-Shellcoding/01-Shellcode-Basics/example.c",
+      "exercise": "05-windows-advanced/topics/03-Shellcoding/01-Shellcode-Basics/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/03-Shellcoding/01-Shellcode-Basics/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/03-Shellcoding/02-Position-Independent-Code",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/03-Shellcoding/02-Position-Independent-Code/Cours.md",
+      "example": "05-windows-advanced/topics/03-Shellcoding/02-Position-Independent-Code/example.c",
+      "exercise": "05-windows-advanced/topics/03-Shellcoding/02-Position-Independent-Code/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/03-Shellcoding/02-Position-Independent-Code/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/03-Shellcoding/03-Null-Free-Shellcode",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/03-Shellcoding/03-Null-Free-Shellcode/Cours.md",
+      "example": "05-windows-advanced/topics/03-Shellcoding/03-Null-Free-Shellcode/example.c",
+      "exercise": "05-windows-advanced/topics/03-Shellcoding/03-Null-Free-Shellcode/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/03-Shellcoding/03-Null-Free-Shellcode/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/03-Shellcoding/04-API-Hashing-Resolution",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/03-Shellcoding/04-API-Hashing-Resolution/Cours.md",
+      "example": "05-windows-advanced/topics/03-Shellcoding/04-API-Hashing-Resolution/example.c",
+      "exercise": "05-windows-advanced/topics/03-Shellcoding/04-API-Hashing-Resolution/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/03-Shellcoding/04-API-Hashing-Resolution/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/03-Shellcoding/05-Encoders-XOR-RC4",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/03-Shellcoding/05-Encoders-XOR-RC4/Cours.md",
+      "example": "05-windows-advanced/topics/03-Shellcoding/05-Encoders-XOR-RC4/example.c",
+      "exercise": "05-windows-advanced/topics/03-Shellcoding/05-Encoders-XOR-RC4/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/03-Shellcoding/05-Encoders-XOR-RC4/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/03-Shellcoding/06-Crypters-AES",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/03-Shellcoding/06-Crypters-AES/Cours.md",
+      "example": "05-windows-advanced/topics/03-Shellcoding/06-Crypters-AES/example.c",
+      "exercise": "05-windows-advanced/topics/03-Shellcoding/06-Crypters-AES/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/03-Shellcoding/06-Crypters-AES/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/03-Shellcoding/07-Staged-vs-Stageless",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/03-Shellcoding/07-Staged-vs-Stageless/Cours.md",
+      "example": "05-windows-advanced/topics/03-Shellcoding/07-Staged-vs-Stageless/example.c",
+      "exercise": "05-windows-advanced/topics/03-Shellcoding/07-Staged-vs-Stageless/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/03-Shellcoding/07-Staged-vs-Stageless/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/04-Process-Injection/01-DLL-Injection-Basics",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/04-Process-Injection/01-DLL-Injection-Basics/Cours.md",
+      "example": "05-windows-advanced/topics/04-Process-Injection/01-DLL-Injection-Basics/example.c",
+      "exercise": "05-windows-advanced/topics/04-Process-Injection/01-DLL-Injection-Basics/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/04-Process-Injection/01-DLL-Injection-Basics/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/04-Process-Injection/02-DLL-Injection-Advanced",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/04-Process-Injection/02-DLL-Injection-Advanced/Cours.md",
+      "example": "05-windows-advanced/topics/04-Process-Injection/02-DLL-Injection-Advanced/example.c",
+      "exercise": "05-windows-advanced/topics/04-Process-Injection/02-DLL-Injection-Advanced/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/04-Process-Injection/02-DLL-Injection-Advanced/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/04-Process-Injection/03-Process-Hollowing",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/04-Process-Injection/03-Process-Hollowing/Cours.md",
+      "example": "05-windows-advanced/topics/04-Process-Injection/03-Process-Hollowing/example.c",
+      "exercise": "05-windows-advanced/topics/04-Process-Injection/03-Process-Hollowing/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/04-Process-Injection/03-Process-Hollowing/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/04-Process-Injection/04-Process-Doppelganging",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/04-Process-Injection/04-Process-Doppelganging/Cours.md",
+      "example": "05-windows-advanced/topics/04-Process-Injection/04-Process-Doppelganging/example.c",
+      "exercise": "05-windows-advanced/topics/04-Process-Injection/04-Process-Doppelganging/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/04-Process-Injection/04-Process-Doppelganging/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/04-Process-Injection/05-Module-Stomping",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/04-Process-Injection/05-Module-Stomping/Cours.md",
+      "example": "05-windows-advanced/topics/04-Process-Injection/05-Module-Stomping/example.c",
+      "exercise": "05-windows-advanced/topics/04-Process-Injection/05-Module-Stomping/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/04-Process-Injection/05-Module-Stomping/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/04-Process-Injection/06-Shellcode-Injection",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/04-Process-Injection/06-Shellcode-Injection/Cours.md",
+      "example": "05-windows-advanced/topics/04-Process-Injection/06-Shellcode-Injection/example.c",
+      "exercise": "05-windows-advanced/topics/04-Process-Injection/06-Shellcode-Injection/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/04-Process-Injection/06-Shellcode-Injection/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/04-Process-Injection/07-IAT-Hooking",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/04-Process-Injection/07-IAT-Hooking/Cours.md",
+      "example": "05-windows-advanced/topics/04-Process-Injection/07-IAT-Hooking/example.c",
+      "exercise": "05-windows-advanced/topics/04-Process-Injection/07-IAT-Hooking/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/04-Process-Injection/07-IAT-Hooking/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/04-Process-Injection/08-Inline-Hooking",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/04-Process-Injection/08-Inline-Hooking/Cours.md",
+      "example": "05-windows-advanced/topics/04-Process-Injection/08-Inline-Hooking/example.c",
+      "exercise": "05-windows-advanced/topics/04-Process-Injection/08-Inline-Hooking/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/04-Process-Injection/08-Inline-Hooking/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/04-Process-Injection/09-Unhooking",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/04-Process-Injection/09-Unhooking/Cours.md",
+      "example": "05-windows-advanced/topics/04-Process-Injection/09-Unhooking/example.c",
+      "exercise": "05-windows-advanced/topics/04-Process-Injection/09-Unhooking/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/04-Process-Injection/09-Unhooking/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/04-Process-Injection/10-Reflective-DLL",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/04-Process-Injection/10-Reflective-DLL/Cours.md",
+      "example": "05-windows-advanced/topics/04-Process-Injection/10-Reflective-DLL/example.c",
+      "exercise": "05-windows-advanced/topics/04-Process-Injection/10-Reflective-DLL/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/04-Process-Injection/10-Reflective-DLL/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/01-String-Obfuscation",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/01-String-Obfuscation/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/01-String-Obfuscation/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/01-String-Obfuscation/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/01-String-Obfuscation/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/02-API-Hashing",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/02-API-Hashing/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/02-API-Hashing/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/02-API-Hashing/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/02-API-Hashing/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/03-Direct-Syscalls",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/03-Direct-Syscalls/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/03-Direct-Syscalls/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/03-Direct-Syscalls/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/03-Direct-Syscalls/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/04-AMSI-Bypass",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/04-AMSI-Bypass/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/04-AMSI-Bypass/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/04-AMSI-Bypass/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/04-AMSI-Bypass/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/05-ETW-Patching",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/05-ETW-Patching/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/05-ETW-Patching/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/05-ETW-Patching/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/05-ETW-Patching/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/06-Sleep-Obfuscation",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/06-Sleep-Obfuscation/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/06-Sleep-Obfuscation/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/06-Sleep-Obfuscation/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/06-Sleep-Obfuscation/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/07-Memory-Evasion",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/07-Memory-Evasion/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/07-Memory-Evasion/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/07-Memory-Evasion/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/07-Memory-Evasion/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/08-Sandbox-Detection",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/08-Sandbox-Detection/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/08-Sandbox-Detection/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/08-Sandbox-Detection/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/08-Sandbox-Detection/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/09-Anti-Debug",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/09-Anti-Debug/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/09-Anti-Debug/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/09-Anti-Debug/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/09-Anti-Debug/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/10-PPID-Spoofing",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/10-PPID-Spoofing/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/10-PPID-Spoofing/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/10-PPID-Spoofing/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/10-PPID-Spoofing/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/11-Callback-Evasion",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/11-Callback-Evasion/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/11-Callback-Evasion/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/11-Callback-Evasion/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/11-Callback-Evasion/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/05-Evasion/12-PE-Packer",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/05-Evasion/12-PE-Packer/Cours.md",
+      "example": "05-windows-advanced/topics/05-Evasion/12-PE-Packer/example.c",
+      "exercise": "05-windows-advanced/topics/05-Evasion/12-PE-Packer/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/05-Evasion/12-PE-Packer/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/07-Credential-Access/01-Token-Impersonation",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/07-Credential-Access/01-Token-Impersonation/Cours.md",
+      "example": "05-windows-advanced/topics/07-Credential-Access/01-Token-Impersonation/example.c",
+      "exercise": "05-windows-advanced/topics/07-Credential-Access/01-Token-Impersonation/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/07-Credential-Access/01-Token-Impersonation/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/07-Credential-Access/02-Credential-Access",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/07-Credential-Access/02-Credential-Access/Cours.md",
+      "example": "05-windows-advanced/topics/07-Credential-Access/02-Credential-Access/example.c",
+      "exercise": "05-windows-advanced/topics/07-Credential-Access/02-Credential-Access/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/07-Credential-Access/02-Credential-Access/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/07-Credential-Access/03-Pass-The-Hash",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/07-Credential-Access/03-Pass-The-Hash/Cours.md",
+      "example": "05-windows-advanced/topics/07-Credential-Access/03-Pass-The-Hash/example.c",
+      "exercise": "05-windows-advanced/topics/07-Credential-Access/03-Pass-The-Hash/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/07-Credential-Access/03-Pass-The-Hash/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/07-Credential-Access/04-WMI-Lateral",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/07-Credential-Access/04-WMI-Lateral/Cours.md",
+      "example": "05-windows-advanced/topics/07-Credential-Access/04-WMI-Lateral/example.c",
+      "exercise": "05-windows-advanced/topics/07-Credential-Access/04-WMI-Lateral/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/07-Credential-Access/04-WMI-Lateral/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/07-Credential-Access/05-PSExec-Technique",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/07-Credential-Access/05-PSExec-Technique/Cours.md",
+      "example": "05-windows-advanced/topics/07-Credential-Access/05-PSExec-Technique/example.c",
+      "exercise": "05-windows-advanced/topics/07-Credential-Access/05-PSExec-Technique/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/07-Credential-Access/05-PSExec-Technique/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/07-Credential-Access/06-DCOM-Lateral",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/07-Credential-Access/06-DCOM-Lateral/Cours.md",
+      "example": "05-windows-advanced/topics/07-Credential-Access/06-DCOM-Lateral/example.c",
+      "exercise": "05-windows-advanced/topics/07-Credential-Access/06-DCOM-Lateral/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/07-Credential-Access/06-DCOM-Lateral/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/00-Reverse-Shell",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/00-Reverse-Shell/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/00-Reverse-Shell/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/00-Reverse-Shell/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/00-Reverse-Shell/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/01-HTTP-Client-WinHTTP",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/01-HTTP-Client-WinHTTP/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/01-HTTP-Client-WinHTTP/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/01-HTTP-Client-WinHTTP/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/01-HTTP-Client-WinHTTP/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/02-HTTPS-Communication",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/02-HTTPS-Communication/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/02-HTTPS-Communication/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/02-HTTPS-Communication/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/02-HTTPS-Communication/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/03-WinInet-Client",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/03-WinInet-Client/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/03-WinInet-Client/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/03-WinInet-Client/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/03-WinInet-Client/solution.md",
+        "05-windows-advanced/topics/08-C2-Development/03-WinInet-Client/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/04-JSON-Parsing",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/04-JSON-Parsing/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/04-JSON-Parsing/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/04-JSON-Parsing/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/04-JSON-Parsing/solution.md",
+        "05-windows-advanced/topics/08-C2-Development/04-JSON-Parsing/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/05-DNS-Communication",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/05-DNS-Communication/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/05-DNS-Communication/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/05-DNS-Communication/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/05-DNS-Communication/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/06-Domain-Fronting",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/06-Domain-Fronting/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/06-Domain-Fronting/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/06-Domain-Fronting/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/06-Domain-Fronting/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/07-Proxy-Awareness",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/07-Proxy-Awareness/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/07-Proxy-Awareness/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/07-Proxy-Awareness/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/07-Proxy-Awareness/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/08-SMB-Communication",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/08-SMB-Communication/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/08-SMB-Communication/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/08-SMB-Communication/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/08-SMB-Communication/solution.md",
+        "05-windows-advanced/topics/08-C2-Development/08-SMB-Communication/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/09-Beacon-Architecture",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/09-Beacon-Architecture/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/09-Beacon-Architecture/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/09-Beacon-Architecture/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/09-Beacon-Architecture/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/10-Session-Management",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/10-Session-Management/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/10-Session-Management/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/10-Session-Management/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/10-Session-Management/solution.md",
+        "05-windows-advanced/topics/08-C2-Development/10-Session-Management/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/11-Jitter-Sleep",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/11-Jitter-Sleep/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/11-Jitter-Sleep/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/11-Jitter-Sleep/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/11-Jitter-Sleep/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/12-Staged-vs-Stageless",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/12-Staged-vs-Stageless/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/12-Staged-vs-Stageless/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/12-Staged-vs-Stageless/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/12-Staged-vs-Stageless/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/13-Command-Dispatcher",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/13-Command-Dispatcher/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/13-Command-Dispatcher/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/13-Command-Dispatcher/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/13-Command-Dispatcher/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/14-Output-Capture",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/14-Output-Capture/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/14-Output-Capture/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/14-Output-Capture/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/14-Output-Capture/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/15-File-Operations",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/15-File-Operations/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/15-File-Operations/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/15-File-Operations/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/15-File-Operations/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/16-Process-Operations",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/16-Process-Operations/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/16-Process-Operations/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/16-Process-Operations/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/16-Process-Operations/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/17-Screenshot",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/17-Screenshot/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/17-Screenshot/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/17-Screenshot/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/17-Screenshot/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/18-Keylogger",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/18-Keylogger/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/18-Keylogger/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/18-Keylogger/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/18-Keylogger/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/19-Persistence-Agent",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/19-Persistence-Agent/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/19-Persistence-Agent/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/19-Persistence-Agent/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/19-Persistence-Agent/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/08-C2-Development/20-Kill-Switch",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/08-C2-Development/20-Kill-Switch/Cours.md",
+      "example": "05-windows-advanced/topics/08-C2-Development/20-Kill-Switch/example.c",
+      "exercise": "05-windows-advanced/topics/08-C2-Development/20-Kill-Switch/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/08-C2-Development/20-Kill-Switch/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/01-Driver-Basics",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/01-Driver-Basics/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/01-Driver-Basics/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/01-Driver-Basics/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/01-Driver-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/02-Kernel-Memory",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/02-Kernel-Memory/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/02-Kernel-Memory/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/02-Kernel-Memory/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/02-Kernel-Memory/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/03-IOCTL-Communication",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/03-IOCTL-Communication/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/03-IOCTL-Communication/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/03-IOCTL-Communication/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/03-IOCTL-Communication/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/04-Callbacks",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/04-Callbacks/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/04-Callbacks/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/04-Callbacks/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/04-Callbacks/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/05-DKOM",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/05-DKOM/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/05-DKOM/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/05-DKOM/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/05-DKOM/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/06-SSDT-Hooking",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/06-SSDT-Hooking/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/06-SSDT-Hooking/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/06-SSDT-Hooking/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/06-SSDT-Hooking/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/07-Minifilter",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/07-Minifilter/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/07-Minifilter/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/07-Minifilter/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/07-Minifilter/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/08-BYOVD",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/08-BYOVD/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/08-BYOVD/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/08-BYOVD/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/08-BYOVD/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/09-DSE-Bypass",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/09-DSE-Bypass/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/09-DSE-Bypass/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/09-DSE-Bypass/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/09-DSE-Bypass/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/10-Kernel-Rootkit-Basics",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/10-Kernel-Rootkit-Basics/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/10-Kernel-Rootkit-Basics/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/10-Kernel-Rootkit-Basics/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/10-Kernel-Rootkit-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/11-Hypervisor-Awareness",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/11-Hypervisor-Awareness/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/11-Hypervisor-Awareness/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/11-Hypervisor-Awareness/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/11-Hypervisor-Awareness/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "05-windows-advanced/topics/09-Kernel/12-PatchGuard-Basics",
+      "section": "05-windows-advanced",
+      "course": "05-windows-advanced/topics/09-Kernel/12-PatchGuard-Basics/Cours.md",
+      "example": "05-windows-advanced/topics/09-Kernel/12-PatchGuard-Basics/example.c",
+      "exercise": "05-windows-advanced/topics/09-Kernel/12-PatchGuard-Basics/exercice.md",
+      "solutions": [
+        "05-windows-advanced/topics/09-Kernel/12-PatchGuard-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/01-Fondamentaux/01-Syscalls-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/01-Fondamentaux/01-Syscalls-Linux/Cours.md",
+      "example": "08-linux/topics/01-Fondamentaux/01-Syscalls-Linux/example.c",
+      "exercise": "08-linux/topics/01-Fondamentaux/01-Syscalls-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/01-Fondamentaux/01-Syscalls-Linux/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/01-Fondamentaux/02-ELF-Format",
+      "section": "08-linux",
+      "course": "08-linux/topics/01-Fondamentaux/02-ELF-Format/Cours.md",
+      "example": "08-linux/topics/01-Fondamentaux/02-ELF-Format/example.c",
+      "exercise": "08-linux/topics/01-Fondamentaux/02-ELF-Format/exercice.md",
+      "solutions": [
+        "08-linux/topics/01-Fondamentaux/02-ELF-Format/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/01-Fondamentaux/03-Ptrace",
+      "section": "08-linux",
+      "course": "08-linux/topics/01-Fondamentaux/03-Ptrace/Cours.md",
+      "example": "08-linux/topics/01-Fondamentaux/03-Ptrace/example.c",
+      "exercise": "08-linux/topics/01-Fondamentaux/03-Ptrace/exercice.md",
+      "solutions": [
+        "08-linux/topics/01-Fondamentaux/03-Ptrace/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/01-Fondamentaux/04-Proc-Filesystem",
+      "section": "08-linux",
+      "course": "08-linux/topics/01-Fondamentaux/04-Proc-Filesystem/Cours.md",
+      "example": "08-linux/topics/01-Fondamentaux/04-Proc-Filesystem/example.c",
+      "exercise": "08-linux/topics/01-Fondamentaux/04-Proc-Filesystem/exercice.md",
+      "solutions": [
+        "08-linux/topics/01-Fondamentaux/04-Proc-Filesystem/solution.md",
+        "08-linux/topics/01-Fondamentaux/04-Proc-Filesystem/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/01-Fondamentaux/05-Shared-Libraries",
+      "section": "08-linux",
+      "course": "08-linux/topics/01-Fondamentaux/05-Shared-Libraries/Cours.md",
+      "example": "08-linux/topics/01-Fondamentaux/05-Shared-Libraries/example.c",
+      "exercise": "08-linux/topics/01-Fondamentaux/05-Shared-Libraries/exercice.md",
+      "solutions": [
+        "08-linux/topics/01-Fondamentaux/05-Shared-Libraries/solution.md",
+        "08-linux/topics/01-Fondamentaux/05-Shared-Libraries/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/01-Fondamentaux/06-Networking-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/01-Fondamentaux/06-Networking-Linux/Cours.md",
+      "example": "08-linux/topics/01-Fondamentaux/06-Networking-Linux/example.c",
+      "exercise": "08-linux/topics/01-Fondamentaux/06-Networking-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/01-Fondamentaux/06-Networking-Linux/solution.md",
+        "08-linux/topics/01-Fondamentaux/06-Networking-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/01-Fondamentaux/07-Permissions-Capabilities",
+      "section": "08-linux",
+      "course": "08-linux/topics/01-Fondamentaux/07-Permissions-Capabilities/Cours.md",
+      "example": "08-linux/topics/01-Fondamentaux/07-Permissions-Capabilities/example.c",
+      "exercise": "08-linux/topics/01-Fondamentaux/07-Permissions-Capabilities/exercice.md",
+      "solutions": [
+        "08-linux/topics/01-Fondamentaux/07-Permissions-Capabilities/solution.md",
+        "08-linux/topics/01-Fondamentaux/07-Permissions-Capabilities/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/01-Fondamentaux/08-Memory-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/01-Fondamentaux/08-Memory-Linux/Cours.md",
+      "example": "08-linux/topics/01-Fondamentaux/08-Memory-Linux/example.c",
+      "exercise": "08-linux/topics/01-Fondamentaux/08-Memory-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/01-Fondamentaux/08-Memory-Linux/solution.md",
+        "08-linux/topics/01-Fondamentaux/08-Memory-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/02-Internals/01-Process-Injection",
+      "section": "08-linux",
+      "course": "08-linux/topics/02-Internals/01-Process-Injection/Cours.md",
+      "example": "08-linux/topics/02-Internals/01-Process-Injection/example.c",
+      "exercise": "08-linux/topics/02-Internals/01-Process-Injection/exercice.md",
+      "solutions": [
+        "08-linux/topics/02-Internals/01-Process-Injection/solution.md",
+        "08-linux/topics/02-Internals/01-Process-Injection/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/02-Internals/02-Syscall-Hooking-User",
+      "section": "08-linux",
+      "course": "08-linux/topics/02-Internals/02-Syscall-Hooking-User/Cours.md",
+      "example": "08-linux/topics/02-Internals/02-Syscall-Hooking-User/example.c",
+      "exercise": "08-linux/topics/02-Internals/02-Syscall-Hooking-User/exercice.md",
+      "solutions": [
+        "08-linux/topics/02-Internals/02-Syscall-Hooking-User/solution.md",
+        "08-linux/topics/02-Internals/02-Syscall-Hooking-User/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/02-Internals/03-Anti-Debug",
+      "section": "08-linux",
+      "course": "08-linux/topics/02-Internals/03-Anti-Debug/Cours.md",
+      "example": "08-linux/topics/02-Internals/03-Anti-Debug/example.c",
+      "exercise": "08-linux/topics/02-Internals/03-Anti-Debug/exercice.md",
+      "solutions": [
+        "08-linux/topics/02-Internals/03-Anti-Debug/solution.md",
+        "08-linux/topics/02-Internals/03-Anti-Debug/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/02-Internals/04-Sandbox-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/02-Internals/04-Sandbox-Linux/Cours.md",
+      "example": "08-linux/topics/02-Internals/04-Sandbox-Linux/example.c",
+      "exercise": "08-linux/topics/02-Internals/04-Sandbox-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/02-Internals/04-Sandbox-Linux/solution.md",
+        "08-linux/topics/02-Internals/04-Sandbox-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/02-Internals/05-PAM-Backdoor",
+      "section": "08-linux",
+      "course": "08-linux/topics/02-Internals/05-PAM-Backdoor/Cours.md",
+      "example": "08-linux/topics/02-Internals/05-PAM-Backdoor/example.c",
+      "exercise": "08-linux/topics/02-Internals/05-PAM-Backdoor/exercice.md",
+      "solutions": [
+        "08-linux/topics/02-Internals/05-PAM-Backdoor/solution.md",
+        "08-linux/topics/02-Internals/05-PAM-Backdoor/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/02-Internals/06-Shellcode-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/02-Internals/06-Shellcode-Linux/Cours.md",
+      "example": "08-linux/topics/02-Internals/06-Shellcode-Linux/example.c",
+      "exercise": "08-linux/topics/02-Internals/06-Shellcode-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/02-Internals/06-Shellcode-Linux/solution.md",
+        "08-linux/topics/02-Internals/06-Shellcode-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/02-Internals/07-ROP-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/02-Internals/07-ROP-Linux/Cours.md",
+      "example": "08-linux/topics/02-Internals/07-ROP-Linux/example.c",
+      "exercise": "08-linux/topics/02-Internals/07-ROP-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/02-Internals/07-ROP-Linux/solution.md",
+        "08-linux/topics/02-Internals/07-ROP-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/02-Internals/08-Heap-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/02-Internals/08-Heap-Linux/Cours.md",
+      "example": "08-linux/topics/02-Internals/08-Heap-Linux/example.c",
+      "exercise": "08-linux/topics/02-Internals/08-Heap-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/02-Internals/08-Heap-Linux/solution.md",
+        "08-linux/topics/02-Internals/08-Heap-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/03-Shellcoding/01-Stack-Overflow-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/03-Shellcoding/01-Stack-Overflow-Linux/Cours.md",
+      "example": "08-linux/topics/03-Shellcoding/01-Stack-Overflow-Linux/example.c",
+      "exercise": "08-linux/topics/03-Shellcoding/01-Stack-Overflow-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/03-Shellcoding/01-Stack-Overflow-Linux/solution.md",
+        "08-linux/topics/03-Shellcoding/01-Stack-Overflow-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/03-Shellcoding/02-Format-String-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/03-Shellcoding/02-Format-String-Linux/Cours.md",
+      "example": "08-linux/topics/03-Shellcoding/02-Format-String-Linux/example.c",
+      "exercise": "08-linux/topics/03-Shellcoding/02-Format-String-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/03-Shellcoding/02-Format-String-Linux/solution.md",
+        "08-linux/topics/03-Shellcoding/02-Format-String-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/03-Shellcoding/03-Use-After-Free",
+      "section": "08-linux",
+      "course": "08-linux/topics/03-Shellcoding/03-Use-After-Free/Cours.md",
+      "example": "08-linux/topics/03-Shellcoding/03-Use-After-Free/example.c",
+      "exercise": "08-linux/topics/03-Shellcoding/03-Use-After-Free/exercice.md",
+      "solutions": [
+        "08-linux/topics/03-Shellcoding/03-Use-After-Free/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/03-Shellcoding/04-Race-Conditions",
+      "section": "08-linux",
+      "course": "08-linux/topics/03-Shellcoding/04-Race-Conditions/Cours.md",
+      "example": "08-linux/topics/03-Shellcoding/04-Race-Conditions/example.c",
+      "exercise": "08-linux/topics/03-Shellcoding/04-Race-Conditions/exercice.md",
+      "solutions": [
+        "08-linux/topics/03-Shellcoding/04-Race-Conditions/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/03-Shellcoding/05-Kernel-Exploits-Basics",
+      "section": "08-linux",
+      "course": "08-linux/topics/03-Shellcoding/05-Kernel-Exploits-Basics/Cours.md",
+      "example": "08-linux/topics/03-Shellcoding/05-Kernel-Exploits-Basics/example.c",
+      "exercise": "08-linux/topics/03-Shellcoding/05-Kernel-Exploits-Basics/exercice.md",
+      "solutions": [
+        "08-linux/topics/03-Shellcoding/05-Kernel-Exploits-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/03-Shellcoding/06-Dirty-Pipe-Study",
+      "section": "08-linux",
+      "course": "08-linux/topics/03-Shellcoding/06-Dirty-Pipe-Study/Cours.md",
+      "example": "08-linux/topics/03-Shellcoding/06-Dirty-Pipe-Study/example.c",
+      "exercise": "08-linux/topics/03-Shellcoding/06-Dirty-Pipe-Study/exercice.md",
+      "solutions": [
+        "08-linux/topics/03-Shellcoding/06-Dirty-Pipe-Study/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/07-Privilege-Escalation/01-ROP-Basics",
+      "section": "08-linux",
+      "course": "08-linux/topics/07-Privilege-Escalation/01-ROP-Basics/Cours.md",
+      "example": "08-linux/topics/07-Privilege-Escalation/01-ROP-Basics/example.c",
+      "exercise": "08-linux/topics/07-Privilege-Escalation/01-ROP-Basics/exercice.md",
+      "solutions": [
+        "08-linux/topics/07-Privilege-Escalation/01-ROP-Basics/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/07-Privilege-Escalation/02-Container-Basics",
+      "section": "08-linux",
+      "course": "08-linux/topics/07-Privilege-Escalation/02-Container-Basics/Cours.md",
+      "example": "08-linux/topics/07-Privilege-Escalation/02-Container-Basics/example.c",
+      "exercise": "08-linux/topics/07-Privilege-Escalation/02-Container-Basics/exercice.md",
+      "solutions": [
+        "08-linux/topics/07-Privilege-Escalation/02-Container-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/07-Privilege-Escalation/03-Docker-Exploitation",
+      "section": "08-linux",
+      "course": "08-linux/topics/07-Privilege-Escalation/03-Docker-Exploitation/Cours.md",
+      "example": "08-linux/topics/07-Privilege-Escalation/03-Docker-Exploitation/example.c",
+      "exercise": "08-linux/topics/07-Privilege-Escalation/03-Docker-Exploitation/exercice.md",
+      "solutions": [
+        "08-linux/topics/07-Privilege-Escalation/03-Docker-Exploitation/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/07-Privilege-Escalation/04-Kubernetes-Basics",
+      "section": "08-linux",
+      "course": "08-linux/topics/07-Privilege-Escalation/04-Kubernetes-Basics/Cours.md",
+      "example": "08-linux/topics/07-Privilege-Escalation/04-Kubernetes-Basics/example.c",
+      "exercise": "08-linux/topics/07-Privilege-Escalation/04-Kubernetes-Basics/exercice.md",
+      "solutions": [
+        "08-linux/topics/07-Privilege-Escalation/04-Kubernetes-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/07-Privilege-Escalation/05-Kubernetes-Attacks",
+      "section": "08-linux",
+      "course": "08-linux/topics/07-Privilege-Escalation/05-Kubernetes-Attacks/Cours.md",
+      "example": "08-linux/topics/07-Privilege-Escalation/05-Kubernetes-Attacks/example.c",
+      "exercise": "08-linux/topics/07-Privilege-Escalation/05-Kubernetes-Attacks/exercice.md",
+      "solutions": [
+        "08-linux/topics/07-Privilege-Escalation/05-Kubernetes-Attacks/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/07-Privilege-Escalation/06-Namespace-Escape",
+      "section": "08-linux",
+      "course": "08-linux/topics/07-Privilege-Escalation/06-Namespace-Escape/Cours.md",
+      "example": "08-linux/topics/07-Privilege-Escalation/06-Namespace-Escape/example.c",
+      "exercise": "08-linux/topics/07-Privilege-Escalation/06-Namespace-Escape/exercice.md",
+      "solutions": [
+        "08-linux/topics/07-Privilege-Escalation/06-Namespace-Escape/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/07-Privilege-Escalation/07-Cgroup-Escape",
+      "section": "08-linux",
+      "course": "08-linux/topics/07-Privilege-Escalation/07-Cgroup-Escape/Cours.md",
+      "example": "08-linux/topics/07-Privilege-Escalation/07-Cgroup-Escape/example.c",
+      "exercise": "08-linux/topics/07-Privilege-Escalation/07-Cgroup-Escape/exercice.md",
+      "solutions": [
+        "08-linux/topics/07-Privilege-Escalation/07-Cgroup-Escape/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/08-Rootkits/01-LKM-Basics",
+      "section": "08-linux",
+      "course": "08-linux/topics/08-Rootkits/01-LKM-Basics/Cours.md",
+      "example": "08-linux/topics/08-Rootkits/01-LKM-Basics/example.c",
+      "exercise": "08-linux/topics/08-Rootkits/01-LKM-Basics/exercice.md",
+      "solutions": [
+        "08-linux/topics/08-Rootkits/01-LKM-Basics/solution.md",
+        "08-linux/topics/08-Rootkits/01-LKM-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/08-Rootkits/02-Syscall-Table-Hook",
+      "section": "08-linux",
+      "course": "08-linux/topics/08-Rootkits/02-Syscall-Table-Hook/Cours.md",
+      "example": "08-linux/topics/08-Rootkits/02-Syscall-Table-Hook/example.c",
+      "exercise": "08-linux/topics/08-Rootkits/02-Syscall-Table-Hook/exercice.md",
+      "solutions": [
+        "08-linux/topics/08-Rootkits/02-Syscall-Table-Hook/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/08-Rootkits/03-Proc-Hiding-Kernel",
+      "section": "08-linux",
+      "course": "08-linux/topics/08-Rootkits/03-Proc-Hiding-Kernel/Cours.md",
+      "example": "08-linux/topics/08-Rootkits/03-Proc-Hiding-Kernel/example.c",
+      "exercise": "08-linux/topics/08-Rootkits/03-Proc-Hiding-Kernel/exercice.md",
+      "solutions": [
+        "08-linux/topics/08-Rootkits/03-Proc-Hiding-Kernel/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/08-Rootkits/04-File-Hiding-Kernel",
+      "section": "08-linux",
+      "course": "08-linux/topics/08-Rootkits/04-File-Hiding-Kernel/Cours.md",
+      "example": "08-linux/topics/08-Rootkits/04-File-Hiding-Kernel/example.c",
+      "exercise": "08-linux/topics/08-Rootkits/04-File-Hiding-Kernel/exercice.md",
+      "solutions": [
+        "08-linux/topics/08-Rootkits/04-File-Hiding-Kernel/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/08-Rootkits/05-Network-Hiding",
+      "section": "08-linux",
+      "course": "08-linux/topics/08-Rootkits/05-Network-Hiding/Cours.md",
+      "example": "08-linux/topics/08-Rootkits/05-Network-Hiding/example.c",
+      "exercise": "08-linux/topics/08-Rootkits/05-Network-Hiding/exercice.md",
+      "solutions": [
+        "08-linux/topics/08-Rootkits/05-Network-Hiding/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/08-Rootkits/06-Rootkit-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/08-Rootkits/06-Rootkit-Linux/Cours.md",
+      "example": "08-linux/topics/08-Rootkits/06-Rootkit-Linux/example.c",
+      "exercise": "08-linux/topics/08-Rootkits/06-Rootkit-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/08-Rootkits/06-Rootkit-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/08-Rootkits/07-eBPF-Basics",
+      "section": "08-linux",
+      "course": "08-linux/topics/08-Rootkits/07-eBPF-Basics/Cours.md",
+      "example": "08-linux/topics/08-Rootkits/07-eBPF-Basics/example.c",
+      "exercise": "08-linux/topics/08-Rootkits/07-eBPF-Basics/exercice.md",
+      "solutions": [
+        "08-linux/topics/08-Rootkits/07-eBPF-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/08-Rootkits/08-eBPF-Offensive",
+      "section": "08-linux",
+      "course": "08-linux/topics/08-Rootkits/08-eBPF-Offensive/Cours.md",
+      "example": "08-linux/topics/08-Rootkits/08-eBPF-Offensive/example.c",
+      "exercise": "08-linux/topics/08-Rootkits/08-eBPF-Offensive/exercice.md",
+      "solutions": [
+        "08-linux/topics/08-Rootkits/08-eBPF-Offensive/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/09-C2-Development/01-HTTP-Client-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/09-C2-Development/01-HTTP-Client-Linux/Cours.md",
+      "example": "08-linux/topics/09-C2-Development/01-HTTP-Client-Linux/example.c",
+      "exercise": "08-linux/topics/09-C2-Development/01-HTTP-Client-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/09-C2-Development/01-HTTP-Client-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/09-C2-Development/02-DNS-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/09-C2-Development/02-DNS-Linux/Cours.md",
+      "example": "08-linux/topics/09-C2-Development/02-DNS-Linux/example.c",
+      "exercise": "08-linux/topics/09-C2-Development/02-DNS-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/09-C2-Development/02-DNS-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/09-C2-Development/03-Beacon-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/09-C2-Development/03-Beacon-Linux/Cours.md",
+      "example": "08-linux/topics/09-C2-Development/03-Beacon-Linux/example.c",
+      "exercise": "08-linux/topics/09-C2-Development/03-Beacon-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/09-C2-Development/03-Beacon-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/09-C2-Development/04-Persistence-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/09-C2-Development/04-Persistence-Linux/Cours.md",
+      "example": "08-linux/topics/09-C2-Development/04-Persistence-Linux/example.c",
+      "exercise": "08-linux/topics/09-C2-Development/04-Persistence-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/09-C2-Development/04-Persistence-Linux/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/09-C2-Development/05-Evasion-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/09-C2-Development/05-Evasion-Linux/Cours.md",
+      "example": "08-linux/topics/09-C2-Development/05-Evasion-Linux/example.c",
+      "exercise": "08-linux/topics/09-C2-Development/05-Evasion-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/09-C2-Development/05-Evasion-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/09-C2-Development/06-File-Operations",
+      "section": "08-linux",
+      "course": "08-linux/topics/09-C2-Development/06-File-Operations/Cours.md",
+      "example": "08-linux/topics/09-C2-Development/06-File-Operations/example.c",
+      "exercise": "08-linux/topics/09-C2-Development/06-File-Operations/exercice.md",
+      "solutions": [
+        "08-linux/topics/09-C2-Development/06-File-Operations/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/09-C2-Development/07-Screenshot-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/09-C2-Development/07-Screenshot-Linux/Cours.md",
+      "example": "08-linux/topics/09-C2-Development/07-Screenshot-Linux/example.c",
+      "exercise": "08-linux/topics/09-C2-Development/07-Screenshot-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/09-C2-Development/07-Screenshot-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/09-C2-Development/08-Keylogger-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/09-C2-Development/08-Keylogger-Linux/Cours.md",
+      "example": "08-linux/topics/09-C2-Development/08-Keylogger-Linux/example.c",
+      "exercise": "08-linux/topics/09-C2-Development/08-Keylogger-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/09-C2-Development/08-Keylogger-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/09-C2-Development/09-Credential-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/09-C2-Development/09-Credential-Linux/Cours.md",
+      "example": "08-linux/topics/09-C2-Development/09-Credential-Linux/example.c",
+      "exercise": "08-linux/topics/09-C2-Development/09-Credential-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/09-C2-Development/09-Credential-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "08-linux/topics/09-C2-Development/10-Lateral-Linux",
+      "section": "08-linux",
+      "course": "08-linux/topics/09-C2-Development/10-Lateral-Linux/Cours.md",
+      "example": "08-linux/topics/09-C2-Development/10-Lateral-Linux/example.c",
+      "exercise": "08-linux/topics/09-C2-Development/10-Lateral-Linux/exercice.md",
+      "solutions": [
+        "08-linux/topics/09-C2-Development/10-Lateral-Linux/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/01-Fondamentaux/01-Mach-O-Format",
+      "section": "09-macos",
+      "course": "09-macos/topics/01-Fondamentaux/01-Mach-O-Format/Cours.md",
+      "example": "09-macos/topics/01-Fondamentaux/01-Mach-O-Format/example.c",
+      "exercise": "09-macos/topics/01-Fondamentaux/01-Mach-O-Format/exercice.md",
+      "solutions": [
+        "09-macos/topics/01-Fondamentaux/01-Mach-O-Format/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/01-Fondamentaux/02-macOS-Syscalls",
+      "section": "09-macos",
+      "course": "09-macos/topics/01-Fondamentaux/02-macOS-Syscalls/Cours.md",
+      "example": "09-macos/topics/01-Fondamentaux/02-macOS-Syscalls/example.c",
+      "exercise": "09-macos/topics/01-Fondamentaux/02-macOS-Syscalls/exercice.md",
+      "solutions": [
+        "09-macos/topics/01-Fondamentaux/02-macOS-Syscalls/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/01-Fondamentaux/03-Dylib-Loading",
+      "section": "09-macos",
+      "course": "09-macos/topics/01-Fondamentaux/03-Dylib-Loading/Cours.md",
+      "example": "09-macos/topics/01-Fondamentaux/03-Dylib-Loading/example.c",
+      "exercise": "09-macos/topics/01-Fondamentaux/03-Dylib-Loading/exercice.md",
+      "solutions": [
+        "09-macos/topics/01-Fondamentaux/03-Dylib-Loading/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/01-Fondamentaux/04-Mach-Ports",
+      "section": "09-macos",
+      "course": "09-macos/topics/01-Fondamentaux/04-Mach-Ports/Cours.md",
+      "example": "09-macos/topics/01-Fondamentaux/04-Mach-Ports/example.c",
+      "exercise": "09-macos/topics/01-Fondamentaux/04-Mach-Ports/exercice.md",
+      "solutions": [
+        "09-macos/topics/01-Fondamentaux/04-Mach-Ports/solution.md",
+        "09-macos/topics/01-Fondamentaux/04-Mach-Ports/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/01-Fondamentaux/05-Code-Signing",
+      "section": "09-macos",
+      "course": "09-macos/topics/01-Fondamentaux/05-Code-Signing/Cours.md",
+      "example": "09-macos/topics/01-Fondamentaux/05-Code-Signing/example.c",
+      "exercise": "09-macos/topics/01-Fondamentaux/05-Code-Signing/exercice.md",
+      "solutions": [
+        "09-macos/topics/01-Fondamentaux/05-Code-Signing/solution.md",
+        "09-macos/topics/01-Fondamentaux/05-Code-Signing/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/01-Fondamentaux/06-XPC-Services",
+      "section": "09-macos",
+      "course": "09-macos/topics/01-Fondamentaux/06-XPC-Services/Cours.md",
+      "example": "09-macos/topics/01-Fondamentaux/06-XPC-Services/example.c",
+      "exercise": "09-macos/topics/01-Fondamentaux/06-XPC-Services/exercice.md",
+      "solutions": [
+        "09-macos/topics/01-Fondamentaux/06-XPC-Services/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/01-Fondamentaux/07-ARM64-Architecture",
+      "section": "09-macos",
+      "course": "09-macos/topics/01-Fondamentaux/07-ARM64-Architecture/Cours.md",
+      "example": "09-macos/topics/01-Fondamentaux/07-ARM64-Architecture/example.c",
+      "exercise": "09-macos/topics/01-Fondamentaux/07-ARM64-Architecture/exercice.md",
+      "solutions": [
+        "09-macos/topics/01-Fondamentaux/07-ARM64-Architecture/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/02-Internals/01-TCC",
+      "section": "09-macos",
+      "course": "09-macos/topics/02-Internals/01-TCC/Cours.md",
+      "example": "09-macos/topics/02-Internals/01-TCC/example.c",
+      "exercise": "09-macos/topics/02-Internals/01-TCC/exercice.md",
+      "solutions": [
+        "09-macos/topics/02-Internals/01-TCC/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/02-Internals/02-SIP",
+      "section": "09-macos",
+      "course": "09-macos/topics/02-Internals/02-SIP/Cours.md",
+      "example": "09-macos/topics/02-Internals/02-SIP/example.c",
+      "exercise": "09-macos/topics/02-Internals/02-SIP/exercice.md",
+      "solutions": [
+        "09-macos/topics/02-Internals/02-SIP/solution.md",
+        "09-macos/topics/02-Internals/02-SIP/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/02-Internals/03-Gatekeeper",
+      "section": "09-macos",
+      "course": "09-macos/topics/02-Internals/03-Gatekeeper/Cours.md",
+      "example": "09-macos/topics/02-Internals/03-Gatekeeper/example.c",
+      "exercise": "09-macos/topics/02-Internals/03-Gatekeeper/exercice.md",
+      "solutions": [
+        "09-macos/topics/02-Internals/03-Gatekeeper/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/02-Internals/04-Endpoint-Security",
+      "section": "09-macos",
+      "course": "09-macos/topics/02-Internals/04-Endpoint-Security/Cours.md",
+      "example": "09-macos/topics/02-Internals/04-Endpoint-Security/example.c",
+      "exercise": "09-macos/topics/02-Internals/04-Endpoint-Security/exercice.md",
+      "solutions": [
+        "09-macos/topics/02-Internals/04-Endpoint-Security/solution.md",
+        "09-macos/topics/02-Internals/04-Endpoint-Security/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/02-Internals/05-KEXT-Basics",
+      "section": "09-macos",
+      "course": "09-macos/topics/02-Internals/05-KEXT-Basics/Cours.md",
+      "example": "09-macos/topics/02-Internals/05-KEXT-Basics/example.c",
+      "exercise": "09-macos/topics/02-Internals/05-KEXT-Basics/exercice.md",
+      "solutions": [
+        "09-macos/topics/02-Internals/05-KEXT-Basics/solution.md",
+        "09-macos/topics/02-Internals/05-KEXT-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/02-Internals/06-AMFI",
+      "section": "09-macos",
+      "course": "09-macos/topics/02-Internals/06-AMFI/Cours.md",
+      "example": "09-macos/topics/02-Internals/06-AMFI/example.c",
+      "exercise": "09-macos/topics/02-Internals/06-AMFI/exercice.md",
+      "solutions": [
+        "09-macos/topics/02-Internals/06-AMFI/solution.md",
+        "09-macos/topics/02-Internals/06-AMFI/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/03-Injection/01-HTTP-Client-macOS",
+      "section": "09-macos",
+      "course": "09-macos/topics/03-Injection/01-HTTP-Client-macOS/Cours.md",
+      "example": "09-macos/topics/03-Injection/01-HTTP-Client-macOS/example.c",
+      "exercise": "09-macos/topics/03-Injection/01-HTTP-Client-macOS/exercice.md",
+      "solutions": [
+        "09-macos/topics/03-Injection/01-HTTP-Client-macOS/solution.md",
+        "09-macos/topics/03-Injection/01-HTTP-Client-macOS/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/03-Injection/02-Beacon-macOS",
+      "section": "09-macos",
+      "course": "09-macos/topics/03-Injection/02-Beacon-macOS/Cours.md",
+      "example": "09-macos/topics/03-Injection/02-Beacon-macOS/example.c",
+      "exercise": "09-macos/topics/03-Injection/02-Beacon-macOS/exercice.md",
+      "solutions": [
+        "09-macos/topics/03-Injection/02-Beacon-macOS/solution.md",
+        "09-macos/topics/03-Injection/02-Beacon-macOS/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/03-Injection/03-Persistence-macOS",
+      "section": "09-macos",
+      "course": "09-macos/topics/03-Injection/03-Persistence-macOS/Cours.md",
+      "example": "09-macos/topics/03-Injection/03-Persistence-macOS/example.c",
+      "exercise": "09-macos/topics/03-Injection/03-Persistence-macOS/exercice.md",
+      "solutions": [
+        "09-macos/topics/03-Injection/03-Persistence-macOS/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/03-Injection/04-Dylib-Injection",
+      "section": "09-macos",
+      "course": "09-macos/topics/03-Injection/04-Dylib-Injection/Cours.md",
+      "example": "09-macos/topics/03-Injection/04-Dylib-Injection/example.c",
+      "exercise": "09-macos/topics/03-Injection/04-Dylib-Injection/exercice.md",
+      "solutions": [
+        "09-macos/topics/03-Injection/04-Dylib-Injection/solution.md",
+        "09-macos/topics/03-Injection/04-Dylib-Injection/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/03-Injection/05-Keychain-Access",
+      "section": "09-macos",
+      "course": "09-macos/topics/03-Injection/05-Keychain-Access/Cours.md",
+      "example": "09-macos/topics/03-Injection/05-Keychain-Access/example.c",
+      "exercise": "09-macos/topics/03-Injection/05-Keychain-Access/exercice.md",
+      "solutions": [
+        "09-macos/topics/03-Injection/05-Keychain-Access/solution.md",
+        "09-macos/topics/03-Injection/05-Keychain-Access/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/03-Injection/06-Screenshot-macOS",
+      "section": "09-macos",
+      "course": "09-macos/topics/03-Injection/06-Screenshot-macOS/Cours.md",
+      "example": "09-macos/topics/03-Injection/06-Screenshot-macOS/example.c",
+      "exercise": "09-macos/topics/03-Injection/06-Screenshot-macOS/exercice.md",
+      "solutions": [
+        "09-macos/topics/03-Injection/06-Screenshot-macOS/solution.md",
+        "09-macos/topics/03-Injection/06-Screenshot-macOS/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/03-Injection/07-Keylogger-macOS",
+      "section": "09-macos",
+      "course": "09-macos/topics/03-Injection/07-Keylogger-macOS/Cours.md",
+      "example": "09-macos/topics/03-Injection/07-Keylogger-macOS/example.c",
+      "exercise": "09-macos/topics/03-Injection/07-Keylogger-macOS/exercice.md",
+      "solutions": [
+        "09-macos/topics/03-Injection/07-Keylogger-macOS/solution.md",
+        "09-macos/topics/03-Injection/07-Keylogger-macOS/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/03-Injection/08-Evasion-macOS",
+      "section": "09-macos",
+      "course": "09-macos/topics/03-Injection/08-Evasion-macOS/Cours.md",
+      "example": "09-macos/topics/03-Injection/08-Evasion-macOS/example.c",
+      "exercise": "09-macos/topics/03-Injection/08-Evasion-macOS/exercice.md",
+      "solutions": [
+        "09-macos/topics/03-Injection/08-Evasion-macOS/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/03-Injection/09-Shellcode-ARM64",
+      "section": "09-macos",
+      "course": "09-macos/topics/03-Injection/09-Shellcode-ARM64/Cours.md",
+      "example": "09-macos/topics/03-Injection/09-Shellcode-ARM64/example.c",
+      "exercise": "09-macos/topics/03-Injection/09-Shellcode-ARM64/exercice.md",
+      "solutions": [
+        "09-macos/topics/03-Injection/09-Shellcode-ARM64/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/04-Evasion/01-Sandbox-Detection",
+      "section": "09-macos",
+      "course": "09-macos/topics/04-Evasion/01-Sandbox-Detection/Cours.md",
+      "example": "09-macos/topics/04-Evasion/01-Sandbox-Detection/example.c",
+      "exercise": "09-macos/topics/04-Evasion/01-Sandbox-Detection/exercice.md",
+      "solutions": [
+        "09-macos/topics/04-Evasion/01-Sandbox-Detection/solution.md",
+        "09-macos/topics/04-Evasion/01-Sandbox-Detection/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/04-Evasion/02-Anti-Debug-macOS",
+      "section": "09-macos",
+      "course": "09-macos/topics/04-Evasion/02-Anti-Debug-macOS/Cours.md",
+      "example": "09-macos/topics/04-Evasion/02-Anti-Debug-macOS/example.c",
+      "exercise": "09-macos/topics/04-Evasion/02-Anti-Debug-macOS/exercice.md",
+      "solutions": [
+        "09-macos/topics/04-Evasion/02-Anti-Debug-macOS/solution.md",
+        "09-macos/topics/04-Evasion/02-Anti-Debug-macOS/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/04-Evasion/03-Process-Injection-macOS",
+      "section": "09-macos",
+      "course": "09-macos/topics/04-Evasion/03-Process-Injection-macOS/Cours.md",
+      "example": "09-macos/topics/04-Evasion/03-Process-Injection-macOS/example.c",
+      "exercise": "09-macos/topics/04-Evasion/03-Process-Injection-macOS/exercice.md",
+      "solutions": [
+        "09-macos/topics/04-Evasion/03-Process-Injection-macOS/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/04-Evasion/04-Fileless-macOS",
+      "section": "09-macos",
+      "course": "09-macos/topics/04-Evasion/04-Fileless-macOS/Cours.md",
+      "example": "09-macos/topics/04-Evasion/04-Fileless-macOS/example.c",
+      "exercise": "09-macos/topics/04-Evasion/04-Fileless-macOS/exercice.md",
+      "solutions": [
+        "09-macos/topics/04-Evasion/04-Fileless-macOS/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/04-Evasion/05-Lateral-macOS",
+      "section": "09-macos",
+      "course": "09-macos/topics/04-Evasion/05-Lateral-macOS/Cours.md",
+      "example": "09-macos/topics/04-Evasion/05-Lateral-macOS/example.c",
+      "exercise": "09-macos/topics/04-Evasion/05-Lateral-macOS/exercice.md",
+      "solutions": [
+        "09-macos/topics/04-Evasion/05-Lateral-macOS/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "09-macos/topics/06-Privilege-Escalation/01-ROP-ARM64",
+      "section": "09-macos",
+      "course": "09-macos/topics/06-Privilege-Escalation/01-ROP-ARM64/Cours.md",
+      "example": "09-macos/topics/06-Privilege-Escalation/01-ROP-ARM64/example.c",
+      "exercise": "09-macos/topics/06-Privilege-Escalation/01-ROP-ARM64/exercice.md",
+      "solutions": [
+        "09-macos/topics/06-Privilege-Escalation/01-ROP-ARM64/solution.md"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/01-Hypervisor/01-Virtualization-Basics",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/01-Hypervisor/01-Virtualization-Basics/Cours.md",
+      "example": "10-advanced/topics/01-Hypervisor/01-Virtualization-Basics/example.c",
+      "exercise": "10-advanced/topics/01-Hypervisor/01-Virtualization-Basics/exercice.md",
+      "solutions": [
+        "10-advanced/topics/01-Hypervisor/01-Virtualization-Basics/solution.md",
+        "10-advanced/topics/01-Hypervisor/01-Virtualization-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/01-Hypervisor/02-VM-Detection",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/01-Hypervisor/02-VM-Detection/Cours.md",
+      "example": "10-advanced/topics/01-Hypervisor/02-VM-Detection/example.c",
+      "exercise": "10-advanced/topics/01-Hypervisor/02-VM-Detection/exercice.md",
+      "solutions": [
+        "10-advanced/topics/01-Hypervisor/02-VM-Detection/solution.md",
+        "10-advanced/topics/01-Hypervisor/02-VM-Detection/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/01-Hypervisor/03-VM-Escape-Concepts",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/01-Hypervisor/03-VM-Escape-Concepts/Cours.md",
+      "example": "10-advanced/topics/01-Hypervisor/03-VM-Escape-Concepts/example.c",
+      "exercise": "10-advanced/topics/01-Hypervisor/03-VM-Escape-Concepts/exercice.md",
+      "solutions": [
+        "10-advanced/topics/01-Hypervisor/03-VM-Escape-Concepts/solution.md",
+        "10-advanced/topics/01-Hypervisor/03-VM-Escape-Concepts/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/01-Hypervisor/04-Hyperjacking-Theory",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/01-Hypervisor/04-Hyperjacking-Theory/Cours.md",
+      "example": "10-advanced/topics/01-Hypervisor/04-Hyperjacking-Theory/example.c",
+      "exercise": "10-advanced/topics/01-Hypervisor/04-Hyperjacking-Theory/exercice.md",
+      "solutions": [
+        "10-advanced/topics/01-Hypervisor/04-Hyperjacking-Theory/solution.md",
+        "10-advanced/topics/01-Hypervisor/04-Hyperjacking-Theory/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/01-Hypervisor/05-Cloud-Hypervisors",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/01-Hypervisor/05-Cloud-Hypervisors/Cours.md",
+      "example": "10-advanced/topics/01-Hypervisor/05-Cloud-Hypervisors/example.c",
+      "exercise": "10-advanced/topics/01-Hypervisor/05-Cloud-Hypervisors/exercice.md",
+      "solutions": [
+        "10-advanced/topics/01-Hypervisor/05-Cloud-Hypervisors/solution.md",
+        "10-advanced/topics/01-Hypervisor/05-Cloud-Hypervisors/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/02-Firmware/01-UEFI-Basics",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/02-Firmware/01-UEFI-Basics/Cours.md",
+      "example": "10-advanced/topics/02-Firmware/01-UEFI-Basics/example.c",
+      "exercise": "10-advanced/topics/02-Firmware/01-UEFI-Basics/exercice.md",
+      "solutions": [
+        "10-advanced/topics/02-Firmware/01-UEFI-Basics/solution.md",
+        "10-advanced/topics/02-Firmware/01-UEFI-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/02-Firmware/02-Secure-Boot",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/02-Firmware/02-Secure-Boot/Cours.md",
+      "example": "10-advanced/topics/02-Firmware/02-Secure-Boot/example.c",
+      "exercise": "10-advanced/topics/02-Firmware/02-Secure-Boot/exercice.md",
+      "solutions": [
+        "10-advanced/topics/02-Firmware/02-Secure-Boot/solution.md",
+        "10-advanced/topics/02-Firmware/02-Secure-Boot/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/02-Firmware/03-SPI-Flash",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/02-Firmware/03-SPI-Flash/Cours.md",
+      "example": "10-advanced/topics/02-Firmware/03-SPI-Flash/example.c",
+      "exercise": "10-advanced/topics/02-Firmware/03-SPI-Flash/exercice.md",
+      "solutions": [
+        "10-advanced/topics/02-Firmware/03-SPI-Flash/solution.md",
+        "10-advanced/topics/02-Firmware/03-SPI-Flash/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/02-Firmware/04-Bootkit-Concepts",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/02-Firmware/04-Bootkit-Concepts/Cours.md",
+      "example": "10-advanced/topics/02-Firmware/04-Bootkit-Concepts/example.c",
+      "exercise": "10-advanced/topics/02-Firmware/04-Bootkit-Concepts/exercice.md",
+      "solutions": [
+        "10-advanced/topics/02-Firmware/04-Bootkit-Concepts/solution.md",
+        "10-advanced/topics/02-Firmware/04-Bootkit-Concepts/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/02-Firmware/05-SMM-Basics",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/02-Firmware/05-SMM-Basics/Cours.md",
+      "example": "10-advanced/topics/02-Firmware/05-SMM-Basics/example.c",
+      "exercise": "10-advanced/topics/02-Firmware/05-SMM-Basics/exercice.md",
+      "solutions": [
+        "10-advanced/topics/02-Firmware/05-SMM-Basics/solution.md",
+        "10-advanced/topics/02-Firmware/05-SMM-Basics/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/03-Hardware/01-Side-Channel-Intro",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/03-Hardware/01-Side-Channel-Intro/Cours.md",
+      "example": "10-advanced/topics/03-Hardware/01-Side-Channel-Intro/example.c",
+      "exercise": "10-advanced/topics/03-Hardware/01-Side-Channel-Intro/exercice.md",
+      "solutions": [
+        "10-advanced/topics/03-Hardware/01-Side-Channel-Intro/solution.md",
+        "10-advanced/topics/03-Hardware/01-Side-Channel-Intro/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/03-Hardware/02-Spectre-Meltdown",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/03-Hardware/02-Spectre-Meltdown/Cours.md",
+      "example": "10-advanced/topics/03-Hardware/02-Spectre-Meltdown/example.c",
+      "exercise": "10-advanced/topics/03-Hardware/02-Spectre-Meltdown/exercice.md",
+      "solutions": [
+        "10-advanced/topics/03-Hardware/02-Spectre-Meltdown/solution.md",
+        "10-advanced/topics/03-Hardware/02-Spectre-Meltdown/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/03-Hardware/03-Rowhammer",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/03-Hardware/03-Rowhammer/Cours.md",
+      "example": "10-advanced/topics/03-Hardware/03-Rowhammer/example.c",
+      "exercise": "10-advanced/topics/03-Hardware/03-Rowhammer/exercice.md",
+      "solutions": [
+        "10-advanced/topics/03-Hardware/03-Rowhammer/solution.md",
+        "10-advanced/topics/03-Hardware/03-Rowhammer/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/03-Hardware/04-Hardware-Implants",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/03-Hardware/04-Hardware-Implants/Cours.md",
+      "example": "10-advanced/topics/03-Hardware/04-Hardware-Implants/example.c",
+      "exercise": "10-advanced/topics/03-Hardware/04-Hardware-Implants/exercice.md",
+      "solutions": [
+        "10-advanced/topics/03-Hardware/04-Hardware-Implants/solution.md",
+        "10-advanced/topics/03-Hardware/04-Hardware-Implants/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/04-Supply-Chain/01-Dependency-Confusion",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/04-Supply-Chain/01-Dependency-Confusion/Cours.md",
+      "example": "10-advanced/topics/04-Supply-Chain/01-Dependency-Confusion/example.c",
+      "exercise": "10-advanced/topics/04-Supply-Chain/01-Dependency-Confusion/exercice.md",
+      "solutions": [
+        "10-advanced/topics/04-Supply-Chain/01-Dependency-Confusion/solution.md",
+        "10-advanced/topics/04-Supply-Chain/01-Dependency-Confusion/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/04-Supply-Chain/02-Typosquatting",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/04-Supply-Chain/02-Typosquatting/Cours.md",
+      "example": "10-advanced/topics/04-Supply-Chain/02-Typosquatting/example.c",
+      "exercise": "10-advanced/topics/04-Supply-Chain/02-Typosquatting/exercice.md",
+      "solutions": [
+        "10-advanced/topics/04-Supply-Chain/02-Typosquatting/solution.md",
+        "10-advanced/topics/04-Supply-Chain/02-Typosquatting/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/04-Supply-Chain/03-Build-Compromise",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/04-Supply-Chain/03-Build-Compromise/Cours.md",
+      "example": "10-advanced/topics/04-Supply-Chain/03-Build-Compromise/example.c",
+      "exercise": "10-advanced/topics/04-Supply-Chain/03-Build-Compromise/exercice.md",
+      "solutions": [
+        "10-advanced/topics/04-Supply-Chain/03-Build-Compromise/solution.md",
+        "10-advanced/topics/04-Supply-Chain/03-Build-Compromise/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/04-Supply-Chain/04-Signed-Malware",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/04-Supply-Chain/04-Signed-Malware/Cours.md",
+      "example": "10-advanced/topics/04-Supply-Chain/04-Signed-Malware/example.c",
+      "exercise": "10-advanced/topics/04-Supply-Chain/04-Signed-Malware/exercice.md",
+      "solutions": [
+        "10-advanced/topics/04-Supply-Chain/04-Signed-Malware/solution.md",
+        "10-advanced/topics/04-Supply-Chain/04-Signed-Malware/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/05-AI-Security/01-LLM-Attack-Surface",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/05-AI-Security/01-LLM-Attack-Surface/Cours.md",
+      "example": "10-advanced/topics/05-AI-Security/01-LLM-Attack-Surface/example.c",
+      "exercise": "10-advanced/topics/05-AI-Security/01-LLM-Attack-Surface/exercice.md",
+      "solutions": [
+        "10-advanced/topics/05-AI-Security/01-LLM-Attack-Surface/solution.md",
+        "10-advanced/topics/05-AI-Security/01-LLM-Attack-Surface/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/05-AI-Security/02-Prompt-Injection",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/05-AI-Security/02-Prompt-Injection/Cours.md",
+      "example": "10-advanced/topics/05-AI-Security/02-Prompt-Injection/example.c",
+      "exercise": "10-advanced/topics/05-AI-Security/02-Prompt-Injection/exercice.md",
+      "solutions": [
+        "10-advanced/topics/05-AI-Security/02-Prompt-Injection/solution.md",
+        "10-advanced/topics/05-AI-Security/02-Prompt-Injection/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/05-AI-Security/03-Model-Extraction",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/05-AI-Security/03-Model-Extraction/Cours.md",
+      "example": "10-advanced/topics/05-AI-Security/03-Model-Extraction/example.c",
+      "exercise": "10-advanced/topics/05-AI-Security/03-Model-Extraction/exercice.md",
+      "solutions": [
+        "10-advanced/topics/05-AI-Security/03-Model-Extraction/solution.md",
+        "10-advanced/topics/05-AI-Security/03-Model-Extraction/solution.c"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "10-advanced/topics/05-AI-Security/04-AI-Red-Team-Prep",
+      "section": "10-advanced",
+      "course": "10-advanced/topics/05-AI-Security/04-AI-Red-Team-Prep/Cours.md",
+      "example": "10-advanced/topics/05-AI-Security/04-AI-Red-Team-Prep/example.c",
+      "exercise": "10-advanced/topics/05-AI-Security/04-AI-Red-Team-Prep/exercice.md",
+      "solutions": [
+        "10-advanced/topics/05-AI-Security/04-AI-Red-Team-Prep/solution.md",
+        "10-advanced/topics/05-AI-Security/04-AI-Red-Team-Prep/solution.c"
+      ],
+      "status": "draft"
+    }
+  ]
+}
