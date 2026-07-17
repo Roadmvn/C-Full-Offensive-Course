@@ -150,6 +150,17 @@ class BeginnerCSourceRegressionTests(unittest.TestCase):
                 if match is not None:
                     self.fail(f"{label}: matched executable code {match.group(0)!r}")
 
+    def test_ip_header_packing_supports_msvc_and_gnu_compilers(self):
+        source = (
+            BEGINNER_ROOT / "topics/10-Structs-Unions-Enums/example.c"
+        ).read_text(encoding="utf-8")
+
+        self.assertNotIn("struct __attribute__((packed)) IPHeader", source)
+        self.assertIn("#if defined(_MSC_VER)", source)
+        self.assertIn("#pragma pack(push, 1)", source)
+        self.assertIn("#pragma pack(pop)", source)
+        self.assertIn("#define PACKED_STRUCT", source)
+
 
 class BeginnerDocumentationTests(unittest.TestCase):
     def test_onboarding_only_references_existing_tools(self):

@@ -360,7 +360,14 @@ void demo_c2_protocol(void) {
 // DEMO 10 : Application offensive - En-tête de paquet réseau
 // ============================================================================
 
-struct __attribute__((packed)) IPHeader {
+#if defined(_MSC_VER)
+#pragma pack(push, 1)
+#define PACKED_STRUCT
+#else
+#define PACKED_STRUCT __attribute__((packed))
+#endif
+
+struct PACKED_STRUCT IPHeader {
     uint8_t  version_ihl;
     uint8_t  tos;
     uint16_t total_length;
@@ -372,6 +379,11 @@ struct __attribute__((packed)) IPHeader {
     uint32_t src_addr;
     uint32_t dst_addr;
 };
+
+#if defined(_MSC_VER)
+#pragma pack(pop)
+#endif
+#undef PACKED_STRUCT
 
 void print_ip(uint32_t ip) {
     printf("%d.%d.%d.%d",
