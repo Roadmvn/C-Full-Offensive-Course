@@ -383,8 +383,11 @@ void demo_inline_macros(void) {
     printf("\n[!] Danger des macros - effets de bord:\n");
     int x = 5;
     printf("    x = 5\n");
-    printf("    SQUARE_MACRO(x++) évalue x++ deux fois!\n");
-    printf("    Résultat: %d (pas 25!)\n", SQUARE_MACRO(x++));
+    printf("    SQUARE_MACRO(x++) se développe en (x++) * (x++): ne pas exécuter!\n");
+    int resultat_sur = square_inline(x);
+    x++;
+    printf("    Séquence sûre: square_inline(5) = %d, puis x++ donne x = %d\n",
+           resultat_sur, x);
     printf("\n");
 }
 

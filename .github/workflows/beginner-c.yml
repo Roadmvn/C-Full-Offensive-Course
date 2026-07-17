@@ -1,0 +1,64 @@
+name: Beginner C syntax
+
+"on":
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  beginner-c-syntax:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Validate beginner C syntax on Unix
+        if: runner.os != 'Windows'
+        run: python3 -m unittest tests.test_beginner_c -v
+
+      - name: Validate beginner C syntax on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path -LiteralPath $vswhere)) {
+            throw "vswhere.exe was not found at $vswhere"
+          }
+
+          $installationPath = & $vswhere `
+            -latest `
+            -products * `
+            -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+            -property installationPath
+          if ([string]::IsNullOrWhiteSpace($installationPath)) {
+            throw "Visual Studio with the VC x64 tools was not found"
+          }
+
+          $devShell = Join-Path $installationPath "Common7\Tools\Launch-VsDevShell.ps1"
+          if (-not (Test-Path -LiteralPath $devShell)) {
+            throw "Visual Studio developer shell was not found at $devShell"
+          }
+
+          . $devShell -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
+          if (-not (Get-Command cl.exe -ErrorAction SilentlyContinue)) {
+            throw "cl.exe is unavailable after launching the Visual Studio developer shell"
+          }
+
+          python -m unittest tests.test_beginner_c -v

@@ -46,6 +46,8 @@
 // uint8_t, uint32_t, etc. - utile pour la portabilité
 #include <stdint.h>
 
+int main(int argc, char *argv[]);
+
 
 /*
  * -----------------------------------------------------------------------------

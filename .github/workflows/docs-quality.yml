@@ -1,0 +1,35 @@
+name: Documentation quality
+
+"on":
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  documentation-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Run documentation tests
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Run aggregate repository checks
+        run: python scripts/check_repository.py --all
+
+      - name: Regenerate curriculum manifest
+        run: python scripts/curriculum.py --root . --output content/curriculum.json --overrides content/status-overrides.json
+
+      - name: Verify curriculum manifest is current
+        run: git diff --exit-code -- content/curriculum.json

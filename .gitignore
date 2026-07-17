@@ -66,6 +66,7 @@ test_exploit
 
 # Fichiers de test temporaires
 test_*
+!tests/test_*.py
 tmp_*
 
 Rules.md

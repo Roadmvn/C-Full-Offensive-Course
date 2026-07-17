@@ -173,7 +173,7 @@ A la fin de cette phase, vous devriez pouvoir :
 │   └── VM Windows 10/11 (cible isolee)                           │
 │       └── Tests des outils offensifs                            │
 │                                                                 │
-│   Reseau : NAT ou Host-Only pour isolation                      │
+│   Reseau : Host-Only ou loopback pour isolation                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
