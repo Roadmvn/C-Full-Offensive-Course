@@ -15,7 +15,7 @@ Partez de zéro, choisissez un parcours et utilisez les laboratoires partagés e
 ## What is inside? · Que contient le dépôt ?
 
 - 216 inventoried course units with theory, examples, exercises, and solutions at different maturity levels.
-- One shared C codebase—never duplicated between languages.
+- One shared C codebase, never duplicated between languages.
 - A 12-week beginner core plus Windows, Linux, macOS, and advanced reference paths.
 - Transparent `Ready`, `Draft`, and `Reference` labels.
 

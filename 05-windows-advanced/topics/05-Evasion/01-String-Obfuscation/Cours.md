@@ -987,6 +987,6 @@ Maintenant que vous maîtrisez l'obfuscation de strings, passez aux modules suiv
 **Fin du Module W33 - String Obfuscation**
 
 > "The best place to hide a leaf is in a forest."
-> — Anonyme
+> - Anonyme
 
 ---

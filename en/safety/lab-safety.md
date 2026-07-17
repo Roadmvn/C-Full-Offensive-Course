@@ -11,7 +11,7 @@ This gate applies before every hands-on security exercise. Do not start while an
 - [ ] **Disposable VM:** the exercise runs in a disposable virtual machine or an equivalently disposable dedicated test system, not on a daily-use host.
 - [ ] **Snapshot:** I created and verified a restorable snapshot before the exercise.
 - [ ] **Isolated network:** the lab uses host-only or loopback networking. Bridged networking, public exposure, inbound port forwarding, and routes to unrelated networks are disabled.
-- [ ] **No real secrets:** the lab contains only synthetic test credentials, tokens, certificates, and keys—never real secrets.
+- [ ] **No real secrets:** the lab contains only synthetic test credentials, tokens, certificates, and keys, never real secrets.
 - [ ] **No corporate or personal data:** the VM, inputs, outputs, and mounted folders contain no production, employer, customer, or personal data.
 - [ ] **Documented privileges:** I recorded the lab accounts, assigned privileges, required elevated actions, and who approved them. I will use the least privilege the exercise needs.
 - [ ] **Stop conditions:** I will stop immediately if traffic reaches an unexpected address, isolation changes, the target differs from scope, monitoring is lost, the host becomes unstable, or I am unsure about authorization.

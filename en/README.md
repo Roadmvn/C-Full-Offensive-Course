@@ -2,7 +2,7 @@
 
 # C Offensive Security Journey
 
-A free, progressive path for learning systems-level C for authorized security research—from computing prerequisites to hands-on Windows, Linux, and macOS labs.
+A free, progressive path for learning systems-level C for authorized security research, from computing prerequisites to hands-on Windows, Linux, and macOS labs.
 
 > Content status: 216 units are inventoried. Readiness is audited publicly; incomplete material stays available and is labeled `Draft`.
 
@@ -16,10 +16,10 @@ All C source and lab artifacts remain shared in the historical course directorie
 
 ## Four curriculum paths
 
-1. **12-week beginner core** — progress from computing prerequisites to an integrated project through sections `00` to `07`, with assembly section `03` before Windows internals.
-2. **Windows depth** — study sections `04` and `05`, followed by selected references from `10`.
-3. **Linux or macOS specialization** — choose section `08` or `09` after memory and assembly in sections `02` and `03`.
-4. **Advanced reference** — use section `10` as optional material outside the 12-week promise.
+1. **12-week beginner core:** progress from computing prerequisites to an integrated project through sections `00` to `07`, with assembly section `03` before Windows internals.
+2. **Windows depth:** study sections `04` and `05`, followed by selected references from `10`.
+3. **Linux or macOS specialization:** choose section `08` or `09` after memory and assembly in sections `02` and `03`.
+4. **Advanced reference:** use section `10` as optional material outside the 12-week promise.
 
 ## Learning approach
 

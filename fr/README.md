@@ -16,10 +16,10 @@ Le code C et les artefacts de laboratoire restent partagés dans les dossiers hi
 
 ## Quatre parcours
 
-1. **Tronc commun débutant en 12 semaines** — des prérequis à la construction d'un projet intégré, dans les sections `00` à `07`, avec l'assembleur `03` avant les internes Windows.
-2. **Approfondissement Windows** — les sections `04` et `05`, puis certaines références de `10`.
-3. **Spécialisation Linux ou macOS** — la section `08` ou `09`, après la mémoire et l'assembleur des sections `02` et `03`.
-4. **Références avancées** — la section `10`, visible comme ressource complémentaire hors de la promesse des 12 semaines.
+1. **Tronc commun débutant en 12 semaines :** des prérequis à la construction d'un projet intégré, dans les sections `00` à `07`, avec l'assembleur `03` avant les internes Windows.
+2. **Approfondissement Windows :** les sections `04` et `05`, puis certaines références de `10`.
+3. **Spécialisation Linux ou macOS :** la section `08` ou `09`, après la mémoire et l'assembleur des sections `02` et `03`.
+4. **Références avancées :** la section `10`, visible comme ressource complémentaire hors de la promesse des 12 semaines.
 
 ## Contribuer
 
@@ -27,7 +27,7 @@ Le code C et les artefacts de laboratoire restent partagés dans les dossiers hi
 
 ---
 
-## Feuille de route historique et aspirationnelle — C Maldev Journey
+## Feuille de route historique et aspirationnelle : C Maldev Journey
 
 > Cette section conserve un objectif historique et aspirationnel : progresser de `printf()` vers un beacon C2 fonctionnel au moyen d'un tronc commun proposé sur 12 semaines. C'est un cap pédagogique, pas un résultat garanti ; des unités sont encore `Draft`, et leur statut audité décrit leur maturité réelle.
 
