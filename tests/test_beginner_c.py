@@ -155,11 +155,19 @@ class BeginnerCSourceRegressionTests(unittest.TestCase):
             BEGINNER_ROOT / "topics/10-Structs-Unions-Enums/example.c"
         ).read_text(encoding="utf-8")
 
-        self.assertNotIn("struct __attribute__((packed)) IPHeader", source)
+        self.assertNotIn("struct __attribute__((packed))", source)
         self.assertIn("#if defined(_MSC_VER)", source)
-        self.assertIn("#pragma pack(push, 1)", source)
-        self.assertIn("#pragma pack(pop)", source)
+        self.assertEqual(2, source.count("#pragma pack(push, 1)"))
+        self.assertEqual(2, source.count("#pragma pack(pop)"))
         self.assertIn("#define PACKED_STRUCT", source)
+
+    def test_struct_sizes_use_the_portable_size_t_format(self):
+        source = (
+            BEGINNER_ROOT / "topics/10-Structs-Unions-Enums/example.c"
+        ).read_text(encoding="utf-8")
+
+        self.assertNotIn("%lu", source)
+        self.assertIn("%zu", source)
 
 
 class BeginnerDocumentationTests(unittest.TestCase):

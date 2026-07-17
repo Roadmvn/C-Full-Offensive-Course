@@ -12,6 +12,12 @@
 #include <stdint.h>
 #include <time.h>
 
+#if defined(_MSC_VER)
+#define PACKED_STRUCT
+#else
+#define PACKED_STRUCT __attribute__((packed))
+#endif
+
 // ============================================================================
 // DEMO 1 : Définition et accès aux membres
 // ============================================================================
@@ -240,34 +246,40 @@ struct GoodLayout {
     char c;     // 1 byte
 };
 
-struct __attribute__((packed)) PackedStruct {
+#if defined(_MSC_VER)
+#pragma pack(push, 1)
+#endif
+struct PACKED_STRUCT PackedStruct {
     char a;
     int b;
     char c;
 };
+#if defined(_MSC_VER)
+#pragma pack(pop)
+#endif
 
 void demo_padding(void) {
     printf("=== DEMO 7 : Taille et padding ===\n\n");
 
     printf("struct BadLayout (char, int, char):\n");
     printf("  Taille attendue : 6 bytes\n");
-    printf("  Taille réelle   : %lu bytes (avec padding)\n\n",
+    printf("  Taille réelle   : %zu bytes (avec padding)\n\n",
            sizeof(struct BadLayout));
 
     printf("struct GoodLayout (int, char, char):\n");
-    printf("  Taille : %lu bytes (mieux organisé)\n\n",
+    printf("  Taille : %zu bytes (mieux organisé)\n\n",
            sizeof(struct GoodLayout));
 
     printf("struct PackedStruct (packed):\n");
-    printf("  Taille : %lu bytes (sans padding)\n\n",
+    printf("  Taille : %zu bytes (sans padding)\n\n",
            sizeof(struct PackedStruct));
 
     // Visualiser les offsets
     struct BadLayout bad;
     printf("Offsets dans BadLayout:\n");
-    printf("  &a : %lu\n", (size_t)&bad.a - (size_t)&bad);
-    printf("  &b : %lu\n", (size_t)&bad.b - (size_t)&bad);
-    printf("  &c : %lu\n\n", (size_t)&bad.c - (size_t)&bad);
+    printf("  &a : %zu\n", (size_t)&bad.a - (size_t)&bad);
+    printf("  &b : %zu\n", (size_t)&bad.b - (size_t)&bad);
+    printf("  &c : %zu\n\n", (size_t)&bad.c - (size_t)&bad);
 }
 
 // ============================================================================
@@ -362,9 +374,6 @@ void demo_c2_protocol(void) {
 
 #if defined(_MSC_VER)
 #pragma pack(push, 1)
-#define PACKED_STRUCT
-#else
-#define PACKED_STRUCT __attribute__((packed))
 #endif
 
 struct PACKED_STRUCT IPHeader {
@@ -409,7 +418,7 @@ void demo_packet_header(void) {
         .dst_addr = 0xC0A80102    // 192.168.1.2
     };
 
-    printf("IP Header (%lu bytes):\n", sizeof(ip));
+    printf("IP Header (%zu bytes):\n", sizeof(ip));
     printf("  Version    : %d\n", (ip.version_ihl >> 4) & 0x0F);
     printf("  IHL        : %d (x4 = %d bytes)\n",
            ip.version_ihl & 0x0F, (ip.version_ihl & 0x0F) * 4);
