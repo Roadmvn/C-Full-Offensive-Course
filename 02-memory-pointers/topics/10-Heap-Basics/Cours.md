@@ -645,9 +645,9 @@ sleep(random());  // Timing aléatoire pour éviter détection déterministe
 
 ## ➡️ Prochaine étape
 
-Maintenant que tu comprends l'exploitation du heap, tu vas apprendre les [Race Conditions](../27_race_conditions/) pour exploiter les programmes multi-threadés.
+Maintenant que tu comprends l'exploitation du heap, tu vas apprendre les [Race Conditions](../../../08-linux/topics/03-Shellcoding/04-Race-Conditions/Cours.md) pour exploiter les programmes multi-threadés.
 
 ---
 
-**Exercices** : Voir [exercice.txt](exercice.txt)
+**Exercices** : Voir [exercice.md](exercice.md)
 **Code exemple** : Voir [example.c](example.c)

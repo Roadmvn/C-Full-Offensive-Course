@@ -567,9 +567,9 @@ memcpy(vulnerable_buffer, exploit, sizeof(exploit));
 
 ## ➡️ Prochaine étape
 
-Maintenant que tu maîtrises les tableaux, tu vas apprendre à manipuler les [strings (chaînes de caractères)](../09_strings/)
+Maintenant que tu maîtrises les tableaux, tu vas apprendre à manipuler les [strings (chaînes de caractères)](../07bis-Chaines/Cours.md)
 
 ---
 
-**Exercices** : Voir [exercice.txt](exercice.txt)
+**Exercices** : Voir [exercice.md](exercice.md)
 **Code exemple** : Voir [example.c](example.c)

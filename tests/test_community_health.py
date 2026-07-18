@@ -84,12 +84,8 @@ class CommunityHealthTests(unittest.TestCase):
         self.assertIn("Permission is hereby granted", license_text)
         self.assertNotIn("DISCLAIMER", license_text)
 
-    def test_legacy_licence_path_matches_the_canonical_mit_license(self):
-        self.assertEqual(
-            (ROOT / "LICENSE").read_bytes(),
-            (ROOT / "LICENCE").read_bytes(),
-        )
-        self.assertNotIn("DISCLAIMER", read("LICENCE"))
+    def test_license_has_no_duplicate_variant(self):
+        self.assertFalse((ROOT / "LICENCE").exists())
 
     def test_disclaimer_preserves_french_warning_and_adds_english_equivalent(self):
         disclaimer = read("DISCLAIMER.md")

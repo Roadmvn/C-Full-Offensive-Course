@@ -241,4 +241,4 @@ Avant de passer au module suivant, verifiez que vous pouvez :
 
 ## Solutions
 
-Les solutions detaillees sont disponibles dans [solution.md](solution.md)
+Les solutions detaillees sont disponibles dans [solution.c](solution.c)

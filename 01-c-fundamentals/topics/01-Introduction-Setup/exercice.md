@@ -361,4 +361,4 @@ Avant de passer au module suivant, vérifie que tu sais :
 
 ## Solutions
 
-Voir [solution.c](solution.c) pour les solutions commentées.
+Voir [solution.md](solution.md) pour les solutions commentées.

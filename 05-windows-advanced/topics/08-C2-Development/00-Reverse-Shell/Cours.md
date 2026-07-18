@@ -683,9 +683,9 @@ $client.Close()
 
 ## ➡️ Prochaine étape
 
-Maintenant que tu maîtrises le reverse shell x86-64, tu vas apprendre l'[Architecture ARM64](../29_arm64_architecture/) pour exploiter les Mac M1/M2/M3 et les devices mobiles.
+Maintenant que tu maîtrises le reverse shell x86-64, tu vas apprendre l'[Architecture ARM64](../../../../09-macos/topics/01-Fondamentaux/07-ARM64-Architecture/Cours.md) pour exploiter les Mac M1/M2/M3 et les devices mobiles.
 
 ---
 
-**Exercices** : Voir [exercice.txt](exercice.txt)
+**Exercices** : Voir [exercice.md](exercice.md)
 **Code exemple** : Voir [example.c](example.c)
